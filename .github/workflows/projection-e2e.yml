@@ -1,0 +1,57 @@
+name: projection-e2e
+
+on:
+  workflow_dispatch:
+  release:
+    types: [prereleased, released]
+
+concurrency:
+  group: codepatrol-projection-e2e
+  cancel-in-progress: false
+
+permissions:
+  contents: write
+  issues: write
+
+jobs:
+  e2e:
+    runs-on: ubuntu-latest
+    environment: projection-e2e
+    strategy:
+      # Sequential: both scenarios drive the same scratch repository.
+      max-parallel: 1
+      fail-fast: false
+      matrix:
+        scenario: [accept, rollback]
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: "22"
+          cache: npm
+      - run: npm ci
+      - run: npm run build
+
+      # The scenario runs against the packaged artifact, not the source tree,
+      # so it exercises exactly what a user would install.
+      - name: Pack artifact
+        run: |
+          set -euo pipefail
+          npm pack --pack-destination "$RUNNER_TEMP"
+          echo "TARBALL=$(ls "$RUNNER_TEMP"/codepatrol-*.tgz)" >> "$GITHUB_ENV"
+
+      - name: Install the artifact
+        run: |
+          set -euo pipefail
+          consumer="$RUNNER_TEMP/consumer"
+          mkdir -p "$consumer"
+          cd "$consumer"
+          npm init --yes >/dev/null
+          npm install "$TARBALL"
+          echo "CODEPATROL_BIN=$consumer/node_modules/codepatrol/bin/codepatrol.js" >> "$GITHUB_ENV"
+
+      - name: ${{ matrix.scenario }} scenario
+        env:
+          GH_TOKEN: ${{ secrets.E2E_GH_TOKEN }}
+          E2E_REPOSITORY: ${{ vars.E2E_REPOSITORY }}
+        run: node scripts/projection-e2e.mjs ${{ matrix.scenario }}

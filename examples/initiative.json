@@ -1,0 +1,41 @@
+{
+  "schemaVersion": 1,
+  "type": "codepatrol-initiative-document",
+  "documentId": "document-9f73",
+  "intent": "Add passkey authentication",
+  "summary": "Two Works: credential schema, then registration endpoint",
+  "observedState": "Empty backlog; base at main; no active runs",
+  "digest": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+  "createdAt": "2026-08-01T12:00:00.000Z",
+  "initiative": {
+    "title": "Passkey authentication",
+    "intent": "Replace password login with passkeys",
+    "motivation": "Split by verification boundary: schema, then endpoint",
+    "ordering": "The endpoint depends on the schema it persists into"
+  },
+  "works": [
+    {
+      "key": "schema",
+      "title": "Add the credential schema",
+      "description": "Persist public keys and signature counters",
+      "issueType": "Feature",
+      "priority": "p1",
+      "acceptance": [
+        "A credential round-trips through the store",
+        "Migrations apply to an empty database"
+      ]
+    },
+    {
+      "key": "endpoint",
+      "title": "Add the registration endpoint",
+      "description": "Accept an attestation and persist a credential",
+      "issueType": "Feature",
+      "priority": "p1",
+      "acceptance": [
+        "A valid attestation is stored",
+        "An invalid attestation is rejected with a 400"
+      ],
+      "blockedBy": ["#schema"]
+    }
+  ]
+}

@@ -1,0 +1,13 @@
+{
+  "decision": "return",
+  "returnTo": "plan",
+  "reasons": ["The acceptance premise does not define the required expired-credential behavior"],
+  "summary": "Plan revision required before implementation can continue",
+  "handoff": "Clarify the acceptance contract using the recorded evidence",
+  "todo": [
+    { "id": "T1", "status": "completed", "note": "Baseline and candidate inspected" },
+    { "id": "T2", "status": "failed", "note": "Acceptance contract is incomplete" },
+    { "id": "T3", "status": "completed", "note": "Defect evidence and return reason recorded" }
+  ],
+  "artifacts": []
+}

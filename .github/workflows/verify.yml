@@ -1,0 +1,61 @@
+name: verify
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        # Windows is not in the matrix because it is not verified; see
+        # docs/limitations.md rather than assuming it is supported.
+        os: [ubuntu-latest, macos-latest]
+        node: ["20", "22"]
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: ${{ matrix.node }}
+          cache: npm
+      - run: npm ci
+      - run: npm run typecheck
+      - run: npm test
+      # The external smoke drives a clean repository through the published CLI,
+      # so an entry point that only works inside this repository fails here.
+      - run: npm run smoke
+
+  artifact:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: "20"
+          cache: npm
+      - run: npm ci
+      - run: npm run build
+      # Install the exact tarball a user would get, in a directory with no
+      # source tree, and drive a real repository with it.
+      - name: Validate the published artifact
+        run: |
+          set -euo pipefail
+          npm pack --pack-destination "$RUNNER_TEMP"
+          tarball="$(ls "$RUNNER_TEMP"/codepatrol-*.tgz)"
+          consumer="$RUNNER_TEMP/consumer"
+          mkdir -p "$consumer"
+          cd "$consumer"
+          npm init --yes >/dev/null
+          npm install "$tarball"
+          test ! -d node_modules/codepatrol/dist/test
+          npx codepatrol --version
+          npx codepatrol --help
+          CODEPATROL_BIN="$consumer/node_modules/codepatrol/bin/codepatrol.js" \
+            node "$GITHUB_WORKSPACE/scripts/smoke.mjs"

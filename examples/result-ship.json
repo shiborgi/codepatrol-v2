@@ -1,0 +1,24 @@
+{
+  "decision": "accept",
+  "authority": "release-owner",
+  "summary": "Exact verified candidate accepted for local integration",
+  "handoff": "Lifecycle terminal; retain the archive ref as the audit record",
+  "todo": [
+    {
+      "id": "T1",
+      "status": "completed",
+      "note": "Baseline and verified candidate identities match"
+    },
+    {
+      "id": "T2",
+      "status": "completed",
+      "note": "Candidate inspection and minimum evidence reviewed"
+    },
+    {
+      "id": "T3",
+      "status": "completed",
+      "note": "Terminal rationale and authority recorded"
+    }
+  ],
+  "artifacts": []
+}

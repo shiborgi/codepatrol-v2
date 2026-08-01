@@ -1,0 +1,6 @@
+{
+  "type": "command",
+  "message": "Ran the focused validation against the pinned candidate",
+  "command": ["npm", "test", "--", "authentication"],
+  "exitCode": 0
+}

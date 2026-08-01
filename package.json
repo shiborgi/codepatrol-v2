@@ -1,0 +1,60 @@
+{
+  "name": "codepatrol",
+  "version": "1.0.0",
+  "description": "Local-first, Git-native orchestration for agent-driven change: Spec proposes, the Core validates and applies, Git stays authoritative.",
+  "type": "module",
+  "engines": {
+    "node": ">=20"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/shiborgi/codepatrol.git"
+  },
+  "homepage": "https://github.com/shiborgi/codepatrol#readme",
+  "bugs": {
+    "url": "https://github.com/shiborgi/codepatrol/issues"
+  },
+  "bin": {
+    "codepatrol": "./bin/codepatrol.js"
+  },
+  "exports": {
+    ".": "./dist/cli/main.js",
+    "./package.json": "./package.json"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "scripts": {
+    "clean": "node -e \"require('node:fs').rmSync('dist',{recursive:true,force:true})\"",
+    "build": "npm run clean && tsc -p tsconfig.json",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "test": "npm run build && node --test dist/test/*.test.js",
+    "smoke": "npm run build && node scripts/smoke.mjs",
+    "verify": "npm run typecheck && npm test && npm run smoke && node bin/codepatrol.js --help",
+    "prepublishOnly": "npm run verify"
+  },
+  "devDependencies": {
+    "@types/node": "^22.0.0",
+    "typescript": "^5.6.0"
+  },
+  "license": "MIT",
+  "keywords": [
+    "agents",
+    "orchestration",
+    "git",
+    "workflow",
+    "code-review"
+  ],
+  "files": [
+    "bin",
+    "dist",
+    "!dist/test",
+    "skills",
+    "docs",
+    "examples",
+    "README.md",
+    "LICENSE",
+    "SECURITY.md",
+    "CHANGELOG.md"
+  ]
+}

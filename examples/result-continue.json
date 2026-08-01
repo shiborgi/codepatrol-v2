@@ -1,0 +1,11 @@
+{
+  "decision": "continue",
+  "summary": "Acceptance criteria completed with focused validation passing",
+  "handoff": "Verify candidate 0123456789abcdef0123456789abcdef01234567 against baseline 89abcdef0123456789abcdef0123456789abcdef",
+  "todo": [
+    { "id": "T1", "status": "completed", "note": "Pinned baseline and candidate recorded" },
+    { "id": "T2", "status": "completed", "note": "Acceptance criteria satisfied" },
+    { "id": "T3", "status": "completed", "note": "Validation evidence recorded; no known residual risk" }
+  ],
+  "artifacts": []
+}

@@ -1,0 +1,12 @@
+{
+  "verify": {
+    "requiredCommands": [
+      [
+        "npm",
+        "run",
+        "verify"
+      ]
+    ],
+    "persistOutputExcerpt": false
+  }
+}

@@ -1,0 +1,14 @@
+[
+  {
+    "id": "T1",
+    "title": "Read the v1 handoff and pin its baseline and candidate"
+  },
+  {
+    "id": "T2",
+    "title": "Execute the role against the stated acceptance criteria"
+  },
+  {
+    "id": "T3",
+    "title": "Record command evidence, residual risk, and the result"
+  }
+]

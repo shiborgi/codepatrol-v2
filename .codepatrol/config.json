@@ -1,0 +1,27 @@
+{
+  "schemaVersion": 1,
+  "baseBranch": "main",
+  "harness": "none",
+  "github": {
+    "refs": {
+      "enabled": true
+    },
+    "issue": {
+      "enabled": true,
+      "classification": {
+        "mode": "labels",
+        "labels": {
+          "Bug": "codepatrol:type/bug",
+          "Feature": "codepatrol:type/feature",
+          "Task": "codepatrol:type/task"
+        }
+      }
+    },
+    "milestone": {
+      "enabled": true
+    },
+    "project": {
+      "mode": "managed"
+    }
+  }
+}
