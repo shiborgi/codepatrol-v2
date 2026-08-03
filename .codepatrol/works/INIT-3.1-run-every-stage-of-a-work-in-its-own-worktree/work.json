@@ -1,0 +1,205 @@
+{
+  "schemaVersion": 1,
+  "type": "codepatrol-work",
+  "work": {
+    "id": "INIT-3.1-run-every-stage-of-a-work-in-its-own-worktree",
+    "title": "Run every stage of a Work in its own worktree",
+    "description": "A stage run today executes against the main checkout unless Build happens to have code or --worktree was passed, so two harnesses attacking two Works share one directory and one's edits, builds, and test artifacts land in the other's view. Give every stage run of a Work the Work's own worktree as its execution directory: created on first need, reused by later stages of the same Work, distinct from every other Work's, and never the repository's main checkout. One harness per Work stays the rule — a Work already serializes its own runs — this Work makes many harnesses on many Works safe.",
+    "issueType": "Feature",
+    "priority": "p1",
+    "acceptance": [
+      "Every stage run of a Work receives that Work's own worktree as its execution directory, never the repository's main checkout",
+      "Two Works attacked at the same time hold two distinct worktree directories simultaneously",
+      "The worktree is created on first need and the same directory is handed to later stages of the same Work",
+      "A terminal Work's worktree is cleaned up the way terminal branch cleanup already is, and every existing lifecycle transition behaves as before"
+    ],
+    "createdAt": "2026-08-03T16:45:14.389Z",
+    "requestedBy": "spec",
+    "initiative": {
+      "id": "INIT-3",
+      "position": 1
+    },
+    "origin": {
+      "createdAt": "2026-08-03T16:45:14.389Z"
+    }
+  },
+  "repository": {
+    "baseRef": "refs/heads/main"
+  },
+  "graph": {
+    "blockedBy": []
+  },
+  "issue": {
+    "repository": "shiborgi/codepatrol",
+    "number": 40
+  },
+  "workflow": {
+    "state": "ready",
+    "stage": "build",
+    "attempt": 1,
+    "updatedAt": "2026-08-03T17:03:53.332Z"
+  },
+  "attempts": [
+    {
+      "stage": "plan",
+      "attempt": 1,
+      "runId": "2268c952-0427-4fa8-99dd-e617eda485d5",
+      "status": "completed",
+      "execution": {
+        "role": "planner",
+        "harness": "opencode",
+        "model": "kimi-for-coding/k3"
+      },
+      "startedAt": "2026-08-03T16:48:27.966Z",
+      "finishedAt": "2026-08-03T16:51:39.053Z",
+      "todo": [
+        {
+          "id": "P1",
+          "title": "Inspect worktree lifecycle (Worktrees adapter, NEEDS_WORKTREE, start/handoff, cleanup)"
+        },
+        {
+          "id": "P2",
+          "title": "Decide the execution-directory rule per stage and worktree reuse/removal"
+        },
+        {
+          "id": "P3",
+          "title": "Decide test coverage incl. two concurrent Works and regression"
+        },
+        {
+          "id": "P4",
+          "title": "Write decision-complete plan covering all four acceptance criteria"
+        },
+        {
+          "id": "P5",
+          "title": "Record traces; complete Plan with decision continue"
+        }
+      ],
+      "result": {
+        "decision": "continue",
+        "summary": "Every stage start now attaches the Work's own worktree: start()/resume() drop the NEEDS_WORKTREE distinction so plan and review materialize the branch and return the attached directory exactly like build/verify/ship. The Change branch and base projection appear at first run instead of at build; lifecycle transitions are untouched; terminal cleanup already removes the worktree. Skills docs are updated to stay truthful.",
+        "handoff": "# Plan: Run every stage of a Work in its own worktree (INIT-3.1)\n\n## Finding (P1)\nNEEDS_WORKTREE = {build, verify, ship} (work-service.ts:100): only those stages materialize the Change branch and attach the Work's worktree. Plan and review of a branchless Work get `worktreeDirectory: null` (work-service.ts:323-325) and execute against the main checkout — the shared-directory hazard this Work removes. The machinery already fits: attach() is idempotent and keyed to the Work's branch with registry mutations under the repository lock (worktree.ts:132-168), reuse across stages is free, and terminal cleanup already removes the worktree at integration (integration.ts:133/145/169) and at cancellation (work-graph-service.ts:216).\n\n## Product files Build touches\n1. src/application/work-service.ts — remove the NEEDS_WORKTREE distinction: start() (lines 299, 323-325) and resume() (lines 357-358) materialize and attach for every stage, so worktreeDirectory is always the Work's own worktree. The constant goes away; the --worktree flag stays accepted and is now a no-op.\n2. skills/codepatrol-plan/SKILL.md — step 5 currently says plan start creates no worktree by default; rewrite to state every stage start attaches the Work's worktree and returns it as worktreeDirectory (control JSON still lives outside the repository and all worktrees).\n3. skills/codepatrol-work/SKILL.md — the ownership sentence (line 10) stays true (\"owns no branch and no worktree until something needs one\"); adjust only if the wording implies plan never needs one.\n4. src/test/work-service.test.ts — updated expectations and new tests.\n5. docs/ — check for statements about worktree-on-demand behavior and keep them truthful; documentation.test.ts must stay green.\n\nNo adapter changes: worktree.ts, integration.ts, and the lock structure are untouched.\n\n## The rule (P2)\n- Every stage start of a Work returns that Work's own worktree as worktreeDirectory — created on first need (materialize + attach), never the main checkout (acceptance 1).\n- First need is the first stage run: the Change branch and the base's manifest-projection commit now appear at plan for most Works instead of at build. This is the deliberate cost of isolation; the lifecycle state machine, handoff shape, and transition order are unchanged (acceptance 4). A backlog Work still owns no branch and no worktree, and local-git-remote.test.ts's \"a branchless Work stays branchless across sync\" (creation never materializes) stays green.\n- attach() idempotency gives acceptance 3: later stages of the same Work get the same directory.\n- Terminal removal is the existing integration/cancellation path (acceptance 4).\n- Rejected alternative: detached branchless worktrees for plan/review — avoids earlier branch creation but forces a detached-to-branch switch at build and breaks \"the branch is the Change\". Recorded so Review sees it.\n\n## Tests (P3)\n1. Plan start returns a worktreeDirectory under .codepatrol/runtime/worktrees/<work-id>, distinct from the repository root; the handoff carries it (acceptance 1).\n2. Two Works started (plan) hold two distinct directories at once, and the main checkout shows no Change content (acceptance 2).\n3. Build after plan attaches the same directory plan received (acceptance 3).\n4. Terminal integration removes the worktree as today; existing integration and cleanup assertions stay green (acceptance 4).\n5. Update base commit-count expectations that assumed projection-at-build to projection-at-first-run (e.g. plan-only scenarios now show bootstrap + manifest projection on the base).\n6. Full existing suite green — the regression proof that transitions behave as before; harness-adapters.test.ts passes with the updated skill text.\n\n## Acceptance coverage\n1. Own worktree, never the main checkout — start/resume attach for all stages + test 1.\n2. Two Works, two directories simultaneously — keyed attach + test 2.\n3. Created on first need, reused by later stages — idempotent attach + test 3.\n4. Terminal cleanup the way branch cleanup already is; transitions unchanged — existing removal paths + tests 4–6.\n\n## Verification for Build\nnpm run verify (typecheck, unit tests, smoke, --help).\n\n## Non-goals\nNo scheduler or queue — parallelism stays the caller's choice. No concurrency stress suite (INIT-3.2). No change to the one-run-per-Work rule. No lock changes unless a test exposes a gap (then the gap belongs to INIT-3.2's scope note, not here).",
+        "todo": [
+          {
+            "id": "P1",
+            "status": "completed",
+            "note": "NEEDS_WORKTREE={build,verify,ship}; plan/review run in the main checkout when branchless; attach is idempotent and locked; terminal removal exists."
+          },
+          {
+            "id": "P2",
+            "status": "completed",
+            "note": "start/resume attach for every stage; branch + base projection move to first run; detached-worktree alternative rejected; --worktree becomes a no-op."
+          },
+          {
+            "id": "P3",
+            "status": "completed",
+            "note": "New tests for plan-time directory, two concurrent Works, cross-stage reuse; commit-count expectations updated; skill docs kept truthful."
+          },
+          {
+            "id": "P4",
+            "status": "completed",
+            "note": "Handoff covers all four acceptance criteria with exact files, the side effect, and the rejected alternative."
+          },
+          {
+            "id": "P5",
+            "status": "completed",
+            "note": "Three traces recorded (observation + two decisions); completing with decision continue."
+          }
+        ],
+        "artifacts": []
+      },
+      "traces": [
+        {
+          "id": "c6d58b8fdeae",
+          "type": "observation",
+          "message": "Today NEEDS_WORKTREE = {build, verify, ship} (work-service.ts:100): only those stages materialize the branch and attach the Work's worktree; plan and review get worktreeDirectory null when no branch exists and execute against the main checkout — the shared-directory hazard. attach() is idempotent and keyed to the Work's branch (worktree.ts:132-168), registry mutations take the repository lock, and terminal cleanup already removes the worktree at integration (integration.ts:133/145/169) and at cancellation (work-graph-service.ts:216).",
+          "at": "2026-08-03T16:51:38.664Z",
+          "data": {
+            "files": [
+              "src/application/work-service.ts",
+              "src/adapters/worktree.ts",
+              "src/adapters/integration.ts"
+            ]
+          }
+        },
+        {
+          "id": "749e89f6e67a",
+          "type": "decision",
+          "message": "Every stage start attaches the Work's own worktree: start() and resume() drop the NEEDS_WORKTREE distinction so any stage materializes the branch when absent and returns the attached directory in worktreeDirectory. Consequence accepted deliberately: the Change branch and the base's manifest-projection commit appear at the first stage run (usually plan) rather than at build — the lifecycle transitions themselves are untouched. Rejected alternative: detached branchless worktrees for plan/review, which would complicate attach (detached-to-branch switch at build) and break the \"the branch is the Change\" invariant. The --worktree flag stays accepted and becomes a no-op. Backlog Works stay branchless: creation still materializes nothing.",
+          "at": "2026-08-03T16:51:38.792Z",
+          "data": {
+            "change": "start/resume attach for all stages",
+            "sideEffect": "branch + base projection at first run instead of at build"
+          }
+        },
+        {
+          "id": "cddd76759574",
+          "type": "decision",
+          "message": "Tests: plan start returns a worktree inside .codepatrol/runtime/worktrees/<id> and never the main root; two Works started concurrently hold two distinct directories with the main checkout untouched; build after plan reuses the same directory; terminal integration still removes the worktree (existing assertions stay green); base commit-count expectations that assumed projection-at-build are updated to projection-at-first-run. Skill docs updated: codepatrol-plan SKILL.md step 5 (currently says plan start creates no worktree) and codepatrol-work SKILL.md's ownership sentence stay truthful; harness-adapters.test.ts must keep passing.",
+          "at": "2026-08-03T16:51:38.913Z",
+          "data": {
+            "testFiles": [
+              "src/test/work-service.test.ts"
+            ],
+            "docs": [
+              "skills/codepatrol-plan/SKILL.md"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "stage": "review",
+      "attempt": 1,
+      "runId": "7ce6f7f9-bb22-4daf-884e-3effa4f54557",
+      "status": "completed",
+      "execution": {
+        "role": "reviewer",
+        "harness": "opencode",
+        "model": "google/antigravity-gemini-3.1-pro"
+      },
+      "startedAt": "2026-08-03T17:03:19.263Z",
+      "finishedAt": "2026-08-03T17:03:53.332Z",
+      "todo": [
+        {
+          "id": "R1",
+          "title": "Audit plan completeness against SPEC-FORMAT and PLAN-FORMAT",
+          "description": "Verify every acceptance criterion is testable and maps to tasks; task dependencies form a DAG; every task names its file set and verify command; blast radius covers union of task files."
+        },
+        {
+          "id": "R2",
+          "title": "Validate plan references against the repository",
+          "description": "Check that referenced paths, symbols, and verification commands exist and are executable. No hidden production edits."
+        },
+        {
+          "id": "R3",
+          "title": "Write review report and seal verdict",
+          "description": "Write report.md and evidence, curate traces.md, record the run, and checkpoint or return."
+        }
+      ],
+      "result": {
+        "decision": "continue",
+        "summary": "Plan is approved. The approach is deeply rigorous: shifting the materialization trigger out of specific 'builder' stages and directly onto first access effectively ensures total isolation.",
+        "handoff": "# Review Report\n\nThe plan eliminates the concurrency hazard across shared root checkouts natively. By deleting the restrictive `NEEDS_WORKTREE` set, every stage is fully isolated using existing idempotent allocation paths. The noted impact (early base projection and branch allocation) is exactly the intended trade-off. Verification strategy correctly highlights necessary updates in commit-count test expectations.",
+        "todo": [
+          {
+            "id": "R1",
+            "status": "completed",
+            "note": "Plan thoroughly covers all ACs with deep references to system behaviors mapping task paths perfectly."
+          },
+          {
+            "id": "R2",
+            "status": "completed",
+            "note": "Reference to `work-service.ts` modifications mapping `attach()` changes without touching backend lock mechanics is sound."
+          },
+          {
+            "id": "R3",
+            "status": "completed",
+            "note": "Verdict sealed: continue."
+          }
+        ],
+        "artifacts": []
+      }
+    }
+  ],
+  "completion": null
+}
