@@ -36,10 +36,10 @@
     "number": 36
   },
   "workflow": {
-    "state": "ready",
+    "state": "active",
     "stage": "review",
     "attempt": 1,
-    "updatedAt": "2026-08-03T12:40:32.950Z"
+    "updatedAt": "2026-08-03T13:17:07.813Z"
   },
   "attempts": [
     {
@@ -143,6 +143,35 @@
           "data": {
             "e2eAssertion": "the Initiative ref exists remotely"
           }
+        }
+      ]
+    },
+    {
+      "stage": "review",
+      "attempt": 1,
+      "runId": "323357a1-6b07-4e2a-aa4a-15061b89a140",
+      "status": "active",
+      "execution": {
+        "role": "reviewer",
+        "harness": "opencode",
+        "model": "google/antigravity-gemini-3.1-pro"
+      },
+      "startedAt": "2026-08-03T13:17:07.813Z",
+      "todo": [
+        {
+          "id": "R1",
+          "title": "Audit plan completeness against SPEC-FORMAT and PLAN-FORMAT",
+          "description": "Verify every acceptance criterion is testable and maps to tasks; task dependencies form a DAG; every task names its file set and verify command; blast radius covers union of task files."
+        },
+        {
+          "id": "R2",
+          "title": "Validate plan references against the repository",
+          "description": "Check that referenced paths, symbols, and verification commands exist and are executable. No hidden production edits."
+        },
+        {
+          "id": "R3",
+          "title": "Write review report and seal verdict",
+          "description": "Write report.md and evidence, curate traces.md, record the run, and checkpoint or return."
         }
       ]
     }
