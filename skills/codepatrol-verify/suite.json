@@ -1,0 +1,101 @@
+{
+  "schemaVersion": 1,
+  "type": "codepatrol-skill-suite",
+  "skill": "codepatrol-verify",
+  "title": "codepatrol-verify protocol suite",
+  "scenarios": [
+    {
+      "id": "pin-candidate-and-baseline",
+      "title": "Verify pins and reports the exact candidate and baseline",
+      "assertions": [
+        {
+          "kind": "content-includes",
+          "skill": "codepatrol-verify",
+          "pattern": "verificationTarget\\.candidateCommit"
+        },
+        {
+          "kind": "content-includes",
+          "skill": "codepatrol-verify",
+          "pattern": "verificationTarget\\.baselineCommit"
+        },
+        {
+          "kind": "content-excludes",
+          "skill": "codepatrol-verify",
+          "pattern": "edit the candidate"
+        }
+      ]
+    },
+    {
+      "id": "fresh-evidence-this-run",
+      "title": "Verify records evidence from this run, never earlier attempts",
+      "assertions": [
+        {
+          "kind": "content-includes",
+          "skill": "codepatrol-verify",
+          "pattern": "from \\*\\*this\\*\\* run"
+        },
+        {
+          "kind": "content-includes",
+          "skill": "codepatrol-verify",
+          "pattern": "evidence from an earlier attempt never carries over"
+        },
+        {
+          "kind": "content-includes",
+          "skill": "codepatrol-verify",
+          "pattern": "VERIFY_INCOMPLETE"
+        }
+      ]
+    },
+    {
+      "id": "return-targets-build-and-plan",
+      "title": "Verify returns only to Build or Plan",
+      "assertions": [
+        {
+          "kind": "content-includes",
+          "skill": "codepatrol-verify",
+          "pattern": "return to Build or Plan"
+        },
+        {
+          "kind": "content-includes",
+          "skill": "codepatrol-verify",
+          "pattern": "Verify has no other return target"
+        }
+      ]
+    },
+    {
+      "id": "refuses-malformed-plan-start",
+      "title": "A plan start with a malformed work id refuses with INVALID_WORK_ID",
+      "assertions": [
+        {
+          "kind": "command",
+          "setup": [
+            {
+              "argv": ["init", "--verify-commands", "[[\"node\",\"-e\",\"process.exit(0)\"]]"],
+              "exitCode": 0
+            }
+          ],
+          "argv": [
+            "plan", "start", "not-a-work-id",
+            "--harness", "harness",
+            "--model", "model",
+            "--todo", "todo.json"
+          ],
+          "exitCode": 1,
+          "stderr": "INVALID_WORK_ID"
+        }
+      ]
+    },
+    {
+      "id": "skill-list-succeeds",
+      "title": "skill list prints the shipped skills without error",
+      "assertions": [
+        {
+          "kind": "command",
+          "argv": ["skill", "list"],
+          "exitCode": 0,
+          "stdout": "codepatrol-verify"
+        }
+      ]
+    }
+  ]
+}
