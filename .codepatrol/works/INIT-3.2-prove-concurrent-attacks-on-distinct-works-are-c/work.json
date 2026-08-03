@@ -39,10 +39,10 @@
     "number": 41
   },
   "workflow": {
-    "state": "active",
-    "stage": "build",
+    "state": "ready",
+    "stage": "verify",
     "attempt": 1,
-    "updatedAt": "2026-08-03T21:53:19.638Z"
+    "updatedAt": "2026-08-03T22:07:21.095Z"
   },
   "attempts": [
     {
@@ -210,13 +210,14 @@
       "stage": "build",
       "attempt": 1,
       "runId": "dc1fd085-8bd2-4bc5-ba10-c2a410ca0d79",
-      "status": "active",
+      "status": "completed",
       "execution": {
         "role": "builder",
         "harness": "opencode",
         "model": "minimax-coding-plan/MiniMax-M3"
       },
       "startedAt": "2026-08-03T21:53:19.638Z",
+      "finishedAt": "2026-08-03T22:07:21.095Z",
       "todo": [
         {
           "id": "B1",
@@ -245,6 +246,64 @@
         {
           "id": "B7",
           "title": "Complete Build with continue"
+        }
+      ],
+      "result": {
+        "decision": "continue",
+        "summary": "The concurrency suite is in place. The four tests run two independent service bundles over one test repo, drive plan/review/build for three Works concurrently, assert every manifest records each lifecycle transition exactly once, prove that no Work's worktree sees another's edits, run a sync against a bare remote during the storm, and converge on a repeat sync. The suite passes within its 60s timeout; npm run typecheck is clean; npm test reports 284/284 pass; npm run smoke passes. No adapter or lock edits were needed: the existing work/<id> and repository ref locks already serialize the operations the suite exercises. The CI shape (no remote, no GitHub) is the default.",
+        "handoff": "# Build: Prove concurrent attacks on distinct Works are corruption-free (INIT-3.2)\n\n## What changed\n- src/test/concurrency.test.ts (new) — the suite below.\n- No adapter changes. The plan committed to fixing lock gaps only if the suite exposed them, and the suite passed against the existing lock primitives.\n\n## The suite\n- `overlapping stage runs across three Works and a sync converge without corruption` — three Works (Alpha, Bravo, Charlie) created through one SpecService.apply, two service bundles drive each Work's plan/review/build under `Promise.all`. Asserts every manifest records plan/review/build exactly once with `completed` status and a `continue` decision; checks each Work's product file is in its own branch only; runs `LocalGitRemote.sync` against a bare remote mid-storm and asserts every manifest ref is published; a second sync reports every ref unchanged.\n- `the concurrency storm completes inside its bounded time` — runs the same three-Works plan/review storm under a 60s test timeout. The lock's own 30s GIT_LOCKED refusal backs the bound: a deadlock surfaces as a refusal, not a hang.\n- `a Work's product file is invisible from the peer Work's worktree and the main checkout` — walks plan/review first, then starts builds for alpha and bravo (the `build/<id>` lock is held during the build), writes each Work's file in its own worktree, and asserts the peer Work's worktree and the main checkout do not see the file.\n- `the concurrency suite runs in CI without a remote` — the same three-Works plan/review storm with no bare remote, no GitHub fake, no network. The npm test glob picks the file up automatically; the suite is the CI shape.\n\n## Why no lock edits\nThe plan enumerated the four acceptance criteria (exactly-once transitions, no cross-Work file visibility, bounded time without deadlock, sync overlap serialized and correct, CI without a remote) and named the lock primitives that already cover them: `work/<id>` (per-Work state), `repository` (shared Git state: base projection, worktree registry), `sync` (publication). The plan reserved adapter edits for the case where the suite exposes a gap, and the suite passed without one. Each Work's `start`/`complete` runs under `work/<id>`; build/verify/ship additionally hold `repository` for the base projection; the per-Work worktree checkout is local to the `work/<id>` critical section. Two bundles racing on the same repo therefore serialize on the same refs two processes would.\n\n## Validation\n- npm run typecheck: clean.\n- npm test: 284/284 pass (4 new concurrency tests on top of 280 existing).\n- npm run smoke: pass.\n- node bin/codepatrol.js --help: prints the expected surface.\n- Candidate commit b067a970c8b5d3489ae4911c03dda0c61df1bac2 is on refs/heads/codepatrol/work/INIT-3.2-prove-concurrent-attacks-on-distinct-works-are-c; the worktree is clean.\n\n## Acceptance evidence\n1. Exactly-once transitions — the storm test inspects each manifest and asserts `[plan, review, build]` with every attempt `completed` and `continue`.\n2. File isolation — the isolation test reads each Work's product file from its own worktree (positive) and from the peer Work's worktree and the main checkout (negative).\n3. Bounded time — the storm runs under `test({ timeout: 60_000 })`. The 30s GIT_LOCKED refusal inside `withGitRefLock` ensures any deadlock surfaces as a refusal.\n4. Sync overlap and convergence — the storm test calls `LocalGitRemote.sync` against a bare remote mid-storm and asserts every manifest ref is in the result; the next sync reports `action: 'unchanged'` for every ref.\n5. CI without a remote — the last test runs against a plain repo with no `git remote` configured.\n\n## Files Build declared as artifacts\n- src/test/concurrency.test.ts (new)",
+        "todo": [
+          {
+            "id": "B1",
+            "status": "completed",
+            "note": "Inspected the v1 plan handoff and the lock primitives (git-lock.ts ordered sync → work/<id> → repository with a 30s GIT_LOCKED refusal, AsyncLocalStorage re-entry). Two service bundles over one repo exercise the same CAS paths two processes would."
+          },
+          {
+            "id": "B2",
+            "status": "completed",
+            "note": "Confirmed work/<id> serializes manifest updates in manifest-store.ts and WorkService.start/complete; the repository lock is added for build/verify/ship; sync wraps publication; the per-Work worktree is local to the work/<id> critical section."
+          },
+          {
+            "id": "B3",
+            "status": "completed",
+            "note": "src/test/concurrency.test.ts added: storm with sync overlap, bounded-time storm, file isolation during active builds, CI shape without a remote."
+          },
+          {
+            "id": "B4",
+            "status": "completed",
+            "note": "No lock gaps exposed. The plan reserved adapter edits for that case; the existing primitives covered every assertion."
+          },
+          {
+            "id": "B5",
+            "status": "completed",
+            "note": "npm run typecheck clean; npm test 284/284 pass; npm run smoke passes; --help prints the expected surface."
+          },
+          {
+            "id": "B6",
+            "status": "completed",
+            "note": "Committed on codepatrol/work/INIT-3.2-prove-concurrent-attacks-on-distinct-works-are-c as b067a970c8b5d3489ae4911c03dda0c61df1bac2; worktree is clean."
+          },
+          {
+            "id": "B7",
+            "status": "completed",
+            "note": "Completing with decision continue."
+          }
+        ],
+        "artifacts": [
+          {
+            "path": "src/test/concurrency.test.ts",
+            "kind": "test",
+            "blob": "36a114edb0217a4c4c4618bd59a6abd337aee91e",
+            "description": "Concurrency suite: two service bundles over one repo drive plan/review/build for three Works concurrently with file isolation and a sync overlap; bounded by the test timeout plus the lock's GIT_LOCKED refusal."
+          }
+        ]
+      },
+      "traces": [
+        {
+          "id": "a6c95bfaeca2",
+          "type": "observation",
+          "message": "Build changes landed as commit b067a97 on codepatrol/work/INIT-3.2-prove-concurrent-attacks-on-distinct-works-are-c. The change is purely the new src/test/concurrency.test.ts suite: two independent service bundles over one test repo run plan/review/build for three Works concurrently, with file-isolation assertions inside the worktrees and a sync against a bare remote during the storm. The lock primitives already covered the cases the plan enumerated (work/<id> serializes per-Work state, repository serializes shared Git state, sync wraps remote publication); no adapter edits were needed. The suite passes: 4 new tests (storm with sync overlap, bounded-time plan/review storm, file isolation during active builds, CI shape without a remote) on top of 280 existing tests.",
+          "at": "2026-08-03T22:07:02.781Z"
         }
       ]
     }
