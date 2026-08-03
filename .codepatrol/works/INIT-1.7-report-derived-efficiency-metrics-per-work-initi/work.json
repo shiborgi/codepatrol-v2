@@ -32,7 +32,10 @@
       "INIT-1.6-record-bounded-privacy-safe-telemetry-on-every-s"
     ]
   },
-  "issue": null,
+  "issue": {
+    "repository": "shiborgi/codepatrol",
+    "number": 35
+  },
   "workflow": {
     "state": "ready",
     "stage": "plan",
