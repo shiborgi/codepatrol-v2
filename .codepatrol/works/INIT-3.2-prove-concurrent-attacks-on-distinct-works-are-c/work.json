@@ -37,11 +37,46 @@
     "number": 41
   },
   "workflow": {
-    "state": "ready",
+    "state": "active",
     "stage": "plan",
     "attempt": 1,
-    "updatedAt": "2026-08-03T16:45:14.389Z"
+    "updatedAt": "2026-08-03T20:49:26.929Z"
   },
-  "attempts": [],
+  "attempts": [
+    {
+      "stage": "plan",
+      "attempt": 1,
+      "runId": "e7e50d13-836a-4aed-bb16-638c4f23ca92",
+      "status": "active",
+      "execution": {
+        "role": "planner",
+        "harness": "opencode",
+        "model": "kimi-for-coding/k3"
+      },
+      "startedAt": "2026-08-03T20:49:26.929Z",
+      "todo": [
+        {
+          "id": "P1",
+          "title": "Inspect lock structure, test fixtures, and how tests can run stages concurrently"
+        },
+        {
+          "id": "P2",
+          "title": "Design the concurrency suite (overlap shape, assertions, deadlock bound, sync serialization)"
+        },
+        {
+          "id": "P3",
+          "title": "Decide where lock-gap fixes would land and CI wiring"
+        },
+        {
+          "id": "P4",
+          "title": "Write decision-complete plan covering all five acceptance criteria"
+        },
+        {
+          "id": "P5",
+          "title": "Record traces; complete Plan with decision continue"
+        }
+      ]
+    }
+  ],
   "completion": null
 }
