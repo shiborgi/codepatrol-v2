@@ -36,10 +36,10 @@
     "number": 29
   },
   "workflow": {
-    "state": "ready",
+    "state": "active",
     "stage": "ship",
     "attempt": 1,
-    "updatedAt": "2026-08-03T13:14:10.352Z"
+    "updatedAt": "2026-08-03T13:19:09.635Z"
   },
   "attempts": [
     {
@@ -535,6 +535,32 @@
         "targetCommit": "e22384d821ff509f3d3e86cb9ccb3bea1047cc30",
         "policyHash": "738b7dca7b2b865e7de12c3f1ca6c05da0d1762f30e202a18709b6290fafb7b4"
       }
+    },
+    {
+      "stage": "ship",
+      "attempt": 1,
+      "runId": "7db7b1d9-3131-48d3-bda7-8c8c9e092ad9",
+      "status": "active",
+      "execution": {
+        "role": "shipper",
+        "harness": "opencode",
+        "model": "kimi-for-coding/k3"
+      },
+      "startedAt": "2026-08-03T13:19:09.635Z",
+      "todo": [
+        {
+          "id": "S1",
+          "title": "Confirm Verify handoff and candidateCommit match the Build candidate (66d2707)"
+        },
+        {
+          "id": "S2",
+          "title": "Record the terminal rationale as an observation trace"
+        },
+        {
+          "id": "S3",
+          "title": "Complete Ship with decision accept and authority user"
+        }
+      ]
     }
   ],
   "completion": null
