@@ -36,10 +36,10 @@
     "number": 40
   },
   "workflow": {
-    "state": "active",
+    "state": "terminal",
     "stage": "ship",
     "attempt": 1,
-    "updatedAt": "2026-08-03T19:52:59.420Z"
+    "updatedAt": "2026-08-03T19:53:39.207Z"
   },
   "attempts": [
     {
@@ -534,13 +534,14 @@
       "stage": "ship",
       "attempt": 1,
       "runId": "494365b8-1c4b-4c9d-b74f-2b7439e35b54",
-      "status": "active",
+      "status": "completed",
       "execution": {
         "role": "shipper",
         "harness": "opencode",
         "model": "minimax-coding-plan/MiniMax-M3"
       },
       "startedAt": "2026-08-03T19:52:59.420Z",
+      "finishedAt": "2026-08-03T19:53:39.207Z",
       "todo": [
         {
           "id": "S1",
@@ -562,8 +563,56 @@
           "id": "S5",
           "title": "Confirm the single integration commit on the base and the archive ref"
         }
+      ],
+      "result": {
+        "decision": "accept",
+        "summary": "Accept the Work. The change to src/application/work-service.ts (NEEDS_WORKTREE removed; start() and resume() always materialize and attach the Work's worktree) is the smallest viable fix for the shared-checkout hazard, the docs and skill files keep their authority statement truthful, and the test suite covers acceptance 1, 2, 3, and 4 with the prior lifecycle tests unchanged. Verification ran npm run verify with exitCode 0 and recorded the policy-hash evidence. Authority for the accept is the explicit user.",
+        "handoff": "# Ship: Run every stage of a Work in its own worktree (INIT-3.1)\n\n## Terminal outcome\n- decision: accept\n- authority: user (explicit)\n- candidateCommit: df73d738f6d05aeb38061935f09d92d5b77cdd1f\n- baselineCommit: 9ca7314c81966e768ad7b5062612d9ecb9d7e90d\n- policyHash: 738b7dca7b2b865e7de12c3f1ca6c05da0d1762f30e202a18709b6290fafb7b4\n\n## Cited evidence (not reproduced)\n- Plan handoff: see availableResults plan/1.\n- Review handoff: see availableResults review/1.\n- Build handoff and 7 committed artifacts (paths/kinds/blobs): see availableResults build/1.\n- Verify handoff, three observations, and the requiredCommand trace with exitCode 0: see availableResults verify/1 and the verify attempt in `attempts`.\n- Ship inspection observation: trace id b65f06c4fa54 in the ship attempt.\n\n## Outcome\nThe single integration commit lands on main; the archive ref `refs/heads/codepatrol/archive/INIT-3.1-run-every-stage-of-a-work-in-its-own-worktree` preserves the full Change history. Open Change branch and worktree are removed.",
+        "todo": [
+          {
+            "id": "S1",
+            "status": "completed",
+            "note": "Work ready for Ship with verifiedCandidate pinned to df73d73. change.verification.attempt=1; baselineCommit=9ca7314; targetCommit=9ca7314; policyHash recorded."
+          },
+          {
+            "id": "S2",
+            "status": "completed",
+            "note": "inspection.clean=true; baselineStale=false; status=[]; commits=[df73d73]; changedFiles match Build-declared artifacts + canonical manifest. base target 9ca7314 equals verification snapshot targetCommit. canonical-manifest-only invariant holds (df73d73 IS the candidate, no commits after it in range)."
+          },
+          {
+            "id": "S3",
+            "status": "completed",
+            "note": "Terminal rationale: work-service.ts refactor is the smallest viable fix; skill/docs kept truthful; test suite covers all four acceptance criteria; verify recorded requiredCommands npm run verify with exitCode 0."
+          },
+          {
+            "id": "S4",
+            "status": "completed",
+            "note": "Completing with decision=accept and authority=user (explicit)."
+          },
+          {
+            "id": "S5",
+            "status": "completed",
+            "note": "Verified post-completion: exactly one integration commit on main; refs/heads/codepatrol/work/INIT-3.1-run-every-stage-of-a-work-in-its-own-worktree removed; refs/heads/codepatrol/archive/INIT-3.1-run-every-stage-of-a-work-in-its-own-worktree carries the full Change history."
+          }
+        ],
+        "artifacts": [],
+        "authority": "user"
+      },
+      "traces": [
+        {
+          "id": "b65f06c4fa54",
+          "type": "observation",
+          "message": "Ship inspection: candidateCommit df73d73 is the single commit ahead of baseline 9ca7314; base target 9ca7314 matches the verification snapshot's targetCommit 9ca7314; baselineStale=false; clean=true; status=[]; the 8 changed files are exactly the Build-declared artifacts (src/application/work-service.ts, skills/codepatrol-plan/SKILL.md, skills/codepatrol-plan/skill.json, docs/protocol.md, docs/architecture.md, README.md, src/test/work-service.test.ts) plus the canonical manifest .codepatrol/works/INIT-3.1-run-every-stage-of-a-work-in-its-own-worktree/work.json. No commits follow the candidate, so the canonical-manifest-only invariant holds vacuously. Verify evidence: requiredCommands command trace with exitCode 0 for `npm run verify` and inspection observations for changed files and pinned candidate are recorded in the verify attempt.",
+          "at": "2026-08-03T19:53:27.685Z"
+        }
       ]
     }
   ],
-  "completion": null
+  "completion": {
+    "outcome": "accepted",
+    "via": "ship",
+    "authority": "user",
+    "finalizedAt": "2026-08-03T19:53:39.207Z",
+    "summary": "Accept the Work. The change to src/application/work-service.ts (NEEDS_WORKTREE removed; start() and resume() always materialize and attach the Work's worktree) is the smallest viable fix for the shared-checkout hazard, the docs and skill files keep their authority statement truthful, and the test suite covers acceptance 1, 2, 3, and 4 with the prior lifecycle tests unchanged. Verification ran npm run verify with exitCode 0 and recorded the policy-hash evidence. Authority for the accept is the explicit user."
+  }
 }
