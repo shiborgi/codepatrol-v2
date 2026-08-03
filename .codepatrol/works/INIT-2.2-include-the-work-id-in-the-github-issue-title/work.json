@@ -1,0 +1,41 @@
+{
+  "schemaVersion": 1,
+  "type": "codepatrol-work",
+  "work": {
+    "id": "INIT-2.2-include-the-work-id-in-the-github-issue-title",
+    "title": "Include the Work id in the GitHub Issue title",
+    "description": "The Issue projection opens and reconciles Issues titled with the bare Work title, so an issue list or board shows prose with no stable handle — while refs, branches, and milestones all speak the INIT-x.y id. Prefix the Issue title with the Work id at creation, reconcile already-linked Issues to carry it on the next sync, and converge: a title that already carries the id is left alone. Matching keeps keying on the Work id, so a retitled Issue never maps to a duplicate.",
+    "issueType": "Feature",
+    "priority": "p2",
+    "acceptance": [
+      "Publishing a Work opens its GitHub Issue with the Work id in the title",
+      "An Issue linked before this change is reconciled to carry the Work id in its title on the next sync",
+      "A repeated sync leaves an Issue untouched once its title carries the id, with no edit churn",
+      "Issue matching still maps the Issue to its Work, so no duplicate Issue is opened for a Work whose projected title changed"
+    ],
+    "createdAt": "2026-08-03T13:21:49.112Z",
+    "requestedBy": "spec",
+    "initiative": {
+      "id": "INIT-2",
+      "position": 2
+    },
+    "origin": {
+      "createdAt": "2026-08-03T13:21:49.112Z"
+    }
+  },
+  "repository": {
+    "baseRef": "refs/heads/main"
+  },
+  "graph": {
+    "blockedBy": []
+  },
+  "issue": null,
+  "workflow": {
+    "state": "ready",
+    "stage": "plan",
+    "attempt": 1,
+    "updatedAt": "2026-08-03T13:21:49.112Z"
+  },
+  "attempts": [],
+  "completion": null
+}
