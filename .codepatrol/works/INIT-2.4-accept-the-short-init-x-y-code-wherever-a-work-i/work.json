@@ -35,10 +35,10 @@
     "number": 39
   },
   "workflow": {
-    "state": "active",
+    "state": "terminal",
     "stage": "ship",
     "attempt": 1,
-    "updatedAt": "2026-08-03T17:01:44.277Z"
+    "updatedAt": "2026-08-03T17:02:14.609Z"
   },
   "attempts": [
     {
@@ -476,13 +476,14 @@
       "stage": "ship",
       "attempt": 1,
       "runId": "15f65206-5d31-45c0-992a-7576c166ab92",
-      "status": "active",
+      "status": "completed",
       "execution": {
         "role": "shipper",
         "harness": "opencode",
         "model": "opencode-current"
       },
       "startedAt": "2026-08-03T17:01:44.277Z",
+      "finishedAt": "2026-08-03T17:02:14.609Z",
       "todo": [
         {
           "id": "S1",
@@ -496,8 +497,46 @@
           "id": "S3",
           "title": "Trace the terminal rationale; complete Ship with decision accept and authority release-owner"
         }
+      ],
+      "result": {
+        "decision": "accept",
+        "summary": "The short INIT-x.y code now resolves to the canonical slugged Work id at one boundary — GitManifestStore.resolve — and every service that takes a work id (WorkService's eight entry methods and PublicationService.automatic/syncExclusive) calls it before any consumer sees the input, so refs, branches, scope filters, and issue matching keep working unchanged on the canonical id. The sync CLI --work flag accepts the short code, so the CLI is the boundary where a caller types a handle. Verify already pinned all three acceptance criteria with `npm run verify` at 257/257 and a fresh evidence trace per criterion; the Ship inspection confirms candidate 53b9aac is the branch head, the only commits after baseline are the product commit and the canonical manifest projection, and the baseline is not stale. Accepting under release-owner authority lands the change on the base; no Issue was linked late, so nothing further is recorded in the archive.",
+        "handoff": "# Ship: INIT-2.4\n\n## Decision and authority\n- Decision: accept\n- Authority: release-owner\n\n## Terminal state (from the v1 handoff inspection)\n- candidateCommit: 53b9aace746cfa4b7ca3cef8994fd2f80e9d24d6\n- manifestCommit: 765c14fc4a183a35070c8cc9d15a0b33e078df3a\n- baselineCommit: e6a6e7194efc6e94e8994d02abe68fc10f8140cc\n- targetCommit: e6a6e7194efc6e94e8994d02abe68fc10f8140cc (matches the verification snapshot)\n- baselineStale: false\n- worktree: clean\n- commits after baseline: 91b0f38 (product) and 53b9aac (manifest projection at the head)\n\n## Evidence cited\n- Verify run pinned 3/3 acceptance criteria, `npm run verify` 257/257, exitCode 0.\n- Build handoff in attempt 3 listed the seven product files and the structural argument for the resolver being the single boundary.\n- A Ship trace recorded the clean inspection, the commit composition, and the structural pin for the unknown-short-code rejection.\n\n## What this Ship does\n- Lands candidate 53b9aac onto refs/heads/main as the single integration commit.\n- Removes the open Change branch and the linked worktree.\n- Preserves full Change history at refs/heads/codepatrol/archive/INIT-2.4-accept-the-short-init-x-y-code-wherever-a-work-i.\n- No Issue was linked late; nothing is recorded after the integration commit.",
+        "todo": [
+          {
+            "id": "S1",
+            "status": "completed",
+            "note": "v1 handoff inspection is clean: headCommit == candidateCommit, baseline is not stale, no uncommitted changes."
+          },
+          {
+            "id": "S2",
+            "status": "completed",
+            "note": "Only canonical manifest checkpoint at the head (53b9aac) follows the candidate; the only earlier commit is the product commit 91b0f38."
+          },
+          {
+            "id": "S3",
+            "status": "completed",
+            "note": "Accept under release-owner authority. Integration commit lands on the base; the archive preserves the full Change."
+          }
+        ],
+        "artifacts": [],
+        "authority": "release-owner"
+      },
+      "traces": [
+        {
+          "id": "5395dc731947",
+          "type": "observation",
+          "message": "Ship handoff inspection is clean: candidate 53b9aac matches verification.candidateCommit and the branch head; baseline e6a6e71 is not stale; only two commits (91b0f38 product + 53b9aac manifest projection) sit between baseline and candidate, with 53b9aac itself the canonical manifest checkpoint at the head. Verify pinned 3/3 acceptance criteria with npm run verify at 257/257 tests, and the unknown-short-code rejection is structural (the resolver throws INVALID_WORK_ID naming the input) and pinned by a new work-service test.",
+          "at": "2026-08-03T17:02:07.367Z"
+        }
       ]
     }
   ],
-  "completion": null
+  "completion": {
+    "outcome": "accepted",
+    "via": "ship",
+    "authority": "release-owner",
+    "finalizedAt": "2026-08-03T17:02:14.609Z",
+    "summary": "The short INIT-x.y code now resolves to the canonical slugged Work id at one boundary — GitManifestStore.resolve — and every service that takes a work id (WorkService's eight entry methods and PublicationService.automatic/syncExclusive) calls it before any consumer sees the input, so refs, branches, scope filters, and issue matching keep working unchanged on the canonical id. The sync CLI --work flag accepts the short code, so the CLI is the boundary where a caller types a handle. Verify already pinned all three acceptance criteria with `npm run verify` at 257/257 and a fresh evidence trace per criterion; the Ship inspection confirms candidate 53b9aac is the branch head, the only commits after baseline are the product commit and the canonical manifest projection, and the baseline is not stale. Accepting under release-owner authority lands the change on the base; no Issue was linked late, so nothing further is recorded in the archive."
+  }
 }
