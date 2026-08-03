@@ -36,11 +36,46 @@
     "number": 30
   },
   "workflow": {
-    "state": "ready",
+    "state": "active",
     "stage": "plan",
     "attempt": 1,
-    "updatedAt": "2026-08-03T11:16:22.452Z"
+    "updatedAt": "2026-08-03T16:21:37.384Z"
   },
-  "attempts": [],
+  "attempts": [
+    {
+      "stage": "plan",
+      "attempt": 1,
+      "runId": "9bf053e9-f1a5-4bc3-8523-ff5278235748",
+      "status": "active",
+      "execution": {
+        "role": "planner",
+        "harness": "opencode",
+        "model": "kimi-for-coding/k3"
+      },
+      "startedAt": "2026-08-03T16:21:37.384Z",
+      "todo": [
+        {
+          "id": "P1",
+          "title": "Inspect the shipped skill manifests, STAGES, and what INIT-1.1 delivered (skill.ts, skill list)"
+        },
+        {
+          "id": "P2",
+          "title": "Design resolution: stage-skill selection, dependencies, conflicts, capabilities, ordering, digest"
+        },
+        {
+          "id": "P3",
+          "title": "Decide the CLI read surface and reason reporting"
+        },
+        {
+          "id": "P4",
+          "title": "Write decision-complete plan covering all four acceptance criteria"
+        },
+        {
+          "id": "P5",
+          "title": "Record traces; complete Plan with decision continue"
+        }
+      ]
+    }
+  ],
   "completion": null
 }
