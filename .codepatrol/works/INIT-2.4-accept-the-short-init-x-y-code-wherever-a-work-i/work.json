@@ -35,10 +35,10 @@
     "number": 39
   },
   "workflow": {
-    "state": "active",
-    "stage": "build",
+    "state": "ready",
+    "stage": "verify",
     "attempt": 1,
-    "updatedAt": "2026-08-03T16:34:06.082Z"
+    "updatedAt": "2026-08-03T16:48:31.125Z"
   },
   "attempts": [
     {
@@ -204,13 +204,14 @@
       "stage": "build",
       "attempt": 1,
       "runId": "f17cf548-ea38-4bab-bd90-e68a35ad9963",
-      "status": "active",
+      "status": "completed",
       "execution": {
         "role": "builder",
         "harness": "opencode",
         "model": "opencode-current"
       },
       "startedAt": "2026-08-03T16:34:06.082Z",
+      "finishedAt": "2026-08-03T16:48:31.125Z",
       "todo": [
         {
           "id": "B1",
@@ -240,7 +241,93 @@
           "id": "B7",
           "title": "Run npm run verify; commit; complete Build"
         }
-      ]
+      ],
+      "result": {
+        "decision": "continue",
+        "summary": "All seven todos completed. GitManifestStore gains a single resolve(idOrCode) that returns a full WORK_ID as-is, matches a WORK_CODE against the same enumeration list() uses, and throws INVALID_WORK_ID for an unknown code. WorkService's eight entry methods and PublicationService.automatic/syncExclusive resolve caller-supplied ids at entry, so every downstream consumer (refs, branches, scope filters, issue matching) always sees the canonical slugged id. The sync CLI --work flag accepts WORK_ID or WORK_CODE, so the CLI is the boundary where a caller types a handle. WORK_CODE was already added to identifiers.ts by INIT-2.2 and is reused here.",
+        "handoff": "# Build: INIT-2.4\n\n## Changed files (product)\n- src/adapters/manifest-store.ts — new `resolve(idOrCode: string): Promise<string>`: a full WORK_ID returns as-is (no extra git call); a WORK_CODE enumerates the same refs `list()` walks and returns the unique match (throws INVALID_WORK_ID for no match, STATE_CORRUPT for non-unique).\n- src/application/work-service.ts — each of the eight entry methods (show, inspect, refresh, checkout, start, resume, trace, complete) calls `workId = await this.store.resolve(workId)` as the first line, so downstream sees the canonical id.\n- src/application/publication.ts — `automatic` and `syncExclusive` resolve `input.workId` through the store instead of testing WORK_ID format; the scope passed to `remote.sync`, the issue-resolution scope, and the per-Work entry lookup all use the canonical id; WORK_ID import removed.\n- src/cli/commands/sync.ts — the --work flag validation accepts WORK_ID or WORK_CODE.\n- src/test/work-service.test.ts — two new tests: short code resolves to the same view/run as the full id, and an unknown short code fails with INVALID_WORK_ID naming the input.\n- src/test/publication.test.ts — new test: a scoped publication by short code publishes only that Work.\n- src/test/cli-registry.test.ts — new test: sync --work accepts a short code and forwards it to the service.\n\n## Validation\n- `npm run verify` green: typecheck, 257/257 unit tests (4 new), smoke, --help.\n\n## Commits\n- 91b0f38 INIT-2.4-accept-the-short-init-x-y-code-wherever-a-work-i: Accept the short INIT-x.y code wherever a Work id is passed (product)\n- 53b9aac codepatrol(INIT-2.4-accept-the-short-init-x-y-code-wherever-a-work-i): manifest projection (state update for the active Build run)\n\n## Candidate\n- The product commit `91b0f38` carries every code and test change. The branch head `53b9aac` is the manifest projection that the Build run wrote on its way to completion. Both are clean and reproducible from `e6a6e71`.\n\n## Acceptance\n1. plan start with a short code resolves the unique Work and starts the run like the full id — WorkService.start resolves at entry + the new work-service test.\n2. The short code resolves in every work-id command — every command funnels through WorkService or PublicationService, both of which now resolve; new tests in work-service, publication, and cli-registry pin the behavior at the three call sites that back stage commands, sync --work, and the post-stage publication.\n3. An unknown short code fails with INVALID_WORK_ID naming the input, and the full slugged id keeps working — the resolver throws INVALID_WORK_ID with the input in the message (new work-service test); the full slugged id is the common path of `resolve` (returns as-is), and the full existing suite passes unchanged.\n\n## Notes\n- A bug surfaced and was fixed during Build: the new `syncExclusive` had to use the resolved `workId` (not the raw `input.workId`) when feeding `resolveIssues` and when looking up the scoped entry, or the scoped publication would have produced zero Issues. The fix is one-line and the regression test (scoped publication by short code) pins it.",
+        "todo": [
+          {
+            "id": "B1",
+            "status": "completed",
+            "note": "WORK_CODE and workCodeOf are already in src/core/identifiers.ts from INIT-2.2 and are reused; no edit needed in this Build."
+          },
+          {
+            "id": "B2",
+            "status": "completed",
+            "note": "Added resolve(idOrCode) to GitManifestStore. Full ids short-circuit; short codes enumerate manifest/archive refs plus the base; unique by construction."
+          },
+          {
+            "id": "B3",
+            "status": "completed",
+            "note": "All eight WorkService entry methods now resolve at entry. Downstream code unchanged."
+          },
+          {
+            "id": "B4",
+            "status": "completed",
+            "note": "automatic and syncExclusive resolve input.workId; the scope and entry-lookup paths use the resolved id; WORK_ID import removed."
+          },
+          {
+            "id": "B5",
+            "status": "completed",
+            "note": "sync --work validation accepts WORK_ID or WORK_CODE."
+          },
+          {
+            "id": "B6",
+            "status": "completed",
+            "note": "Four new behavior tests (work-service: short code resolves + unknown code fails INVALID_WORK_ID; publication: scoped by short code; cli-registry: --work accepts short code). Existing full-id suite green."
+          },
+          {
+            "id": "B7",
+            "status": "completed",
+            "note": "npm run verify green (typecheck + 257/257 tests + smoke + --help). Two commits: 91b0f38 (product) and 53b9aac (manifest projection). Worktree clean."
+          }
+        ],
+        "artifacts": [
+          {
+            "path": "src/adapters/manifest-store.ts",
+            "kind": "production",
+            "blob": "ef2a9dfca6fa8a6d755c33bf6be93d79cdb33dcc",
+            "description": "GitManifestStore.resolve: full id returns as-is, short code resolves, unknown throws INVALID_WORK_ID."
+          },
+          {
+            "path": "src/application/work-service.ts",
+            "kind": "production",
+            "blob": "d6fe76de13152643b5b7ffd29f915e73c018931b",
+            "description": "Eight entry methods resolve the workId at entry."
+          },
+          {
+            "path": "src/application/publication.ts",
+            "kind": "production",
+            "blob": "a3ca03aac823dbf90c442b279fd6e71de791a9ab",
+            "description": "automatic and syncExclusive resolve input.workId; downstream uses canonical id."
+          },
+          {
+            "path": "src/cli/commands/sync.ts",
+            "kind": "production",
+            "blob": "c58bb2db466c9db9283a4389f36220c2cec411ea",
+            "description": "sync --work accepts WORK_ID or WORK_CODE."
+          },
+          {
+            "path": "src/test/work-service.test.ts",
+            "kind": "test",
+            "blob": "1694d8e0b7566c362e9fe4c8896b52648ca5d977",
+            "description": "Short code resolves; unknown short code fails INVALID_WORK_ID."
+          },
+          {
+            "path": "src/test/publication.test.ts",
+            "kind": "test",
+            "blob": "a7392ab0f121615292edb807139c2efc55317f5a",
+            "description": "Scoped publication by short code publishes only the targeted Work."
+          },
+          {
+            "path": "src/test/cli-registry.test.ts",
+            "kind": "test",
+            "blob": "4b2d82354ae77ce5cef21cd6e2b620ae02795ff7",
+            "description": "sync --work accepts a short code and forwards it to the service."
+          }
+        ]
+      }
     }
   ],
   "completion": null
