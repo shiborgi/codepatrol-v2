@@ -39,10 +39,10 @@
     "number": 41
   },
   "workflow": {
-    "state": "active",
+    "state": "terminal",
     "stage": "ship",
     "attempt": 1,
-    "updatedAt": "2026-08-03T22:28:33.819Z"
+    "updatedAt": "2026-08-03T22:29:17.941Z"
   },
   "attempts": [
     {
@@ -554,13 +554,14 @@
       "stage": "ship",
       "attempt": 1,
       "runId": "3a4a86ca-f0b4-4787-a8fe-5e80877de568",
-      "status": "active",
+      "status": "completed",
       "execution": {
         "role": "shipper",
         "harness": "opencode",
         "model": "minimax-coding-plan/MiniMax-M3"
       },
       "startedAt": "2026-08-03T22:28:33.819Z",
+      "finishedAt": "2026-08-03T22:29:17.941Z",
       "todo": [
         {
           "id": "S1",
@@ -582,8 +583,56 @@
           "id": "S5",
           "title": "Confirm the single integration commit on the base and the archive ref"
         }
+      ],
+      "result": {
+        "decision": "accept",
+        "summary": "Accept the Work. The new concurrency suite exercises the existing lock primitives under overlapping stage runs and a sync, with no adapter changes needed. The plan's caveat — only fix lock gaps if the suite exposes them — was honored: the four tests passed against the work/<id>, repository, and sync locks already in place. Verify recorded the requiredCommands `npm run verify` trace with exitCode 0. Authority for the accept is the explicit user.",
+        "handoff": "# Ship: Prove concurrent attacks on distinct Works are corruption-free (INIT-3.2)\n\n## Terminal outcome\n- decision: accept\n- authority: user (explicit)\n- candidateCommit: b067a970c8b5d3489ae4911c03dda0c61df1bac2\n- baselineCommit: 4d7a669e59383f8320be5fb23e6eff658cda1d15\n- policyHash: 738b7dca7b2b865e7de12c3f1ca6c05da0d1762f30e202a18709b6290fafb7b4\n\n## Cited evidence (not reproduced)\n- Plan handoff: see availableResults plan/1.\n- Review handoff and verdict continue: see availableResults review/1.\n- Build handoff and 1 committed artifact (path/kind/blob): see availableResults build/1.\n- Verify handoff, observations, and the requiredCommand trace with exitCode 0: see availableResults verify/1 and the verify attempt in `attempts`.\n- Ship inspection observation: trace id fbd2c87f9a04 in the ship attempt.\n\n## Outcome\nThe single integration commit lands on main; the archive ref `refs/heads/codepatrol/archive/INIT-3.2-prove-concurrent-attacks-on-distinct-works-are-c` preserves the full Change history. Open Change branch and worktree are removed.",
+        "todo": [
+          {
+            "id": "S1",
+            "status": "completed",
+            "note": "Work ready for Ship with verifiedCandidate pinned to b067a97. change.verification.attempt=1; baselineCommit=4d7a669; targetCommit=4d7a669; policyHash recorded."
+          },
+          {
+            "id": "S2",
+            "status": "completed",
+            "note": "inspection.clean=true; baselineStale=false; status=[]; commits=[b067a97]; changedFiles match Build-declared artifact + canonical manifest. base target 4d7a669 equals verification snapshot targetCommit. canonical-manifest-only invariant holds (b067a97 IS the candidate, no commits after it in range)."
+          },
+          {
+            "id": "S3",
+            "status": "completed",
+            "note": "Terminal rationale: the suite proves the existing lock primitives serialize overlapping stage runs and a sync, so the Work's promise of corruption-free concurrency is satisfied by the tests on top of an unchanged lock stack. Verify recorded requiredCommands npm run verify with exitCode 0."
+          },
+          {
+            "id": "S4",
+            "status": "completed",
+            "note": "Completing with decision=accept and authority=user (explicit)."
+          },
+          {
+            "id": "S5",
+            "status": "completed",
+            "note": "Verified post-completion: exactly one integration commit on main; refs/heads/codepatrol/work/INIT-3.2-prove-concurrent-attacks-on-distinct-works-are-c removed; refs/heads/codepatrol/archive/INIT-3.2-prove-concurrent-attacks-on-distinct-works-are-c carries the full Change history."
+          }
+        ],
+        "artifacts": [],
+        "authority": "user"
+      },
+      "traces": [
+        {
+          "id": "fbd2c87f9a04",
+          "type": "observation",
+          "message": "Ship inspection: candidateCommit b067a97 is the single commit ahead of baseline 4d7a669; base target 4d7a669 matches the verification snapshot's targetCommit 4d7a669; baselineStale=false; clean=true; status=[]; the 2 changed files are exactly the Build-declared artifact (src/test/concurrency.test.ts) plus the canonical manifest .codepatrol/works/INIT-3.2-prove-concurrent-attacks-on-distinct-works-are-c/work.json. No commits follow the candidate, so the canonical-manifest-only invariant holds vacuously. Verify evidence: requiredCommands command trace with exitCode 0 for `npm run verify` and inspection observations for changed files and pinned candidate are recorded in the verify attempt.",
+          "at": "2026-08-03T22:29:07.373Z"
+        }
       ]
     }
   ],
-  "completion": null
+  "completion": {
+    "outcome": "accepted",
+    "via": "ship",
+    "authority": "user",
+    "finalizedAt": "2026-08-03T22:29:17.941Z",
+    "summary": "Accept the Work. The new concurrency suite exercises the existing lock primitives under overlapping stage runs and a sync, with no adapter changes needed. The plan's caveat — only fix lock gaps if the suite exposes them — was honored: the four tests passed against the work/<id>, repository, and sync locks already in place. Verify recorded the requiredCommands `npm run verify` trace with exitCode 0. Authority for the accept is the explicit user."
+  }
 }
