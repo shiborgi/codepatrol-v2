@@ -1,0 +1,41 @@
+{
+  "schemaVersion": 1,
+  "type": "codepatrol-work",
+  "work": {
+    "id": "INIT-2.3-move-an-issue-s-project-status-only-when-a-run-a",
+    "title": "Move an Issue's Project status only when a run attacks the Work",
+    "description": "The Project projection derives an Issue's status from the stage the Work is ready for, so the board advertises a stage no agent has started: complete Plan and the Issue jumps to Review while it only waits. The board should report activity, not readiness. A Work no run has attacked stays Backlog; a live run shows its stage; a Work waiting between runs keeps the stage last attacked; a terminal Work shows Done. Status changes remain reconciliation — a sync with no new run edits nothing.",
+    "issueType": "Bug",
+    "priority": "p2",
+    "acceptance": [
+      "Starting a stage run moves the Work's Issue to that stage's Project status on the next sync",
+      "A Work waiting between stages keeps the status of the stage last attacked instead of advertising the stage it is ready for",
+      "A Work no run has ever attacked projects as Backlog, even one ready for Plan",
+      "A terminal Work still projects Done, and a sync with no new run edits no status"
+    ],
+    "createdAt": "2026-08-03T13:34:42.904Z",
+    "requestedBy": "spec",
+    "initiative": {
+      "id": "INIT-2",
+      "position": 3
+    },
+    "origin": {
+      "createdAt": "2026-08-03T13:34:42.904Z"
+    }
+  },
+  "repository": {
+    "baseRef": "refs/heads/main"
+  },
+  "graph": {
+    "blockedBy": []
+  },
+  "issue": null,
+  "workflow": {
+    "state": "ready",
+    "stage": "plan",
+    "attempt": 1,
+    "updatedAt": "2026-08-03T13:34:42.904Z"
+  },
+  "attempts": [],
+  "completion": null
+}
