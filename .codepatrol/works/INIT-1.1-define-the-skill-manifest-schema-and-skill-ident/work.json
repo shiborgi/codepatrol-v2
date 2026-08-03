@@ -34,10 +34,10 @@
     "number": 29
   },
   "workflow": {
-    "state": "active",
-    "stage": "review",
+    "state": "ready",
+    "stage": "build",
     "attempt": 1,
-    "updatedAt": "2026-08-03T12:27:04.282Z"
+    "updatedAt": "2026-08-03T12:28:01.150Z"
   },
   "attempts": [
     {
@@ -167,13 +167,14 @@
       "stage": "review",
       "attempt": 1,
       "runId": "5028943c-48e9-4588-9328-8cc4569714e1",
-      "status": "active",
+      "status": "completed",
       "execution": {
         "role": "reviewer",
         "harness": "opencode",
         "model": "google/antigravity-gemini-3.1-pro"
       },
       "startedAt": "2026-08-03T12:27:04.282Z",
+      "finishedAt": "2026-08-03T12:28:01.150Z",
       "todo": [
         {
           "id": "R1",
@@ -190,7 +191,30 @@
           "title": "Write review report and seal verdict",
           "description": "Write report.md and evidence, curate traces.md, record the run, and checkpoint or return."
         }
-      ]
+      ],
+      "result": {
+        "decision": "continue",
+        "summary": "Plan is approved. It defines strict schema and identity, avoids filesystem side effects in core logic, and fulfills all acceptance criteria.",
+        "handoff": "# Review Report\n\nThe plan looks sound. Acceptance criteria mapped perfectly to the tasks. Files are bounded to core parsing, matching the requirements. Strict separation from filesystem operations is preserved.",
+        "todo": [
+          {
+            "id": "R1",
+            "status": "completed",
+            "note": "Plan successfully covers SPEC-FORMAT and PLAN-FORMAT."
+          },
+          {
+            "id": "R2",
+            "status": "completed",
+            "note": "References are accurate."
+          },
+          {
+            "id": "R3",
+            "status": "completed",
+            "note": "Verdict sealed: continue."
+          }
+        ],
+        "artifacts": []
+      }
     }
   ],
   "completion": null
