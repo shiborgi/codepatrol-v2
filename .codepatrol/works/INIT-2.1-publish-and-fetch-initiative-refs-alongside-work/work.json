@@ -38,10 +38,10 @@
     "number": 36
   },
   "workflow": {
-    "state": "active",
-    "stage": "build",
+    "state": "ready",
+    "stage": "verify",
     "attempt": 1,
-    "updatedAt": "2026-08-03T13:32:06.712Z"
+    "updatedAt": "2026-08-03T14:18:19.528Z"
   },
   "attempts": [
     {
@@ -205,13 +205,14 @@
       "stage": "build",
       "attempt": 1,
       "runId": "c85584e2-a74e-458b-90c6-960174e8bab6",
-      "status": "active",
+      "status": "completed",
       "execution": {
         "role": "builder",
         "harness": "opencode",
         "model": "kimi-for-coding/k3"
       },
       "startedAt": "2026-08-03T13:32:06.712Z",
+      "finishedAt": "2026-08-03T14:18:19.528Z",
       "todo": [
         {
           "id": "B1",
@@ -232,6 +233,78 @@
         {
           "id": "B5",
           "title": "Run npm run verify; commit; complete Build"
+        }
+      ],
+      "result": {
+        "decision": "continue",
+        "summary": "All five todos completed. Initiative refs join the refs projection in LocalGitRemote.sync: they are enumerated locally via for-each-ref, queried from the remote via ls-remote, validated by the same prefix check, and scoped to a single Work's Initiative via initiativeOfWork with a trailing-dash prefix. No deletion logic was added or changed — an Initiative ref structurally can never enter terminal cleanup, and the never-delete behaviour is pinned by a real-git test that runs a Work to terminal and re-syncs. The previous build attempt's no-scope regression in matchesScope was caught by the existing local-git-remote tests and fixed.",
+        "handoff": "# Build: INIT-2.1\n\n## Changed files (product)\n- src/adapters/local-git-remote.ts — added the `initiativeOfWork` import, the trailing-dash Initiative prefix branch in `matchesScope`, the `refs/codepatrol/initiative/` argument to the `for-each-ref` and `ls-remote` patterns, and the Initiative prefix on the `remoteRefs` validation. Nothing else changed. Two debug `process.env.CODEPATROL_DEBUG_*` stderr writes left over from the previous Build attempt were removed; they are not product surface.\n- src/test/local-git-remote.test.ts — four new real-git round-trip tests:\n  1. publishes every local Initiative ref and a fresh clone reads back the same documents\n  2. a second clone mints the next free Initiative number (INIT-1, not INIT-0)\n  3. a scoped sync publishes only the selected Work's Initiative\n  4. never deletes an Initiative ref, even after every Work of that Initiative is terminal (with a repeated sync)\n- src/test/publication.test.ts — the no-remote lifecycle test now asserts the local Initiative ref is untouched; a new test covers `projections: NOTHING` on a remote-configured app, asserting the local Initiative ref is untouched and `remote.sync` is never called.\n- scripts/projection-e2e.mjs — the end-to-end scenario now asserts `git ls-remote origin 'refs/codepatrol/initiative/${applied.initiative}-*'` is non-empty (`the Initiative ref exists remotely`).\n- src/test/documentation.test.ts — registers the new assertion string in the E2E guard list.\n\n## Validation\n- `npm run verify` green: typecheck, 250/250 unit tests (including the four new round-trip tests and the new publication test), smoke, `--help`.\n\n## Commits\n- bde17d8 INIT-2.1-publish-and-fetch-initiative-refs-alongside-work: Publish and fetch Initiative refs alongside Work manifests (product)\n- 9f78761 codepatrol(INIT-2.1-publish-and-fetch-initiative-refs-alongside-work): manifest projection (state update for the active Build run)\n\n## Candidate\n- The product commit `bde17d8` carries every code and test change. The branch head `9f78761` is the manifest projection that the Build run wrote on its way to completion. Both are clean and reproducible from `f73b9a7`.\n\n## Acceptance\n1. Publishes every Initiative ref; fresh clone reads the same documents — covered by localRefs/remoteRefs/validation patterns and test 1.\n2. Scoped sync publishes that Work's Initiative only — covered by the trailing-dash `initiativeOfWork` branch in matchesScope and test 3.\n3. Fetch brings remote-only Initiative refs down; second clone mints the next free number — covered by the existing incoming path and tests 1 and 2.\n4. Never deletes an Initiative ref — structural (no code path can reach an Initiative ref through terminalActiveRefs because `activeWorkId` only matches work branches) and pinned by test 4 (terminal sync + repeated sync).\n5. No remote or refs projection disabled → skipped, local Initiative refs untouched — covered by the existing publication skip paths and the two publication.test.ts assertions.\n6. Projection E2E asserts the Initiative ref exists remotely — covered by the new `ls-remote` check in `scripts/projection-e2e.mjs` and the documentation.test.ts guard.",
+        "todo": [
+          {
+            "id": "B1",
+            "status": "completed",
+            "note": "Adder: refs/codepatrol/initiative/ in localRefs, remoteRefs (query and validation), and matchesScope (via initiativeOfWork with trailing dash). Fixed a regression in the previous attempt: matchesScope now returns true for the no-scope case (it had wrongly returned ref === baseRef). Removed two process.env.CODEPATROL_DEBUG_* stderr writes the previous attempt left behind."
+          },
+          {
+            "id": "B2",
+            "status": "completed",
+            "note": "Four real-git round-trip tests in local-git-remote.test.ts. All pass: publish + fresh-clone read-back, second clone mints INIT-1, scoped sync publishes only the selected Work's Initiative, never-deletes after a terminal sync (and a repeated sync)."
+          },
+          {
+            "id": "B3",
+            "status": "completed",
+            "note": "publication.test.ts: extended the no-remote lifecycle test to assert the local Initiative ref head is unchanged, and added a new test that a remote-configured app with projections: NOTHING leaves the local Initiative ref untouched and never calls remote.sync."
+          },
+          {
+            "id": "B4",
+            "status": "completed",
+            "note": "projection-e2e.mjs: added `git ls-remote origin 'refs/codepatrol/initiative/${applied.initiative}-*'` is non-empty, asserted as 'the Initiative ref exists remotely'. documentation.test.ts: registered the new assertion string in the E2E guard list."
+          },
+          {
+            "id": "B5",
+            "status": "completed",
+            "note": "npm run verify green (typecheck + 250/250 tests + smoke + --help). Two commits: bde17d8 (product) and 9f78761 (manifest projection). Worktree clean."
+          }
+        ],
+        "artifacts": [
+          {
+            "path": "src/adapters/local-git-remote.ts",
+            "kind": "production",
+            "blob": "e6e67920fbba9c1922801a9a18faf906be53b94d",
+            "description": "Adapter: include refs/codepatrol/initiative/ in the refs projection (enumeration, query, validation, scope)."
+          },
+          {
+            "path": "src/test/local-git-remote.test.ts",
+            "kind": "test",
+            "blob": "1e610c1025f67e299cece8461173de43477541a0",
+            "description": "Four real-git round-trip tests pinning the Initiative ref sync behaviour."
+          },
+          {
+            "path": "src/test/publication.test.ts",
+            "kind": "test",
+            "blob": "ab9799d73b083496146aa37724efc5337460eeb6",
+            "description": "No-remote and refs-projection-disabled assertions that the local Initiative ref is untouched."
+          },
+          {
+            "path": "scripts/projection-e2e.mjs",
+            "kind": "scenario",
+            "blob": "f6512faf05129c16f247f9f1b9dae06746ab7b2d",
+            "description": "End-to-end scenario asserts the Initiative ref exists remotely."
+          },
+          {
+            "path": "src/test/documentation.test.ts",
+            "kind": "test",
+            "blob": "039b7fc58ee6eb5bdd6f9e4efeb3cd357bff4bd9",
+            "description": "Guard test registering the new E2E assertion string."
+          }
+        ]
+      },
+      "traces": [
+        {
+          "id": "de42e4817f1d",
+          "type": "observation",
+          "message": "The previous Build attempt's matchesScope rewrite returned ref === baseRef for the no-scope case instead of true, which caused the existing local-git-remote tests to fail (no refs except baseRef would be considered in scope). Fixed to return true when workId is undefined, preserving the original semantics: no scope means all refs match. Also stripped two process.env.CODEPATROL_DEBUG_* debug stderr writes that the previous attempt left behind; they are not product surface.",
+          "at": "2026-08-03T13:58:26.782Z"
         }
       ]
     }
