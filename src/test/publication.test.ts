@@ -2,7 +2,7 @@ import assert from "node:assert/strict";
 import test from "node:test";
 import { CodepatrolError } from "../core/errors.js";
 import { workCodeOf } from "../core/identifiers.js";
-import { createTestApp, type TestApp } from "./support/app.js";
+import { createTestApp, DONE_TODO, TODO, type TestApp } from "./support/app.js";
 import { INITIATIVE_DOCUMENT_SCHEMA_VERSION, INITIATIVE_DOCUMENT_TYPE, parseInitiativeDocument, type InitiativeDocument } from "../core/initiative-document.js";
 import { FakeGitHub, FakeRemote } from "./support/github.js";
 import { mkdir, writeFile } from "node:fs/promises";
@@ -387,7 +387,7 @@ test("tracks the stage on the board and closes the issue only when terminal", as
 
     await app.runStage("plan", workId);
     const planned = await app.publication.reconcile({ repository: REPOSITORY, remote: "origin", workId });
-    assert.deepEqual(planned.project.statuses, [{ workId, status: "Review", outcome: "None" }]);
+    assert.deepEqual(planned.project.statuses, [{ workId, status: "Plan", outcome: "None" }], "the board keeps the last-attacked stage while the Work waits for the next run");
     assert.equal(app.github.issue(issue.number).state, "open");
     assert.ok(app.github.commentsFor(issue.number).some((comment) => /Codepatrol · `plan`/.test(comment.body)));
 
@@ -455,7 +455,7 @@ test("leaves the local fact intact when publication fails", async () => {
     // The Work advanced regardless; sync converges later.
     assert.equal((await app.works.show(workId)).stage, "review");
     const recovered = await app.publication.reconcile({ repository: REPOSITORY, remote: "origin", workId });
-    assert.deepEqual(recovered.project.statuses, [{ workId, status: "Review", outcome: "None" }]);
+    assert.deepEqual(recovered.project.statuses, [{ workId, status: "Plan", outcome: "None" }], "the board keeps the last-attacked stage while the Work waits for the next run");
   } finally {
     await app.cleanup();
   }
@@ -624,6 +624,60 @@ test("an unconfigured workspace falls back to the default Issue classification",
   const app = await createTestApp();
   try {
     assert.deepEqual((await readPublicationSettings(app.repo.root)).classification, defaultIssueClassification());
+  } finally {
+    await app.cleanup();
+  }
+});
+
+test("the board shows the stage of a live run, not the stage the Work is ready for", async () => {
+  // A live run is the activity the board should report. Starting a Review run
+  // moves the status to Review as soon as the run opens, before it completes.
+  const app = await createTestApp({ remoteRepository: REPOSITORY });
+  try {
+    const workId = await app.createWork({ title: "Live run" });
+    await app.runStage("plan", workId);
+    await app.publication.reconcile({ repository: REPOSITORY, remote: "origin", workId });
+    const lastReconcileStatus = (): string => {
+      const calls = app.github.calls.filter((call) => call.op === "reconcile");
+      return (calls.at(-1)?.args as { status: string }).status;
+    };
+    assert.equal(lastReconcileStatus(), "Plan", "after a Plan run completes the board sits at Plan while the Work waits");
+
+    const started = await app.works.start("review", workId, "test-harness", "test-model", TODO);
+    const result = await app.publication.reconcile({ repository: REPOSITORY, remote: "origin", workId });
+    assert.deepEqual(result.project.statuses, [{ workId, status: "Review", outcome: "None" }], "the board moves to Review as soon as the run starts");
+    assert.equal(lastReconcileStatus(), "Review");
+
+    await app.works.complete("review", workId, started.runId, {
+      decision: "continue",
+      summary: "review continues",
+      handoff: "next",
+      todo: DONE_TODO,
+      artifacts: [],
+    });
+  } finally {
+    await app.cleanup();
+  }
+});
+
+test("a terminal Work projects Done and a repeated sync with no new run does not move the status", async () => {
+  // Status changes are reconciliation, not free-form state: once a Work is
+  // terminal its Project status is Done, and a sync with no new run writes
+  // the same value back, so the board value never moves.
+  const app = await createTestApp({ remoteRepository: REPOSITORY });
+  try {
+    const workId = await app.createWork({ title: "Terminal stability" });
+    await app.runThrough(workId);
+    await app.publication.reconcile({ repository: REPOSITORY, remote: "origin", workId });
+    const lastReconcileArgs = (): { issue: number; status: string; outcome: string } => {
+      const calls = app.github.calls.filter((call) => call.op === "reconcile");
+      return calls.at(-1)?.args as { issue: number; status: string; outcome: string };
+    };
+    assert.deepEqual(lastReconcileArgs(), { issue: 1, status: "Done", outcome: "Accepted" }, "the terminal status is Done");
+
+    const result = await app.publication.reconcile({ repository: REPOSITORY, remote: "origin", workId });
+    assert.deepEqual(result.project.statuses, [{ workId, status: "Done", outcome: "Accepted" }], "the derived status is unchanged");
+    assert.deepEqual(lastReconcileArgs(), { issue: 1, status: "Done", outcome: "Accepted" }, "the second sync writes the same status back, so the board value does not move");
   } finally {
     await app.cleanup();
   }
