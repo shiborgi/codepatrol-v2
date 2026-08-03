@@ -1,0 +1,221 @@
+{
+  "schemaVersion": 1,
+  "type": "codepatrol-work",
+  "work": {
+    "id": "INIT-1.1-define-the-skill-manifest-schema-and-skill-ident",
+    "title": "Define the skill manifest schema and skill identity",
+    "description": "Give a skill a machine-readable identity the Core can validate: id, version, kind, declared capabilities, and a content digest, declared beside SKILL.md and parsed strictly. Follows the conventions src/core/initiative.ts already sets — an exported schema version and type, an id regex beside the others in src/core/identifiers.ts, a parser that refuses unknown fields, and a slugOf-style rule for anything derived from prose. Identity and validation only: no resolution, no dependency evaluation, no persistence on a run. Kinds start at the two the repository can justify today, stage and secondary; more are additive later. The seven shipped skills gain manifests, and package.json already ships skills/, so they travel with the release.",
+    "issueType": "Feature",
+    "priority": "p0",
+    "acceptance": [
+      "A skill manifest parses only with a valid id, version, kind, and declared capabilities, and a misspelled or unknown field is refused rather than dropped",
+      "Every skill under skills/ carries a manifest that parses, and its content digest is reproducible from the skill file alone",
+      "A CLI read lists the available skills with their id, version, kind, and digest, and changes nothing",
+      "Skill files stay harness-neutral: no manifest names a harness, and src/test/harness-adapters.test.ts still passes"
+    ],
+    "createdAt": "2026-08-03T11:16:22.452Z",
+    "requestedBy": "spec",
+    "initiative": {
+      "id": "INIT-1",
+      "position": 1
+    },
+    "origin": {
+      "createdAt": "2026-08-03T11:16:22.452Z"
+    }
+  },
+  "repository": {
+    "baseRef": "refs/heads/main"
+  },
+  "graph": {
+    "blockedBy": []
+  },
+  "issue": {
+    "repository": "shiborgi/codepatrol",
+    "number": 29
+  },
+  "workflow": {
+    "state": "ready",
+    "stage": "build",
+    "attempt": 1,
+    "updatedAt": "2026-08-03T12:28:01.150Z"
+  },
+  "attempts": [
+    {
+      "stage": "plan",
+      "attempt": 1,
+      "runId": "b742c8cc-240d-4575-9881-3e9188c94d78",
+      "status": "completed",
+      "execution": {
+        "role": "planner",
+        "harness": "opencode",
+        "model": "alibaba-token-plan/qwen3.8-max-preview"
+      },
+      "startedAt": "2026-08-03T12:10:29.669Z",
+      "finishedAt": "2026-08-03T12:20:38.534Z",
+      "todo": [
+        {
+          "id": "P1",
+          "title": "Inspect existing schema conventions (initiative.ts, identifiers.ts, CLI registration)"
+        },
+        {
+          "id": "P2",
+          "title": "Design skill manifest schema, content digest rule, and placement beside SKILL.md"
+        },
+        {
+          "id": "P3",
+          "title": "Decide the CLI read surface that lists skills with id, version, kind, digest"
+        },
+        {
+          "id": "P4",
+          "title": "Write a decision-complete plan covering all four acceptance criteria"
+        },
+        {
+          "id": "P5",
+          "title": "Record decisions and traces; complete Plan with decision continue"
+        }
+      ],
+      "result": {
+        "decision": "continue",
+        "summary": "Skill manifest schema decided: skills/<id>/skill.json parsed strictly by a new src/core/skill.ts (schemaVersion 1, type codepatrol-skill, id/version/kind/capabilities/digest), digest = sha256 of SKILL.md bytes, kinds stage|secondary, and a read-only `codepatrol skill list` that verifies every shipped manifest against its SKILL.md.",
+        "handoff": "# Plan: Define the skill manifest schema and skill identity (INIT-1.1)\n\n## Product files Build touches\n1. src/core/identifiers.ts — add `SKILL_ID = /^[a-z0-9][a-z0-9-]*$/` beside the existing regexes.\n2. src/core/skill.ts (new) — schema constants, type, strict parser, serializer, digest helper.\n3. src/cli/commands/skill.ts (new) — `skill list` command plus an exported `listShippedSkills(directory)` helper.\n4. src/cli/command.ts — add \"skill\" to the CommandSpec name union.\n5. src/cli/registry.ts — register skillCommand with the other reads (after initiativeCommand).\n6. skills/<name>/skill.json — one manifest per shipped skill (7 files).\n7. src/test/skill.test.ts (new).\n\nNo other files change. In particular harness-adapters.test.ts, opencode.json, and the .claude/.opencode adapters are untouched.\n\n## Schema (src/core/skill.ts)\n```ts\nexport const SKILL_SCHEMA_VERSION = 1;\nexport const SKILL_TYPE = \"codepatrol-skill\";\nexport const SKILL_KINDS = [\"stage\", \"secondary\"] as const;\nexport type SkillKind = (typeof SKILL_KINDS)[number];\nexport interface SkillManifest {\n  schemaVersion: typeof SKILL_SCHEMA_VERSION;\n  type: typeof SKILL_TYPE;\n  id: string;\n  version: string;\n  kind: SkillKind;\n  capabilities: string[];\n  digest: string;\n}\n```\n- parseSkillManifest mirrors parseInitiative exactly: same object/keys/text/corrupt helper pattern, unknown or missing fields refuse with STATE_CORRUPT (acceptance 1).\n- Field rules: schemaVersion === 1; type === \"codepatrol-skill\"; id matches SKILL_ID from identifiers.ts; version matches /^\\d+\\.\\d+\\.\\d+$/; kind in SKILL_KINDS; capabilities is an array of unique tokens each matching /^[a-z0-9][a-z0-9-]*$/ (empty array allowed); digest matches /^[0-9a-f]{64}$/.\n- serializeSkillManifest writes the fixed key order above plus a trailing newline, like serializeInitiative.\n- skillContentDigest(contents: string | Buffer) returns sha256(contents) from src/core/json.ts.\n- The module is pure: no filesystem, no node:fs imports (the layering rule version.ts states — core and application stay filesystem-free).\n\n## Placement and identity rules\n- Manifest file: skills/<id>/skill.json beside SKILL.md. Naming mirrors work.json/initiative.json (the file is named after its document type). The .claude/skills entries symlink whole directories and opencode.json points at ./skills, so the sibling travels everywhere SKILL.md does; every harness reads only SKILL.md, so the JSON is inert (acceptance 4). package.json already lists \"skills\" in files.\n- manifest.id must equal its directory name. The parser cannot check this (filesystem-free); the CLI read and the tests enforce it.\n- digest is the lowercase hex SHA-256 of the exact bytes of SKILL.md alone. The manifest never participates in its own digest (acceptance 2).\n- Kinds: codepatrol-plan, codepatrol-review, codepatrol-build, codepatrol-verify, codepatrol-ship are \"stage\" (matching STAGES in src/core/types.ts:1); codepatrol-spec and codepatrol-work are \"secondary\".\n- version starts at \"1.0.0\" for all seven.\n- capabilities: all seven declare [\"cli\"] — the one requirement every shipped skill genuinely has (each drives the codepatrol CLI). The vocabulary is deliberately open; tokens are additive later, exactly as kinds are.\n\n## CLI read: codepatrol skill list\n- New CommandSpec in src/cli/commands/skill.ts following commands/initiative.ts: name \"skill\", usage [\"skill list\"], no flags, exactPositionals 0.\n- The skills directory resolves package-relative — path.resolve(fileURLToPath(import.meta.url), \"../../../skills\") — the same pattern as version.ts, because the read reports what this codepatrol installation ships, not workspace state. It never touches --workspace, needs no remote, and writes nothing (acceptance 3).\n- listShippedSkills(directory): for each entry directory, read skill.json, parseSkillManifest (a corrupt manifest fails the command), require id === directory name, recompute the digest from SKILL.md and require equality with the recorded digest — a mismatch throws STATE_CORRUPT, because an identity that does not reproduce is corruption, not a soft warning.\n- Output, sorted by id:\n```json\n{ \"skills\": [ { \"id\": \"...\", \"version\": \"...\", \"kind\": \"...\", \"capabilities\": [\"cli\"], \"digest\": \"...\" } ] }\n```\n- Registered in registry.ts COMMANDS so --help lists it.\n\n## Tests (src/test/skill.test.ts)\n- Parser: valid manifest round-trips through serialize/parse; an unknown field is refused; a misspelled field (e.g. \"capability\") is refused as a missing required field; bad id, bad version, bad kind, and bad digest are each refused; duplicate capabilities refused; empty capabilities accepted.\n- Shipped skills: every skills/*/skill.json parses; id equals the directory name; the digest recomputed from SKILL.md equals the recorded digest (reproducibility); kinds match the STAGES split; no manifest mentions a harness name (guard mirroring harness-adapters.test.ts).\n- CLI: listShippedSkills returns the seven skills sorted by id; two consecutive calls return identical output (changes nothing).\n- Existing suites must pass unchanged: npm run typecheck, npm test (including harness-adapters.test.ts), npm run smoke — i.e. npm run verify.\n\n## Acceptance coverage\n1. Strict parse with refused unknown/misspelled fields — parser + parser tests.\n2. Every skill under skills/ carries a parsing manifest; digest reproducible from SKILL.md alone — 7 manifests + shipped-skills test.\n3. CLI read lists id/version/kind/digest and changes nothing — skill list + CLI test.\n4. Harness neutrality — manifests contain no harness names; guard test; harness-adapters.test.ts passes untouched.\n\n## Non-goals (per the Work text)\nNo resolution, no dependency evaluation, no persistence on a run (INIT-1.2, INIT-1.4). No capability vocabulary beyond \"cli\". schemaVersion stays 1.",
+        "todo": [
+          {
+            "id": "P1",
+            "status": "completed",
+            "note": "Conventions confirmed in initiative.ts, identifiers.ts, json.ts, registry.ts, version.ts, types.ts; core/application stay filesystem-free."
+          },
+          {
+            "id": "P2",
+            "status": "completed",
+            "note": "skills/<id>/skill.json; schemaVersion 1 codepatrol-skill with id/version/kind/capabilities/digest; digest = sha256 of SKILL.md bytes; strict parser mirrors parseInitiative."
+          },
+          {
+            "id": "P3",
+            "status": "completed",
+            "note": "codepatrol skill list: package-relative read of shipped skills, verifies id == directory and digest reproduction, sorted JSON output, writes nothing."
+          },
+          {
+            "id": "P4",
+            "status": "completed",
+            "note": "Handoff covers all four acceptance criteria with file list, schema, identity rules, CLI behavior, and test plan."
+          },
+          {
+            "id": "P5",
+            "status": "completed",
+            "note": "Four traces recorded (one observation, three decisions); completing with decision continue."
+          }
+        ],
+        "artifacts": []
+      },
+      "traces": [
+        {
+          "id": "e357d5e91200",
+          "type": "observation",
+          "message": "Conventions confirmed: exported schema version + type + strict unknown-field-refusing parser in src/core/initiative.ts, id regexes in src/core/identifiers.ts, sha256 in src/core/json.ts, read-only CommandSpec pattern in src/cli/commands/initiative.ts, package-relative resource reads in src/cli/version.ts with the rule that core and application stay filesystem-free.",
+          "at": "2026-08-03T12:19:38.624Z",
+          "data": {
+            "files": [
+              "src/core/initiative.ts",
+              "src/core/identifiers.ts",
+              "src/core/json.ts",
+              "src/cli/commands/initiative.ts",
+              "src/cli/version.ts",
+              "src/cli/registry.ts",
+              "src/core/types.ts"
+            ]
+          }
+        },
+        {
+          "id": "a20a9ef54094",
+          "type": "decision",
+          "message": "Skill manifest lives at skills/<id>/skill.json beside SKILL.md: naming mirrors work.json/initiative.json, whole-directory symlinks and opencode skills.paths carry the sibling, harnesses read only SKILL.md so the manifest is inert to them, and package.json already ships skills/.",
+          "at": "2026-08-03T12:19:38.697Z",
+          "data": {
+            "file": "skill.json",
+            "harnessNeutral": true
+          }
+        },
+        {
+          "id": "b3cffab88e91",
+          "type": "decision",
+          "message": "Digest is the hex SHA-256 of the exact bytes of SKILL.md alone, via sha256 from src/core/json.ts; the manifest never participates in its own digest. Kinds: the five STAGES skills are stage, codepatrol-spec and codepatrol-work are secondary. Every shipped manifest declares capabilities [\"cli\"], the single honest shared requirement; the vocabulary is additive.",
+          "at": "2026-08-03T12:19:38.772Z",
+          "data": {
+            "digest": "sha256(SKILL.md bytes)",
+            "kinds": [
+              "stage",
+              "secondary"
+            ],
+            "capabilities": [
+              "cli"
+            ]
+          }
+        },
+        {
+          "id": "bc87afff4689",
+          "type": "decision",
+          "message": "CLI read is codepatrol skill list: no flags, resolves the shipped skills directory package-relative like version.ts, parses each skill.json strictly, requires id == directory name and recorded digest == recomputed digest (mismatch fails with STATE_CORRUPT), outputs id/version/kind/capabilities/digest sorted by id, and writes nothing.",
+          "at": "2026-08-03T12:19:38.843Z",
+          "data": {
+            "command": "skill list",
+            "workspaceIndependent": true
+          }
+        }
+      ]
+    },
+    {
+      "stage": "review",
+      "attempt": 1,
+      "runId": "5028943c-48e9-4588-9328-8cc4569714e1",
+      "status": "completed",
+      "execution": {
+        "role": "reviewer",
+        "harness": "opencode",
+        "model": "google/antigravity-gemini-3.1-pro"
+      },
+      "startedAt": "2026-08-03T12:27:04.282Z",
+      "finishedAt": "2026-08-03T12:28:01.150Z",
+      "todo": [
+        {
+          "id": "R1",
+          "title": "Audit plan completeness against SPEC-FORMAT and PLAN-FORMAT",
+          "description": "Verify every acceptance criterion is testable and maps to tasks; task dependencies form a DAG; every task names its file set and verify command; blast radius covers union of task files."
+        },
+        {
+          "id": "R2",
+          "title": "Validate plan references against the repository",
+          "description": "Check that referenced paths, symbols, and verification commands exist and are executable. No hidden production edits."
+        },
+        {
+          "id": "R3",
+          "title": "Write review report and seal verdict",
+          "description": "Write report.md and evidence, curate traces.md, record the run, and checkpoint or return."
+        }
+      ],
+      "result": {
+        "decision": "continue",
+        "summary": "Plan is approved. It defines strict schema and identity, avoids filesystem side effects in core logic, and fulfills all acceptance criteria.",
+        "handoff": "# Review Report\n\nThe plan looks sound. Acceptance criteria mapped perfectly to the tasks. Files are bounded to core parsing, matching the requirements. Strict separation from filesystem operations is preserved.",
+        "todo": [
+          {
+            "id": "R1",
+            "status": "completed",
+            "note": "Plan successfully covers SPEC-FORMAT and PLAN-FORMAT."
+          },
+          {
+            "id": "R2",
+            "status": "completed",
+            "note": "References are accurate."
+          },
+          {
+            "id": "R3",
+            "status": "completed",
+            "note": "Verdict sealed: continue."
+          }
+        ],
+        "artifacts": []
+      }
+    }
+  ],
+  "completion": null
+}
