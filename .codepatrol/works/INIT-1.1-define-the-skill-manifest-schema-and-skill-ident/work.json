@@ -36,10 +36,10 @@
     "number": 29
   },
   "workflow": {
-    "state": "active",
-    "stage": "build",
+    "state": "ready",
+    "stage": "verify",
     "attempt": 1,
-    "updatedAt": "2026-08-03T12:34:25.667Z"
+    "updatedAt": "2026-08-03T12:49:11.983Z"
   },
   "attempts": [
     {
@@ -222,13 +222,14 @@
       "stage": "build",
       "attempt": 1,
       "runId": "156e132c-55b8-4693-a510-3e4387ebcaed",
-      "status": "active",
+      "status": "completed",
       "execution": {
         "role": "builder",
         "harness": "opencode",
         "model": "kimi-for-coding/k3"
       },
       "startedAt": "2026-08-03T12:34:25.667Z",
+      "finishedAt": "2026-08-03T12:49:11.983Z",
       "todo": [
         {
           "id": "B1",
@@ -249,6 +250,128 @@
         {
           "id": "B5",
           "title": "Run npm run verify; commit; complete Build"
+        }
+      ],
+      "result": {
+        "decision": "continue",
+        "summary": "Skill manifest schema implemented as approved: SKILL_ID in src/core/identifiers.ts; src/core/skill.ts (schemaVersion 1, type codepatrol-skill, strict unknown-field-refusing parser, serializer, sha256 digest of SKILL.md bytes); seven skills/<id>/skill.json manifests (five stage, two secondary, capabilities [\"cli\"], version 1.0.0); read-only `codepatrol skill list` in src/cli/commands/skill.ts registered in the CLI; src/test/skill.test.ts covers strict parsing, shipped-manifest reproducibility, harness neutrality, and read-only listing. npm run verify passes (245/245).",
+        "handoff": "# Build: Define the skill manifest schema and skill identity (INIT-1.1)\n\n## What changed\n- src/core/identifiers.ts — added `SKILL_ID = /^[a-z0-9][a-z0-9-]*$/` beside the existing regexes.\n- src/core/skill.ts (new) — SKILL_SCHEMA_VERSION 1, SKILL_TYPE codepatrol-skill, SKILL_KINDS [stage, secondary], SkillManifest type, parseSkillManifest mirroring parseInitiative (unknown or missing fields refuse with STATE_CORRUPT), serializeSkillManifest with fixed key order and trailing newline, skillContentDigest = sha256 of the SKILL.md bytes. The module is filesystem-free.\n- skills/<id>/skill.json — one manifest per shipped skill (7 files): version 1.0.0, capabilities [\"cli\"], kind stage for codepatrol-plan/review/build/verify/ship, secondary for codepatrol-spec/work, digest = lowercase hex SHA-256 of SKILL.md alone.\n- src/cli/commands/skill.ts (new) — exported listShippedSkills(directory) that parses each manifest, requires id == directory name, and recomputes the digest from SKILL.md (mismatch throws STATE_CORRUPT); `codepatrol skill list` resolves the skills directory package-relative like version.ts, outputs id/version/kind/capabilities/digest sorted by id, and writes nothing.\n- src/cli/command.ts — \"skill\" added to the CommandSpec name union.\n- src/cli/registry.ts — skillCommand registered after initiativeCommand.\n- src/test/skill.test.ts (new) — parser round-trip; refused unknown, misspelled, and invalid fields; refused duplicate capabilities; accepted empty capabilities; every shipped manifest parses, names its directory, reproduces its digest, matches the STAGES kind split, and names no harness; skill list is sorted and idempotent.\n\n## Validation\n- npm run verify in the Change worktree: typecheck clean, 245/245 tests pass (harness-adapters.test.ts untouched and passing), smoke passed, --help lists `skill list`.\n- `node bin/codepatrol.js skill list` prints the seven skills sorted by id with version, kind, capabilities, and digest; it writes nothing.\n\n## Commits\n- 468c527 Define the skill manifest schema and skill identity (INIT-1.1) — product files.\n- 66d2707 codepatrol(INIT-1.1-define-the-skill-manifest-schema-and-skill-ident): manifest projection — control state, matching the repository's projection-commit convention.\n\n## Acceptance coverage\n1. Strict parse with refused unknown/misspelled fields — parser + parser tests.\n2. Every skill under skills/ carries a parsing manifest; digest reproducible from SKILL.md alone — 7 manifests + shipped-skills test.\n3. CLI read lists id/version/kind/digest and changes nothing — skill list + CLI test.\n4. Harness neutrality — manifests contain no harness names; guard test; harness-adapters.test.ts passes untouched.",
+        "todo": [
+          {
+            "id": "B1",
+            "status": "completed",
+            "note": "SKILL_ID added beside the other regexes in identifiers.ts; src/core/skill.ts mirrors parseInitiative exactly and stays filesystem-free."
+          },
+          {
+            "id": "B2",
+            "status": "completed",
+            "note": "src/test/skill.test.ts: round-trip, refused unknown/misspelled/invalid fields, duplicate capabilities, empty capabilities, shipped-manifest parse/id/digest/kind/harness-neutrality, and idempotent CLI listing."
+          },
+          {
+            "id": "B3",
+            "status": "completed",
+            "note": "Seven skills/<id>/skill.json manifests generated with digests computed from the exact SKILL.md bytes; kinds match the STAGES split."
+          },
+          {
+            "id": "B4",
+            "status": "completed",
+            "note": "src/cli/commands/skill.ts added (skill list + exported listShippedSkills), name union extended in command.ts, registered in registry.ts after initiativeCommand."
+          },
+          {
+            "id": "B5",
+            "status": "completed",
+            "note": "npm run verify passed (typecheck, 245/245 tests, smoke, --help); committed as 468c527 (product) and 66d2707 (manifest projection); worktree clean."
+          }
+        ],
+        "artifacts": [
+          {
+            "path": "src/core/identifiers.ts",
+            "kind": "source",
+            "blob": "3f6ed91484c96e9ba9b7164c7efd733e75d3503e"
+          },
+          {
+            "path": "src/core/skill.ts",
+            "kind": "source",
+            "blob": "8277a2896e6da57efe763eaeadde5331f88ae736"
+          },
+          {
+            "path": "src/cli/commands/skill.ts",
+            "kind": "source",
+            "blob": "6fd935177424a0cbe37f86d0bb3c82f922e90458"
+          },
+          {
+            "path": "src/cli/command.ts",
+            "kind": "source",
+            "blob": "02acd3d5977aaba7836229799c12945cc7e30770"
+          },
+          {
+            "path": "src/cli/registry.ts",
+            "kind": "source",
+            "blob": "860aa7bd81f4249006066eb7095beedcd8e1fa98"
+          },
+          {
+            "path": "src/test/skill.test.ts",
+            "kind": "test",
+            "blob": "ce6ffcf569675ecde4788b058bc524560a15971a"
+          },
+          {
+            "path": "skills/codepatrol-build/skill.json",
+            "kind": "manifest",
+            "blob": "3b7beecf4a0beaf7cc22e0d937786286ba03c35f"
+          },
+          {
+            "path": "skills/codepatrol-plan/skill.json",
+            "kind": "manifest",
+            "blob": "47939942308b1f7e133fb81381ab18daea067c1c"
+          },
+          {
+            "path": "skills/codepatrol-review/skill.json",
+            "kind": "manifest",
+            "blob": "a78561224fa772e46bb0866de90cedc31ba9ebd6"
+          },
+          {
+            "path": "skills/codepatrol-ship/skill.json",
+            "kind": "manifest",
+            "blob": "ddf70b20042a75680719aece1f7387aed2ea4d3b"
+          },
+          {
+            "path": "skills/codepatrol-spec/skill.json",
+            "kind": "manifest",
+            "blob": "f76072a0cf1a97fcdb4ace6faace1a90338c833b"
+          },
+          {
+            "path": "skills/codepatrol-verify/skill.json",
+            "kind": "manifest",
+            "blob": "c76cbfc198667fc2ef04182264d9d17619b28055"
+          },
+          {
+            "path": "skills/codepatrol-work/skill.json",
+            "kind": "manifest",
+            "blob": "aa4ff9bd8ae2869c25ae1152f6d08081573b9f5e"
+          }
+        ]
+      },
+      "traces": [
+        {
+          "id": "30ab06158e10",
+          "type": "observation",
+          "message": "npm run verify passed in the Change worktree: typecheck clean, 245/245 tests pass (including harness-adapters.test.ts untouched), smoke passed, --help lists `skill list`. `node bin/codepatrol.js skill list` prints the seven shipped skills sorted by id with version, kind, capabilities, and digest, and writes nothing.",
+          "at": "2026-08-03T12:47:03.260Z",
+          "data": {
+            "commands": [
+              "npm run verify",
+              "node bin/codepatrol.js skill list"
+            ],
+            "tests": {
+              "total": 245,
+              "pass": 245,
+              "fail": 0
+            },
+            "commits": [
+              "468c527",
+              "66d2707"
+            ]
+          }
         }
       ]
     }
