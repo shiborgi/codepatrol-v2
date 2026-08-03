@@ -33,10 +33,10 @@
     "number": 39
   },
   "workflow": {
-    "state": "active",
-    "stage": "review",
+    "state": "ready",
+    "stage": "build",
     "attempt": 1,
-    "updatedAt": "2026-08-03T16:20:49.434Z"
+    "updatedAt": "2026-08-03T16:21:15.385Z"
   },
   "attempts": [
     {
@@ -149,13 +149,14 @@
       "stage": "review",
       "attempt": 1,
       "runId": "e96a4691-4837-40fd-9c81-77f3b7ffb906",
-      "status": "active",
+      "status": "completed",
       "execution": {
         "role": "reviewer",
         "harness": "opencode",
         "model": "google/antigravity-gemini-3.1-pro"
       },
       "startedAt": "2026-08-03T16:20:49.434Z",
+      "finishedAt": "2026-08-03T16:21:15.385Z",
       "todo": [
         {
           "id": "R1",
@@ -172,7 +173,30 @@
           "title": "Write review report and seal verdict",
           "description": "Write report.md and evidence, curate traces.md, record the run, and checkpoint or return."
         }
-      ]
+      ],
+      "result": {
+        "decision": "continue",
+        "summary": "Plan is approved. Resolving the short INIT-x.y code to the full canonical slugged ID explicitly at the entry boundaries (GitManifestStore.resolve) is perfectly scoped and duplicate-safe.",
+        "handoff": "# Review Report\n\nThe plan defines a robust boundary for mapping convenience IDs (`INIT-x.y`) to full canonical IDs via a central method on `GitManifestStore`. Updating all `WorkService` and `PublicationService` entrypoints to resolve first correctly prevents any persistent forms from deviating from canonical slugs, adhering to system invariants. Testing covers the resolution paths optimally.",
+        "todo": [
+          {
+            "id": "R1",
+            "status": "completed",
+            "note": "Plan successfully covers SPEC-FORMAT and PLAN-FORMAT. Task dependencies form a DAG, verification strategy is accurate."
+          },
+          {
+            "id": "R2",
+            "status": "completed",
+            "note": "References to WorkService entry points, GitManifestStore logic, and publication services are thoroughly checked and accurate."
+          },
+          {
+            "id": "R3",
+            "status": "completed",
+            "note": "Verdict sealed: continue."
+          }
+        ],
+        "artifacts": []
+      }
     }
   ],
   "completion": null
