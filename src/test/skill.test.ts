@@ -11,7 +11,8 @@ import {
   serializeSkillManifest,
   skillContentDigest,
 } from "../core/skill.js";
-import { listShippedSkills } from "../cli/commands/skill.js";
+import { listShippedSkills, skillCommand } from "../cli/commands/skill.js";
+import type { CommandContext } from "../cli/command.js";
 import { STAGES } from "../core/types.js";
 
 const skillsDirectory = path.join(process.cwd(), "skills");
@@ -66,6 +67,43 @@ test("accepts empty capabilities", () => {
   assert.deepEqual(parseSkillManifest({ ...valid, capabilities: [] }).capabilities, []);
 });
 
+test("accepts the optional requires, recommends, and conflicts arrays when absent", () => {
+  const parsed = parseSkillManifest(valid);
+  assert.equal(parsed.requires, undefined);
+  assert.equal(parsed.recommends, undefined);
+  assert.equal(parsed.conflicts, undefined);
+});
+
+test("accepts requires, recommends, and conflicts when present and well-formed", () => {
+  const parsed = parseSkillManifest({
+    ...valid,
+    requires: ["codepatrol-base"],
+    recommends: ["codepatrol-work"],
+    conflicts: ["codepatrol-other"],
+  });
+  assert.deepEqual(parsed.requires, ["codepatrol-base"]);
+  assert.deepEqual(parsed.recommends, ["codepatrol-work"]);
+  assert.deepEqual(parsed.conflicts, ["codepatrol-other"]);
+});
+
+test("refuses non-skill-id tokens in requires, recommends, and conflicts", () => {
+  corruptOf({ ...valid, requires: ["CamelCase"] });
+  corruptOf({ ...valid, recommends: ["Bad Id"] });
+  corruptOf({ ...valid, conflicts: ["has space"] });
+});
+
+test("refuses duplicate entries within requires, recommends, and conflicts", () => {
+  corruptOf({ ...valid, requires: ["codepatrol-x", "codepatrol-x"] });
+  corruptOf({ ...valid, recommends: ["codepatrol-x", "codepatrol-x"] });
+  corruptOf({ ...valid, conflicts: ["codepatrol-x", "codepatrol-x"] });
+});
+
+test("refuses non-array values for requires, recommends, and conflicts", () => {
+  corruptOf({ ...valid, requires: "codepatrol-x" });
+  corruptOf({ ...valid, recommends: null });
+  corruptOf({ ...valid, conflicts: 1 });
+});
+
 test("every shipped skill carries a manifest that parses and reproduces", async () => {
   const entries = (await readdir(skillsDirectory, { withFileTypes: true })).filter((entry) => entry.isDirectory());
   assert.ok(entries.length > 0);
@@ -94,4 +132,66 @@ test("skill list returns the shipped skills sorted by id and changes nothing", a
     assert.match(skill.version, /^\d+\.\d+\.\d+$/);
     assert.match(skill.digest, /^[0-9a-f]{64}$/);
   }
+});
+
+function emptyContext(): CommandContext {
+  return {
+    workspace: ".",
+    works: {
+      list: async () => [],
+      show: async () => assert.fail("unused"),
+      graph: async () => assert.fail("unused"),
+      start: async () => assert.fail("unused"),
+      resume: async () => assert.fail("unused"),
+      trace: async () => assert.fail("unused"),
+      complete: async () => assert.fail("unused"),
+      checkout: async () => assert.fail("unused"),
+      inspect: async () => assert.fail("unused"),
+      refresh: async () => assert.fail("unused"),
+    },
+    spec: { inspect: async () => assert.fail("unused"), validate: async () => assert.fail("unused"), apply: async () => assert.fail("unused") },
+    initiatives: { list: async () => [], show: async () => assert.fail("unused") },
+    publication: { automatic: async () => undefined },
+    initialization: { run: async () => assert.fail("unused") },
+    doctor: { run: async () => assert.fail("unused") },
+  };
+}
+
+test("skill resolve <stage> prints the composition with reasons and is idempotent", async () => {
+  const first = (await skillCommand.run(emptyContext(), ["resolve", "plan"])) as {
+    stage: string;
+    skills: { id: string }[];
+    included: { id: string; reason: string }[];
+    omitted: { id: string; reason: string }[];
+  };
+  const second = (await skillCommand.run(emptyContext(), ["resolve", "plan"])) as typeof first;
+  assert.deepEqual(first, second, "the composition is deterministic");
+  assert.equal(first.stage, "plan");
+  const ids = first.skills.map((skill) => skill.id);
+  assert.ok(ids.includes("codepatrol-plan"));
+  // The five stage skills recommend codepatrol-work, so it joins as a secondary.
+  assert.ok(ids.includes("codepatrol-work"));
+  assert.equal(ids[0], "codepatrol-plan", "the stage skill is first");
+  const planReason = first.included.find((item) => item.id === "codepatrol-plan");
+  assert.equal(planReason?.reason, "the stage skill for plan");
+  const workReason = first.included.find((item) => item.id === "codepatrol-work");
+  assert.match(workReason?.reason ?? "", /^recommended by codepatrol-/);
+});
+
+test("skill resolve refuses an unknown stage", async () => {
+  await assert.rejects(
+    skillCommand.run(emptyContext(), ["resolve", "nope"]),
+    (error: unknown) => error instanceof CodepatrolError && error.code === "INVALID_ARGUMENT" && /Unknown stage/.test((error as Error).message),
+  );
+});
+
+test("skill resolve refuses missing and extra positional arguments", async () => {
+  await assert.rejects(
+    skillCommand.run(emptyContext(), ["resolve"]),
+    (error: unknown) => error instanceof CodepatrolError && error.code === "INVALID_ARGUMENT",
+  );
+  await assert.rejects(
+    skillCommand.run(emptyContext(), ["resolve", "plan", "extra"]),
+    (error: unknown) => error instanceof CodepatrolError && error.code === "INVALID_ARGUMENT",
+  );
 });

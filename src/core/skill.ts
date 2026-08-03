@@ -15,8 +15,12 @@ const SKILL_DIGEST = /^[0-9a-f]{64}$/;
  * A skill's machine-readable identity, declared in `skill.json` beside its
  * SKILL.md: what it is called, which revision of itself it is, what kind of
  * skill it is, what it needs from its host, and the digest that ties the
- * declaration to the skill file's exact bytes. Identity and validation only —
- * resolution and dependency evaluation are not part of this document.
+ * declaration to the skill file's exact bytes.
+ *
+ * Dependency, recommendation, and conflict declarations are optional under
+ * schemaVersion 1: a manifest without them still parses, and a stage that
+ * declares none resolves to itself alone. Resolution and dependency evaluation
+ * live in src/core/skill-resolution.ts; this module is identity and validation.
  */
 export interface SkillManifest {
   schemaVersion: typeof SKILL_SCHEMA_VERSION;
@@ -28,6 +32,12 @@ export interface SkillManifest {
   capabilities: string[];
   /** Lowercase hex SHA-256 of the exact bytes of SKILL.md alone. */
   digest: string;
+  /** Skill ids this skill requires. Absent when none. */
+  requires?: readonly string[];
+  /** Skill ids this skill recommends. Absent when none. */
+  recommends?: readonly string[];
+  /** Skill ids this skill conflicts with. Absent when none. */
+  conflicts?: readonly string[];
 }
 
 export function serializeSkillManifest(manifest: SkillManifest): string {
@@ -39,6 +49,9 @@ export function serializeSkillManifest(manifest: SkillManifest): string {
     kind: manifest.kind,
     capabilities: manifest.capabilities,
     digest: manifest.digest,
+    ...(manifest.requires === undefined ? {} : { requires: manifest.requires }),
+    ...(manifest.recommends === undefined ? {} : { recommends: manifest.recommends }),
+    ...(manifest.conflicts === undefined ? {} : { conflicts: manifest.conflicts }),
   };
   return `${JSON.stringify(ordered, null, 2)}\n`;
 }
@@ -64,13 +77,24 @@ function keys(value: Record<string, unknown>, allowed: readonly string[], requir
 
 function text(value: unknown, label: string): string {
   if (typeof value !== "string" || value.trim() === "") corrupt(`${label} must be a non-empty string.`);
-  return value;
+  return value as string;
+}
+
+function skillIdList(value: unknown, label: string): readonly string[] {
+  if (!Array.isArray(value)) corrupt(`${label} must be an array.`);
+  const items = value.map((entry) => {
+    if (typeof entry !== "string" || !SKILL_ID.test(entry)) corrupt(`${label} must contain only skill ids.`);
+    return entry as string;
+  });
+  if (new Set(items).size !== items.length) corrupt(`${label} entries must be unique.`);
+  return items;
 }
 
 export function parseSkillManifest(value: unknown): SkillManifest {
   const record = object(value, "Skill manifest");
-  const fields = ["schemaVersion", "type", "id", "version", "kind", "capabilities", "digest"];
-  keys(record, fields, fields, "Skill manifest");
+  const required = ["schemaVersion", "type", "id", "version", "kind", "capabilities", "digest"];
+  const allowed = [...required, "requires", "recommends", "conflicts"];
+  keys(record, allowed, required, "Skill manifest");
   if (record.schemaVersion !== SKILL_SCHEMA_VERSION) corrupt("Skill manifest schemaVersion is unsupported.");
   if (record.type !== SKILL_TYPE) corrupt("Skill manifest type is invalid.");
   const id = text(record.id, "Skill manifest id");
@@ -87,7 +111,7 @@ export function parseSkillManifest(value: unknown): SkillManifest {
   if (new Set(capabilities).size !== capabilities.length) corrupt("Skill manifest capabilities must be unique.");
   const digest = text(record.digest, "Skill manifest digest");
   if (!SKILL_DIGEST.test(digest)) corrupt("Skill manifest digest is invalid.");
-  return {
+  const parsed: SkillManifest = {
     schemaVersion: SKILL_SCHEMA_VERSION,
     type: SKILL_TYPE,
     id,
@@ -96,4 +120,8 @@ export function parseSkillManifest(value: unknown): SkillManifest {
     capabilities,
     digest,
   };
+  if (record.requires !== undefined) parsed.requires = skillIdList(record.requires, "Skill manifest requires");
+  if (record.recommends !== undefined) parsed.recommends = skillIdList(record.recommends, "Skill manifest recommends");
+  if (record.conflicts !== undefined) parsed.conflicts = skillIdList(record.conflicts, "Skill manifest conflicts");
+  return parsed;
 }
