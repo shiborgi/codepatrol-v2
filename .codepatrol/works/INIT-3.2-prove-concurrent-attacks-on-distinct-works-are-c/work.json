@@ -37,10 +37,10 @@
     "number": 41
   },
   "workflow": {
-    "state": "ready",
+    "state": "active",
     "stage": "review",
     "attempt": 1,
-    "updatedAt": "2026-08-03T20:51:01.551Z"
+    "updatedAt": "2026-08-03T20:59:01.325Z"
   },
   "attempts": [
     {
@@ -134,6 +134,35 @@
             "testFile": "src/test/concurrency.test.ts",
             "mode": "in-process multi-instance + real git remote"
           }
+        }
+      ]
+    },
+    {
+      "stage": "review",
+      "attempt": 1,
+      "runId": "1c23370a-fd5c-416d-b789-c45c3e9307c8",
+      "status": "active",
+      "execution": {
+        "role": "reviewer",
+        "harness": "opencode",
+        "model": "google/antigravity-gemini-3.1-pro"
+      },
+      "startedAt": "2026-08-03T20:59:01.325Z",
+      "todo": [
+        {
+          "id": "R1",
+          "title": "Audit plan completeness against SPEC-FORMAT and PLAN-FORMAT",
+          "description": "Verify every acceptance criterion is testable and maps to tasks; task dependencies form a DAG; every task names its file set and verify command; blast radius covers union of task files."
+        },
+        {
+          "id": "R2",
+          "title": "Validate plan references against the repository",
+          "description": "Check that referenced paths, symbols, and verification commands exist and are executable. No hidden production edits."
+        },
+        {
+          "id": "R3",
+          "title": "Write review report and seal verdict",
+          "description": "Write report.md and evidence, curate traces.md, record the run, and checkpoint or return."
         }
       ]
     }
