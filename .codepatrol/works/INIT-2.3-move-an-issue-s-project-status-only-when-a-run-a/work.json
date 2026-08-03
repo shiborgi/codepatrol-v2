@@ -36,10 +36,10 @@
     "number": 38
   },
   "workflow": {
-    "state": "ready",
+    "state": "active",
     "stage": "verify",
     "attempt": 2,
-    "updatedAt": "2026-08-03T17:16:04.526Z"
+    "updatedAt": "2026-08-03T17:28:22.822Z"
   },
   "attempts": [
     {
@@ -462,6 +462,48 @@
             "description": "Two updated expectations and two new behavior tests (unchanged from the original build; rebased onto the new base)."
           }
         ]
+      }
+    },
+    {
+      "stage": "verify",
+      "attempt": 2,
+      "runId": "c9a74a1d-ddb6-4310-885f-dcfb691c66b7",
+      "status": "active",
+      "execution": {
+        "role": "verifier",
+        "harness": "opencode",
+        "model": "google/antigravity-gemini-3.1-pro"
+      },
+      "startedAt": "2026-08-03T17:28:22.822Z",
+      "todo": [
+        {
+          "id": "V1",
+          "title": "Start Verify; pin candidateCommit and baselineCommit"
+        },
+        {
+          "id": "V2",
+          "title": "Inspect every changed file and blast radius in the pinned range"
+        },
+        {
+          "id": "V3",
+          "title": "Demonstrate each acceptance criterion with evidence"
+        },
+        {
+          "id": "V4",
+          "title": "Run every policy requiredCommand from this run and trace exitCode 0"
+        },
+        {
+          "id": "V5",
+          "title": "Record minimum evidence traces; complete with verdict"
+        }
+      ],
+      "verificationTarget": {
+        "attempt": 2,
+        "candidateCommit": "c23de50ec823a64bb72139b8cbc7e49505d86080",
+        "manifestCommit": "8def2462a8d3a2aca379d0e7f2bd973c688b8189",
+        "baselineCommit": "c80dc67115c4d32957e6a1416c0140d02518c2a7",
+        "targetCommit": "c80dc67115c4d32957e6a1416c0140d02518c2a7",
+        "policyHash": "738b7dca7b2b865e7de12c3f1ca6c05da0d1762f30e202a18709b6290fafb7b4"
       }
     }
   ],
