@@ -46,6 +46,28 @@ test("validates a selected Work before skipping an absent remote", async () => {
   }
 });
 
+test("a scoped publication accepts the short INIT-x.y code and publishes only that Work", async () => {
+  // The scope filter downstream of the resolver must receive the canonical id,
+  // not the short code, so the scoping behavior is identical to passing the
+  // full id: the selected Work is published and nothing else is touched.
+  const app = await createTestApp({ remoteRepository: REPOSITORY });
+  try {
+    const workA = await app.createWork({ title: "Work A" });
+    const workB = await app.createWork({ title: "Work B" });
+    const shortA = workA.match(/^(INIT-\d+\.\d+)-/)?.[1] ?? workA;
+    const shortB = workB.match(/^(INIT-\d+\.\d+)-/)?.[1] ?? workB;
+
+    const result = await app.publication.reconcile({ repository: REPOSITORY, remote: "origin", workId: shortB });
+
+    assert.equal(result.issues.created.length, 1, "the scoped publication creates only the targeted Issue");
+    assert.deepEqual(result.issues.created[0], { issue: 1, workId: workB });
+    assert.equal(app.github.issues.length, 1, "the unselected Work is not touched");
+    assert.notEqual(shortA, shortB, "the two Works have distinct short codes, so the test actually exercises resolution");
+  } finally {
+    await app.cleanup();
+  }
+});
+
 test("completes the whole lifecycle with no remote configured", async () => {
   // The defining property: GitHub is a projection, so its absence is a
   // supported way to run rather than a degraded one.
