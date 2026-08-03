@@ -34,11 +34,46 @@
     "number": 37
   },
   "workflow": {
-    "state": "ready",
+    "state": "active",
     "stage": "plan",
     "attempt": 1,
-    "updatedAt": "2026-08-03T13:21:49.112Z"
+    "updatedAt": "2026-08-03T14:45:03.839Z"
   },
-  "attempts": [],
+  "attempts": [
+    {
+      "stage": "plan",
+      "attempt": 1,
+      "runId": "a858b2d6-e20b-4c20-8322-509a14bd7dcc",
+      "status": "active",
+      "execution": {
+        "role": "planner",
+        "harness": "opencode",
+        "model": "kimi-for-coding/k3"
+      },
+      "startedAt": "2026-08-03T14:45:03.839Z",
+      "todo": [
+        {
+          "id": "P1",
+          "title": "Inspect Issue title creation/reconcile and matching code paths"
+        },
+        {
+          "id": "P2",
+          "title": "Decide the title format carrying the Work id and reconcile/convergence rules"
+        },
+        {
+          "id": "P3",
+          "title": "Decide test coverage incl. duplicate-prevention and E2E assertion"
+        },
+        {
+          "id": "P4",
+          "title": "Write decision-complete plan covering all four acceptance criteria"
+        },
+        {
+          "id": "P5",
+          "title": "Record traces; complete Plan with decision continue"
+        }
+      ]
+    }
+  ],
   "completion": null
 }
