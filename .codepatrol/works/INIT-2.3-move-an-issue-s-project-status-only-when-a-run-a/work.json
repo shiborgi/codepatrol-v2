@@ -36,10 +36,10 @@
     "number": 38
   },
   "workflow": {
-    "state": "active",
+    "state": "terminal",
     "stage": "ship",
     "attempt": 1,
-    "updatedAt": "2026-08-03T17:50:30.468Z"
+    "updatedAt": "2026-08-03T17:50:45.503Z"
   },
   "attempts": [
     {
@@ -611,13 +611,14 @@
       "stage": "ship",
       "attempt": 1,
       "runId": "21ccee75-c7d7-42d7-82ad-7b9b7251420b",
-      "status": "active",
+      "status": "completed",
       "execution": {
         "role": "shipper",
         "harness": "opencode",
         "model": "opencode-current"
       },
       "startedAt": "2026-08-03T17:50:30.468Z",
+      "finishedAt": "2026-08-03T17:50:45.503Z",
       "todo": [
         {
           "id": "S1",
@@ -631,8 +632,46 @@
           "id": "S3",
           "title": "Trace the terminal rationale; complete Ship with decision accept and authority release-owner"
         }
+      ],
+      "result": {
+        "decision": "accept",
+        "summary": "The Project status now derives from the latest attempt's stage rather than workflow.stage, so the board reports activity, not readiness. The change was refreshed onto the new base (c80dc67) after INIT-2.4 landed, and Verify pinned all four acceptance criteria with `npm run verify` at 259/259 and a fresh evidence trace per criterion. The Ship inspection confirms candidate c23de50 is the branch head, the only commits after baseline are the product commit, the manifest projection, and the canonical manifest checkpoint (the refresh at the head), and the baseline is not stale. Accepting under release-owner authority lands the change on the base; no Issue was linked late, so nothing further is recorded in the archive.",
+        "handoff": "# Ship: INIT-2.3\n\n## Decision and authority\n- Decision: accept\n- Authority: release-owner\n\n## Terminal state (from the v1 handoff inspection)\n- candidateCommit: c23de50ec823a64bb72139b8cbc7e49505d86080\n- manifestCommit: 8def2462a8d3a2aca379d0e7f2bd973c688b8189\n- baselineCommit: c80dc67115c4d32957e6a1416c0140d02518c2a7\n- targetCommit: c80dc67115c4d32957e6a1416c0140d02518c2a7 (matches the verification snapshot)\n- baselineStale: false\n- worktree: clean\n- commits after baseline: 82602b2 (product, rebased), c5d8766 (manifest projection, rebased), c23de50 (refresh at the head)\n\n## Evidence cited\n- Verify run pinned 4/4 acceptance criteria, `npm run verify` 259/259, exitCode 0.\n- Build handoff in attempt 2 listed the two product files and the structural argument for the latest-attempt derivation.\n- A Ship trace recorded the clean inspection, the commit composition, and the structural pin for the rule.\n\n## What this Ship does\n- Lands candidate c23de50 onto refs/heads/main as the single integration commit.\n- Removes the open Change branch and the linked worktree.\n- Preserves full Change history at refs/heads/codepatrol/archive/INIT-2.3-move-an-issue-s-project-status-only-when-a-run-a.\n- No Issue was linked late; nothing is recorded after the integration commit.",
+        "todo": [
+          {
+            "id": "S1",
+            "status": "completed",
+            "note": "v1 handoff inspection is clean: headCommit == candidateCommit, baseline is not stale, no uncommitted changes."
+          },
+          {
+            "id": "S2",
+            "status": "completed",
+            "note": "Only the canonical manifest checkpoint at the head (c23de50, the refresh) follows the product and the manifest projection."
+          },
+          {
+            "id": "S3",
+            "status": "completed",
+            "note": "Accept under release-owner authority. Integration commit lands on the base; the archive preserves the full Change."
+          }
+        ],
+        "artifacts": [],
+        "authority": "release-owner"
+      },
+      "traces": [
+        {
+          "id": "81b74db2018e",
+          "type": "observation",
+          "message": "Ship handoff inspection is clean: candidate c23de50 matches verification.candidateCommit and the branch head; baseline c80dc67 matches verification.targetCommit and is not stale; the three commits after baseline are 82602b2 (product, rebased) + c5d8766 (manifest projection, rebased) + c23de50 (refresh at the head, the canonical manifest checkpoint). Verify pinned 4/4 acceptance criteria with npm run verify at 259/259 tests; the rule (Project status from the latest attempt's stage) is structural and pinned by the new live-run and terminal-stability tests.",
+          "at": "2026-08-03T17:50:39.093Z"
+        }
       ]
     }
   ],
-  "completion": null
+  "completion": {
+    "outcome": "accepted",
+    "via": "ship",
+    "authority": "release-owner",
+    "finalizedAt": "2026-08-03T17:50:45.503Z",
+    "summary": "The Project status now derives from the latest attempt's stage rather than workflow.stage, so the board reports activity, not readiness. The change was refreshed onto the new base (c80dc67) after INIT-2.4 landed, and Verify pinned all four acceptance criteria with `npm run verify` at 259/259 and a fresh evidence trace per criterion. The Ship inspection confirms candidate c23de50 is the branch head, the only commits after baseline are the product commit, the manifest projection, and the canonical manifest checkpoint (the refresh at the head), and the baseline is not stale. Accepting under release-owner authority lands the change on the base; no Issue was linked late, so nothing further is recorded in the archive."
+  }
 }
