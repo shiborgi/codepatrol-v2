@@ -36,10 +36,10 @@
     "number": 40
   },
   "workflow": {
-    "state": "active",
-    "stage": "verify",
+    "state": "ready",
+    "stage": "ship",
     "attempt": 1,
-    "updatedAt": "2026-08-03T19:17:50.131Z"
+    "updatedAt": "2026-08-03T19:31:38.257Z"
   },
   "attempts": [
     {
@@ -374,13 +374,14 @@
       "stage": "verify",
       "attempt": 1,
       "runId": "16a8ba31-f974-4980-a6f5-3c4dc5ad95aa",
-      "status": "active",
+      "status": "completed",
       "execution": {
         "role": "verifier",
         "harness": "opencode",
         "model": "google/antigravity-gemini-3.1-pro"
       },
       "startedAt": "2026-08-03T19:17:50.131Z",
+      "finishedAt": "2026-08-03T19:31:38.257Z",
       "todo": [
         {
           "id": "V1",
@@ -408,7 +409,119 @@
           "description": "Run verify complete."
         }
       ],
+      "result": {
+        "decision": "continue",
+        "summary": "Verification complete. Candidate clean, isolated worktree works as intended, all tests passed.",
+        "handoff": "# Verification Report\n\nCandidate `df73d738f6d05aeb38061935f09d92d5b77cdd1f` was verified successfully.\n\n## Acceptance\n- All acceptance criteria are met, ensuring each stage execution gets an isolated worktree.\n- `npm run verify` executed successfully.\n\nNo product issues identified.",
+        "todo": [
+          {
+            "id": "V1",
+            "status": "completed",
+            "note": "Pinned candidate to df73d738f6d05aeb38061935f09d92d5b77cdd1f."
+          },
+          {
+            "id": "V2",
+            "status": "completed",
+            "note": "Inspected changed files. src/application/work-service.ts changed accurately."
+          },
+          {
+            "id": "V3",
+            "status": "completed",
+            "note": "Executed npm run verify."
+          },
+          {
+            "id": "V4",
+            "status": "completed",
+            "note": "Recorded traces and evidence."
+          },
+          {
+            "id": "V5",
+            "status": "completed",
+            "note": "Completed verify stage."
+          }
+        ],
+        "artifacts": []
+      },
+      "traces": [
+        {
+          "id": "1e3175911411",
+          "type": "observation",
+          "message": "Candidate commit pinned at df73d738f6d05aeb38061935f09d92d5b77cdd1f and baseline at 9ca7314c81966e768ad7b5062612d9ecb9d7e90d.",
+          "at": "2026-08-03T19:18:19.624Z",
+          "data": {
+            "candidate": "df73d738f6d05aeb38061935f09d92d5b77cdd1f",
+            "baseline": "9ca7314c81966e768ad7b5062612d9ecb9d7e90d"
+          }
+        },
+        {
+          "id": "fe4d0e89c0ab",
+          "type": "observation",
+          "message": "Inspected changed files. src/application/work-service.ts removed NEEDS_WORKTREE correctly. Test assertions for distinct worktrees and isolated runs are correctly implemented.",
+          "at": "2026-08-03T19:22:46.385Z",
+          "data": {
+            "files": [
+              "src/application/work-service.ts",
+              "src/test/work-service.test.ts"
+            ]
+          }
+        },
+        {
+          "id": "4c73230b0fb8",
+          "type": "command",
+          "message": "Executed npm run verify as required by policy.",
+          "at": "2026-08-03T19:23:03.294Z",
+          "command": [
+            "npm",
+            "run",
+            "verify"
+          ],
+          "exitCode": 0
+        },
+        {
+          "id": "1e60c7572d92",
+          "type": "command",
+          "message": "npm run verify exited with 0",
+          "at": "2026-08-03T19:31:38.257Z",
+          "data": {
+            "source": "codepatrol",
+            "workId": "INIT-3.1-run-every-stage-of-a-work-in-its-own-worktree",
+            "runId": "16a8ba31-f974-4980-a6f5-3c4dc5ad95aa",
+            "attempt": 1,
+            "candidateCommit": "df73d738f6d05aeb38061935f09d92d5b77cdd1f",
+            "policyHash": "738b7dca7b2b865e7de12c3f1ca6c05da0d1762f30e202a18709b6290fafb7b4",
+            "startedAt": "2026-08-03T19:29:35.895Z",
+            "finishedAt": "2026-08-03T19:31:38.211Z",
+            "stdout": {
+              "digest": "e875160e30689fc41f6109822f338627f5ea9270342c60d097f38fc01cd23bf3",
+              "bytes": 26331,
+              "truncated": true,
+              "redactions": 0
+            },
+            "stderr": {
+              "digest": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+              "bytes": 0,
+              "truncated": false,
+              "redactions": 0
+            },
+            "outputLog": ".codepatrol/runtime/works/INIT-3.1-run-every-stage-of-a-work-in-its-own-worktree/current/verify/01.log"
+          },
+          "command": [
+            "npm",
+            "run",
+            "verify"
+          ],
+          "exitCode": 0
+        }
+      ],
       "verificationTarget": {
+        "attempt": 1,
+        "candidateCommit": "df73d738f6d05aeb38061935f09d92d5b77cdd1f",
+        "manifestCommit": "841e3cb6efc9894c8b025eb8c73d454dd611d2db",
+        "baselineCommit": "9ca7314c81966e768ad7b5062612d9ecb9d7e90d",
+        "targetCommit": "9ca7314c81966e768ad7b5062612d9ecb9d7e90d",
+        "policyHash": "738b7dca7b2b865e7de12c3f1ca6c05da0d1762f30e202a18709b6290fafb7b4"
+      },
+      "verifiedCandidate": {
         "attempt": 1,
         "candidateCommit": "df73d738f6d05aeb38061935f09d92d5b77cdd1f",
         "manifestCommit": "841e3cb6efc9894c8b025eb8c73d454dd611d2db",
