@@ -36,10 +36,10 @@
     "number": 36
   },
   "workflow": {
-    "state": "active",
-    "stage": "review",
+    "state": "ready",
+    "stage": "build",
     "attempt": 1,
-    "updatedAt": "2026-08-03T13:17:07.813Z"
+    "updatedAt": "2026-08-03T13:17:35.010Z"
   },
   "attempts": [
     {
@@ -150,13 +150,14 @@
       "stage": "review",
       "attempt": 1,
       "runId": "323357a1-6b07-4e2a-aa4a-15061b89a140",
-      "status": "active",
+      "status": "completed",
       "execution": {
         "role": "reviewer",
         "harness": "opencode",
         "model": "google/antigravity-gemini-3.1-pro"
       },
       "startedAt": "2026-08-03T13:17:07.813Z",
+      "finishedAt": "2026-08-03T13:17:35.010Z",
       "todo": [
         {
           "id": "R1",
@@ -173,7 +174,30 @@
           "title": "Write review report and seal verdict",
           "description": "Write report.md and evidence, curate traces.md, record the run, and checkpoint or return."
         }
-      ]
+      ],
+      "result": {
+        "decision": "continue",
+        "summary": "Plan is approved. It successfully identifies all sync hook sites and sets a thorough test strategy without overextending scopes.",
+        "handoff": "# Review Report\n\nThe plan looks sound. Acceptance criteria mapped perfectly to the tasks. Files are bounded to sync logic and tests. Strict boundaries are respected (no delete operations are introduced for Initiatives, keeping them immutable).",
+        "todo": [
+          {
+            "id": "R1",
+            "status": "completed",
+            "note": "Plan successfully covers SPEC-FORMAT and PLAN-FORMAT."
+          },
+          {
+            "id": "R2",
+            "status": "completed",
+            "note": "References to local-git-remote.ts and related files are accurate."
+          },
+          {
+            "id": "R3",
+            "status": "completed",
+            "note": "Verdict sealed: continue."
+          }
+        ],
+        "artifacts": []
+      }
     }
   ],
   "completion": null
