@@ -34,11 +34,46 @@
     "number": 29
   },
   "workflow": {
-    "state": "ready",
+    "state": "active",
     "stage": "plan",
     "attempt": 1,
-    "updatedAt": "2026-08-03T11:16:22.452Z"
+    "updatedAt": "2026-08-03T12:10:29.669Z"
   },
-  "attempts": [],
+  "attempts": [
+    {
+      "stage": "plan",
+      "attempt": 1,
+      "runId": "b742c8cc-240d-4575-9881-3e9188c94d78",
+      "status": "active",
+      "execution": {
+        "role": "planner",
+        "harness": "opencode",
+        "model": "alibaba-token-plan/qwen3.8-max-preview"
+      },
+      "startedAt": "2026-08-03T12:10:29.669Z",
+      "todo": [
+        {
+          "id": "P1",
+          "title": "Inspect existing schema conventions (initiative.ts, identifiers.ts, CLI registration)"
+        },
+        {
+          "id": "P2",
+          "title": "Design skill manifest schema, content digest rule, and placement beside SKILL.md"
+        },
+        {
+          "id": "P3",
+          "title": "Decide the CLI read surface that lists skills with id, version, kind, digest"
+        },
+        {
+          "id": "P4",
+          "title": "Write a decision-complete plan covering all four acceptance criteria"
+        },
+        {
+          "id": "P5",
+          "title": "Record decisions and traces; complete Plan with decision continue"
+        }
+      ]
+    }
+  ],
   "completion": null
 }
