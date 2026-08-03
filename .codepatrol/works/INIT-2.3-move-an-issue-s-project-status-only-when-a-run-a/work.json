@@ -36,10 +36,10 @@
     "number": 38
   },
   "workflow": {
-    "state": "ready",
+    "state": "active",
     "stage": "build",
     "attempt": 2,
-    "updatedAt": "2026-08-03T16:40:20.798Z"
+    "updatedAt": "2026-08-03T17:04:40.972Z"
   },
   "attempts": [
     {
@@ -409,6 +409,28 @@
         "targetCommit": "06f923650c7aaeaf77873d9b02c2631743f5fdd0",
         "policyHash": "738b7dca7b2b865e7de12c3f1ca6c05da0d1762f30e202a18709b6290fafb7b4"
       }
+    },
+    {
+      "stage": "build",
+      "attempt": 2,
+      "runId": "1389191c-341b-49be-bd34-cfcd181162ee",
+      "status": "active",
+      "execution": {
+        "role": "builder",
+        "harness": "opencode",
+        "model": "opencode-current"
+      },
+      "startedAt": "2026-08-03T17:04:40.972Z",
+      "todo": [
+        {
+          "id": "B1",
+          "title": "Refresh the candidate on the new base (the previous Verify returned because the base moved to e6a6e71)"
+        },
+        {
+          "id": "B2",
+          "title": "Run npm run verify; commit any refresh; complete Build"
+        }
+      ]
     }
   ],
   "completion": null
