@@ -20,7 +20,7 @@ export interface CommandContext {
 }
 
 export interface CommandSpec {
-  name: "init" | "doctor" | "spec" | "work" | "initiative" | "change" | "sync" | Stage;
+  name: "init" | "doctor" | "spec" | "work" | "initiative" | "skill" | "change" | "sync" | Stage;
   summary: string;
   usage: string[];
   run(context: CommandContext, args: string[]): Promise<unknown>;

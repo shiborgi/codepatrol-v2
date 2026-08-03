@@ -1,0 +1,11 @@
+{
+  "schemaVersion": 1,
+  "type": "codepatrol-skill",
+  "id": "codepatrol-build",
+  "version": "1.0.0",
+  "kind": "stage",
+  "capabilities": [
+    "cli"
+  ],
+  "digest": "b058b4b9ad29dccdf0b91fd56d8d3edfc5117c0fc381b58a7edd271c8e9670b0"
+}

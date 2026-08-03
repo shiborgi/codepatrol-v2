@@ -1,0 +1,11 @@
+{
+  "schemaVersion": 1,
+  "type": "codepatrol-skill",
+  "id": "codepatrol-plan",
+  "version": "1.0.0",
+  "kind": "stage",
+  "capabilities": [
+    "cli"
+  ],
+  "digest": "4cc880e09c49776dd680e4a3024180388f11e914caabc6ebb559e1fd064d672b"
+}

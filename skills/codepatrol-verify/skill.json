@@ -1,0 +1,11 @@
+{
+  "schemaVersion": 1,
+  "type": "codepatrol-skill",
+  "id": "codepatrol-verify",
+  "version": "1.0.0",
+  "kind": "stage",
+  "capabilities": [
+    "cli"
+  ],
+  "digest": "69c467fa4ffcf114270afdad1a227c520bf110180219bcdd1b07112aab1b4d04"
+}
