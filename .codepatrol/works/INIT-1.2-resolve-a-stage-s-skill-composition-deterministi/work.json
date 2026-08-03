@@ -1,0 +1,43 @@
+{
+  "schemaVersion": 1,
+  "type": "codepatrol-work",
+  "work": {
+    "id": "INIT-1.2-resolve-a-stage-s-skill-composition-deterministi",
+    "title": "Resolve a stage's skill composition deterministically",
+    "description": "Turn declared manifests into one resolved composition for a stage: exactly one stage skill, required and recommended dependencies, conflict refusal, capability requirements, deterministic ordering, and a resolution digest that is a pure function of the resolved set. Resolution is a read — it reports the selection and the reason for every inclusion and every omission, and writes nothing. Precedence is fixed here: Core invariants, Work state, and repository policy outrank any skill; a secondary skill may add method and may never alter lifecycle decisions or return rules.",
+    "issueType": "Feature",
+    "priority": "p0",
+    "acceptance": [
+      "Resolving a stage yields exactly one stage skill, or refuses with a named error when zero or several would apply",
+      "Required dependencies resolve, recommended ones are included or reported as omitted with a reason, and a declared conflict or an unmet capability refuses the resolution",
+      "The same inputs always produce the same order and the same resolution digest, and any change to a resolved skill's content changes that digest",
+      "A CLI read prints the resolved composition with a reason per included and per omitted skill, and mutates nothing"
+    ],
+    "createdAt": "2026-08-03T11:16:22.452Z",
+    "requestedBy": "spec",
+    "initiative": {
+      "id": "INIT-1",
+      "position": 2
+    },
+    "origin": {
+      "createdAt": "2026-08-03T11:16:22.452Z"
+    }
+  },
+  "repository": {
+    "baseRef": "refs/heads/main"
+  },
+  "graph": {
+    "blockedBy": [
+      "INIT-1.1-define-the-skill-manifest-schema-and-skill-ident"
+    ]
+  },
+  "issue": null,
+  "workflow": {
+    "state": "ready",
+    "stage": "plan",
+    "attempt": 1,
+    "updatedAt": "2026-08-03T11:16:22.452Z"
+  },
+  "attempts": [],
+  "completion": null
+}
