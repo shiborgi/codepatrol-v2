@@ -36,10 +36,10 @@
     "number": 38
   },
   "workflow": {
-    "state": "active",
-    "stage": "build",
+    "state": "ready",
+    "stage": "verify",
     "attempt": 1,
-    "updatedAt": "2026-08-03T16:20:23.269Z"
+    "updatedAt": "2026-08-03T16:30:37.825Z"
   },
   "attempts": [
     {
@@ -203,13 +203,14 @@
       "stage": "build",
       "attempt": 1,
       "runId": "400277fa-e1b2-4654-a1ed-d05506574b23",
-      "status": "active",
+      "status": "completed",
       "execution": {
         "role": "builder",
         "harness": "opencode",
         "model": "opencode-current"
       },
       "startedAt": "2026-08-03T16:20:23.269Z",
+      "finishedAt": "2026-08-03T16:30:37.825Z",
       "todo": [
         {
           "id": "B1",
@@ -227,7 +228,48 @@
           "id": "B4",
           "title": "Run npm run verify; commit; complete Build"
         }
-      ]
+      ],
+      "result": {
+        "decision": "continue",
+        "summary": "All four todos completed. snapshotOf in src/application/publication.ts now derives the Project status from the latest attempt's stage rather than workflow.stage, so the board reports activity rather than readiness: a Work no run has attacked stays Backlog, a live run shows its stage, a Work waiting between runs keeps the stage last attacked, and a terminal Work shows Done. Two existing tests that pinned the wrong behavior now expect \"Plan\" after a Plan run completes; two new tests cover the live-run case and the terminal-stability case. The projection E2E was unchanged: the scenario already asserts the status only immediately after the corresponding stage was attacked.",
+        "handoff": "# Build: INIT-2.3\n\n## Changed files (product)\n- src/application/publication.ts — `snapshotOf` now uses `latest.stage` instead of `manifest.workflow.stage`. A comment captures the rule: the board reports activity, not readiness.\n- src/test/publication.test.ts — two existing tests updated to expect \"Plan\" after Plan completes (the board keeps the last-attacked stage while waiting); two new tests: a live Review run shows \"Review\" on the next sync, and a terminal Work's second sync writes the same Done/Accepted value back so the board value does not move.\n\n## Validation\n- `npm run verify` green: typecheck, 255/255 unit tests (2 new + 2 updated), smoke, --help.\n\n## Commits\n- f6982bb INIT-2.3-move-an-issue-s-project-status-only-when-a-run-a: Move an Issue's Project status only when a run attacks the Work (product)\n- 3591774 codepatrol(INIT-2.3-move-an-issue-s-project-status-only-when-a-run-a): manifest projection (state update for the active Build run)\n\n## Candidate\n- The product commit `f6982bb` carries every code and test change. The branch head `3591774` is the manifest projection that the Build run wrote on its way to completion. Both are clean and reproducible from `06f9236`.\n\n## Acceptance\n1. Starting a run moves the status to that stage on the next sync — latest-attempt derivation + new live-run test.\n2. A Work waiting between stages keeps the last-attacked stage — same derivation + two updated tests.\n3. A Work no run has ever attacked projects as Backlog — unchanged branch + existing test at publication.test.ts:87.\n4. A terminal Work still projects Done, and a sync with no new run edits no status — unchanged Done branch + new stability test.",
+        "todo": [
+          {
+            "id": "B1",
+            "status": "completed",
+            "note": "snapshotOf now uses latest.stage instead of manifest.workflow.stage. Comment added to capture the rule."
+          },
+          {
+            "id": "B2",
+            "status": "completed",
+            "note": "publication.test.ts:368 and :436 updated to expect \"Plan\" after a Plan run completes; existing Done and Backlog assertions left in place."
+          },
+          {
+            "id": "B3",
+            "status": "completed",
+            "note": "Two new tests: live-run test asserts the board moves to Review as soon as the run opens; terminal-stability test asserts a second sync writes the same Done/Accepted value back."
+          },
+          {
+            "id": "B4",
+            "status": "completed",
+            "note": "npm run verify green (typecheck + 255/255 tests + smoke + --help). Two commits: f6982bb (product) and 3591774 (manifest projection). Worktree clean."
+          }
+        ],
+        "artifacts": [
+          {
+            "path": "src/application/publication.ts",
+            "kind": "production",
+            "blob": "8b2ea5d2115938482b22b13b01e904270612c64d",
+            "description": "snapshotOf derives Project status from the latest attempt's stage."
+          },
+          {
+            "path": "src/test/publication.test.ts",
+            "kind": "test",
+            "blob": "5016af495bf476e1c283fd41c372d2ec7cc9697f",
+            "description": "Two updated expectations and two new behavior tests."
+          }
+        ]
+      }
     }
   ],
   "completion": null
