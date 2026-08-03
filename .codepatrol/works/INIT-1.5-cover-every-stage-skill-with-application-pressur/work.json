@@ -32,7 +32,10 @@
       "INIT-1.3-add-the-deterministic-skill-evaluation-harness"
     ]
   },
-  "issue": null,
+  "issue": {
+    "repository": "shiborgi/codepatrol",
+    "number": 33
+  },
   "workflow": {
     "state": "ready",
     "stage": "plan",
