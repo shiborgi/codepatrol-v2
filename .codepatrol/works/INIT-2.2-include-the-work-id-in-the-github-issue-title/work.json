@@ -36,10 +36,10 @@
     "number": 37
   },
   "workflow": {
-    "state": "active",
-    "stage": "build",
+    "state": "ready",
+    "stage": "verify",
     "attempt": 1,
-    "updatedAt": "2026-08-03T15:10:39.492Z"
+    "updatedAt": "2026-08-03T15:16:59.888Z"
   },
   "attempts": [
     {
@@ -203,13 +203,14 @@
       "stage": "build",
       "attempt": 1,
       "runId": "40b715c9-0a56-45b3-8d4a-74e0509d361f",
-      "status": "active",
+      "status": "completed",
       "execution": {
         "role": "builder",
         "harness": "opencode",
         "model": "opencode-current"
       },
       "startedAt": "2026-08-03T15:10:39.492Z",
+      "finishedAt": "2026-08-03T15:16:59.888Z",
       "todo": [
         {
           "id": "B1",
@@ -231,7 +232,65 @@
           "id": "B5",
           "title": "Run npm run verify; commit; complete Build"
         }
-      ]
+      ],
+      "result": {
+        "decision": "continue",
+        "summary": "All five todos completed. The Issue title is now the short Work code plus the title (`INIT-x.y: <title>`) at both creation and reconcile, fed by a new workCodeOf helper in identifiers.ts and a desiredIssueTitle helper in reconcile.ts. Matching is unchanged: it keys on body marker, issue link, and requestedBy — never the title — so retitling is duplicate-safe. Three new behavior tests cover the four acceptance criteria; the existing create test now also asserts the prefixed title.",
+        "handoff": "# Build: INIT-2.2\n\n## Changed files (product)\n- src/core/identifiers.ts — added `WORK_CODE = /^INIT-\\d+\\.\\d+$/` and `workCodeOf(workId): string` (extracts `INIT-<n>.<p>` from a slugged Work id).\n- src/application/publication/reconcile.ts — added `desiredIssueTitle(entry)` beside `desiredIssueBody`, returning `${workCodeOf(entry.work.id)}: ${entry.work.title}`; `reconcileIssueContent` uses it in both the comparison and the update.\n- src/application/publication.ts — the `create` call uses `desiredIssueTitle(entry)` instead of `entry.work.title`.\n- src/test/publication.test.ts — the existing create test now asserts the prefixed title; three new behavior tests cover retitle-on-next-sync, no-edit convergence, and duplicate-safe matching when an Issue is retitled.\n\n## Validation\n- `npm run verify` green: typecheck, 253/253 unit tests (3 new), smoke, --help.\n\n## Commits\n- 75bc3c6 INIT-2.2-include-the-work-id-in-the-github-issue-title: Include the Work id in the GitHub Issue title (product)\n- 64d341e codepatrol(INIT-2.2-include-the-work-id-in-the-github-issue-title): manifest projection (state update for the active Build run)\n\n## Candidate\n- The product commit `75bc3c6` carries every code and test change. The branch head `64d341e` is the manifest projection that the Build run wrote on its way to completion. Both are clean and reproducible from `93cba36`.\n\n## Acceptance\n1. Publishing a Work opens its GitHub Issue with the Work id in the title — desiredIssueTitle at create + the extended test.\n2. An Issue linked before this change is reconciled to carry the Work id in its title on the next sync — desiredIssueTitle at reconcile + the new retitle test.\n3. A repeated sync leaves an Issue untouched once its title carries the id, with no edit churn — the existing compare-then-edit mechanism in reconcileIssueContent + the new convergence test.\n4. Issue matching still maps the Issue to its Work, so no duplicate Issue is opened — matching never reads titles (structural) + the new duplicate-safe test.",
+        "todo": [
+          {
+            "id": "B1",
+            "status": "completed",
+            "note": "Added WORK_CODE and workCodeOf in identifiers.ts. workCodeOf returns the short INIT-x.y code; throws on invalid input."
+          },
+          {
+            "id": "B2",
+            "status": "completed",
+            "note": "Added desiredIssueTitle to reconcile.ts and used it in both the title comparison and the update."
+          },
+          {
+            "id": "B3",
+            "status": "completed",
+            "note": "The Issue create call in publication.ts now uses desiredIssueTitle(entry)."
+          },
+          {
+            "id": "B4",
+            "status": "completed",
+            "note": "Three new behavior tests plus the existing test extended with a title assertion. All pass."
+          },
+          {
+            "id": "B5",
+            "status": "completed",
+            "note": "npm run verify green (typecheck + 253/253 tests + smoke + --help). Two commits: 75bc3c6 (product) and 64d341e (manifest projection). Worktree clean."
+          }
+        ],
+        "artifacts": [
+          {
+            "path": "src/core/identifiers.ts",
+            "kind": "production",
+            "blob": "a7f4ced272c837f1ce169ee503da80409cbee87c",
+            "description": "WORK_CODE regex and workCodeOf helper."
+          },
+          {
+            "path": "src/application/publication/reconcile.ts",
+            "kind": "production",
+            "blob": "2717f709ecbaba9e32dcc701688fe8ce1195bc1c",
+            "description": "desiredIssueTitle helper and its use in reconcileIssueContent."
+          },
+          {
+            "path": "src/application/publication.ts",
+            "kind": "production",
+            "blob": "8d8d15a5bcd9b21515247ca9b544a25b6d902009",
+            "description": "Issue creation uses desiredIssueTitle."
+          },
+          {
+            "path": "src/test/publication.test.ts",
+            "kind": "test",
+            "blob": "760d2f14f4486b2a05238452139cd6e5521158b9",
+            "description": "Extended create test plus three new behavior tests."
+          }
+        ]
+      }
     }
   ],
   "completion": null
