@@ -206,7 +206,10 @@ export function parseInitiativeDocument(value: unknown): InitiativeDocument {
     };
   }
 
-  if (works.length === 0 && cancel.length === 0 && supersede.length === 0 && followUp.length === 0) fail("The document declares nothing.");
+  // Declaring an Initiative is declaring something: its intent and the shape of
+  // a breakdown can be recorded before the breakdown exists, and an Initiative
+  // delivered outside the backlog still deserves a local record.
+  if (initiative === undefined && works.length === 0 && cancel.length === 0 && supersede.length === 0 && followUp.length === 0) fail("The document declares nothing.");
 
   return {
     schemaVersion: INITIATIVE_DOCUMENT_SCHEMA_VERSION,

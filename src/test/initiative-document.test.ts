@@ -49,6 +49,18 @@ test("refuses invalid Work declarations rather than coercing them", () => {
   parseRejects(documentFixture(manifests, [{ ...CREATE_FIELDS }]), "must carry key");
 });
 
+test("accepts a document that declares only an Initiative", () => {
+  // An Initiative is a thing to declare in its own right: the intent and the
+  // shape of a breakdown can be recorded before the breakdown exists, which is
+  // also how an Initiative delivered outside the backlog gets a local record.
+  const manifests = [manifestFixture("a")];
+  const document = parseInitiativeDocument(documentFixture(manifests, [], {
+    initiative: { title: "Declared alone", intent: "i", motivation: "m", ordering: "o" },
+  }));
+  assert.deepEqual(document.works, []);
+  assert.equal(document.initiative?.title, "Declared alone");
+});
+
 test("rejects a document written against a graph that has since moved", () => {
   const observed = [manifestFixture("a")];
   const actual = [manifestFixture("a"), manifestFixture("b")];

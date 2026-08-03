@@ -53,6 +53,34 @@ test("parses an Initiative strictly and refuses unknown or missing fields", () =
   assert.throws(() => parseInitiative({ ...raw, schemaVersion: 99 }), (error: unknown) => error instanceof CodepatrolError && error.code === "STATE_CORRUPT");
 });
 
+test("an Initiative may be declared before it has any Works", async () => {
+  const app = await createTestApp({ defaultBranch: "trunk" });
+  try {
+    // Recording an Initiative that has no breakdown yet is also how one
+    // delivered outside the backlog gets a local record — and, because numbers
+    // are minted from what exists locally, how it reserves its number.
+    const applied = await app.spec.apply(await documentFor(app, [], {
+      initiative: { title: "Declared alone", intent: "i", motivation: "m", ordering: "o" },
+    }));
+    assert.equal(applied.initiative, "INIT-0");
+    assert.equal(applied.creates, 0);
+    assert.deepEqual(await app.works.list(), [], "an Initiative alone creates no Work");
+
+    const shown = await app.initiatives.show("INIT-0");
+    assert.equal(shown.initiative.title, "Declared alone");
+    assert.deepEqual(shown.works, []);
+
+    // The next Initiative takes the next number, so the reserved one stands.
+    const next = await app.spec.apply(await documentFor(app, [{ key: "one", ...CREATE_FIELDS, title: "First" }], {
+      initiative: { title: "With Works", intent: "i", motivation: "m", ordering: "o" },
+    }));
+    assert.equal(next.initiative, "INIT-1");
+    assert.match((next.createdWorkIds ?? [])[0] as string, /^INIT-1\.1-/);
+  } finally {
+    await app.cleanup();
+  }
+});
+
 test("mints sequential Initiative numbers inside the apply transaction", async () => {
   const app = await createTestApp({ defaultBranch: "trunk" });
   try {
