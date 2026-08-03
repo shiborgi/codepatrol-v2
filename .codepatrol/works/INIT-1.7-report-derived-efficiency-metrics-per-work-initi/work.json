@@ -1,0 +1,44 @@
+{
+  "schemaVersion": 1,
+  "type": "codepatrol-work",
+  "work": {
+    "id": "INIT-1.7-report-derived-efficiency-metrics-per-work-initi",
+    "title": "Report derived efficiency metrics per Work, Initiative, stage, and skill",
+    "description": "Makes the baseline usable: tokens per Work and per stage, tokens attributed to returned stages against accepted ones, context and skill bytes per stage, tool output bytes, duration per stage, and return rate by resolved composition — reported per Work and per Initiative, since an Initiative is what groups a body of work. Derived on read from manifests, with no stored index and no service, exactly as attackOrder in src/core/waves.ts already is.",
+    "issueType": "Feature",
+    "priority": "p1",
+    "acceptance": [
+      "A CLI read reports telemetry aggregates per Work, per Initiative, per stage, and per resolved skill, derived from manifests with nothing stored",
+      "Returned stages are attributed separately from accepted ones, so a cheaper run that returns more is not reported as cheaper",
+      "Works whose telemetry is missing or partial are reported as such instead of being silently excluded from an aggregate",
+      "The terminal evidence Spec reads when writing the next Initiative includes these facts",
+      "The command works with no remote and requires no external service"
+    ],
+    "createdAt": "2026-08-03T11:16:22.452Z",
+    "requestedBy": "spec",
+    "initiative": {
+      "id": "INIT-1",
+      "position": 7
+    },
+    "origin": {
+      "createdAt": "2026-08-03T11:16:22.452Z"
+    }
+  },
+  "repository": {
+    "baseRef": "refs/heads/main"
+  },
+  "graph": {
+    "blockedBy": [
+      "INIT-1.6-record-bounded-privacy-safe-telemetry-on-every-s"
+    ]
+  },
+  "issue": null,
+  "workflow": {
+    "state": "ready",
+    "stage": "plan",
+    "attempt": 1,
+    "updatedAt": "2026-08-03T11:16:22.452Z"
+  },
+  "attempts": [],
+  "completion": null
+}
