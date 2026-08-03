@@ -36,10 +36,10 @@
     "number": 30
   },
   "workflow": {
-    "state": "active",
-    "stage": "review",
+    "state": "ready",
+    "stage": "build",
     "attempt": 1,
-    "updatedAt": "2026-08-03T20:51:38.728Z"
+    "updatedAt": "2026-08-03T20:53:45.741Z"
   },
   "attempts": [
     {
@@ -157,13 +157,14 @@
       "stage": "review",
       "attempt": 1,
       "runId": "627938e7-e86f-476c-9300-dd0581923941",
-      "status": "active",
+      "status": "completed",
       "execution": {
         "role": "reviewer",
         "harness": "opencode",
         "model": "minimax-coding-plan/MiniMax-M3"
       },
       "startedAt": "2026-08-03T20:51:38.728Z",
+      "finishedAt": "2026-08-03T20:53:45.741Z",
       "todo": [
         {
           "id": "R1",
@@ -180,7 +181,30 @@
           "title": "Write review report and seal verdict",
           "description": "Write report.md and evidence, curate traces.md, record the run, and checkpoint or return."
         }
-      ]
+      ],
+      "result": {
+        "decision": "continue",
+        "summary": "The plan is decision-complete. It covers all four acceptance criteria with named tests in src/test/skill-resolution.test.ts (and extends src/test/skill.test.ts for the parser additions). The references in the plan resolve against the repository: src/core/skill.ts's strict v1 parser is the additive change target, src/core/identifiers.ts's SKILL_ID regex covers requires/recommends/conflicts, STAGES matches the `codepatrol-${stage}` convention, sha256 is exported from src/core/json.ts, and the existing skill command already has listShippedSkills and the CommandSpec scaffolding to host the new resolve action without registry edits. SKILL.md-only digests keep the shipped-manifests test green when skill.json gains new fields. The blast radius is contained, no adapter changes are needed, and the verification (npm run verify with --help listing `skill resolve`) is appropriate.",
+        "handoff": "# Review Report — INIT-1.2 Resolve a stage's skill composition deterministically\n\nThe plan is approved.\n\n## Completeness (R1)\nEach acceptance criterion maps to one or more named tests:\n1. Exactly one stage skill or named refusal → zero/exactly-one/several stage skill cases asserting SKILL_UNRESOLVABLE.\n2. Requires/recommends/conflict/unmet-capability behavior → transitive requires, missing required, recommended-included-with-reason, recommended-omitted-with-reason, SKILL_CONFLICT, SKILL_CAPABILITY_UNMET.\n3. Determinism and content-sensitive digest → same-input-twice test plus digest-sensitivity test where one resolved skill's digest changes the resolution digest.\n4. CLI read with reasons → `skill resolve plan` prints the composition with reasons and refuses an unknown stage; mutates nothing.\n\nTask dependencies form a DAG (P1 inspect → P2 design → P3 CLI → P4 plan → P5 complete). Every task names its file set; blast radius = union of those files. Verification is `npm run verify` (typecheck, unit tests, smoke, `--help` listing `skill resolve`).\n\n## Reference validation (R2)\n- `src/core/skill.ts` exports `SKILL_SCHEMA_VERSION`, `SKILL_TYPE`, `SKILL_KINDS`, `parseSkillManifest`, `serializeSkillManifest`, `skillContentDigest`. The strict v1 parser is the additive extension target.\n- `src/core/identifiers.ts` exports `SKILL_ID = /^[a-z0-9][a-z0-9-]*$/` — the right regex for the new arrays.\n- `src/core/types.ts` exports `STAGES = ['plan','review','build','verify','ship']` and `STAGE_ROLES`; the `codepatrol-${stage}` convention matches the existing shipped ids with no STAGES change.\n- `src/core/json.ts` exports `sha256` for the resolution digest.\n- `src/cli/commands/skill.ts` already hosts `skill list` and `listShippedSkills`; the new `resolve` action slots in without registry edits.\n- `src/test/skill.test.ts` already covers round-trip, unknown-field, value, capabilities, and the shipped-manifests integrity test; adding requires/recommends/conflicts cases is contained.\n- SKILL.md-only digests (verified in `skillContentDigest`) keep the shipped-manifests integrity test green when skill.json gains new fields.\n\n## Risks noted\n- The id-convention stage selection is safe for the current seven shipped skills; a doc-comment in `skill-resolution.ts` documenting the rule is the right place to call it out, and the plan already commits to it.\n- Host capabilities stay at `[\"cli\"]` — no new tokens invented. The precedence prose in the module's doc comment covers the Work's stated rule without inventing enforcement machinery.\n- INIT-1.3 (evaluation harness) and INIT-1.4 (recording compositions on runs) are explicitly non-goals; the four acceptance criteria do not require them.\n\n## Cited evidence\n- Plan handoff: see `availableResults[0].handoff` in the Review v1 handoff.\n- Plan traces (observation + two decisions): see the `plan` attempt's `traces` in the v1 handoff.\n- Plan task outcomes (P1–P5 completed with notes): see the `plan` attempt's `result.todo` in the v1 handoff.\n- Review traces (R1 plan-completeness observation, R2 reference-validation observation): see this Review attempt's `traces`.\n\n## Verdict\nContinue. The plan is decision-complete. There is nothing to return to Plan for.",
+        "todo": [
+          {
+            "id": "R1",
+            "status": "completed",
+            "note": "Each of the four acceptance criteria is testable and maps to one or more named tests. Task dependencies form a DAG. Every task names its file set. Verification is npm run verify. Blast radius = union of task files."
+          },
+          {
+            "id": "R2",
+            "status": "completed",
+            "note": "Every referenced symbol and path resolves against the repository: src/core/skill.ts (strict v1 parser), src/core/identifiers.ts (SKILL_ID), src/core/types.ts (STAGES), src/core/json.ts (sha256), src/cli/commands/skill.ts (existing listShippedSkills + CommandSpec), src/test/skill.test.ts (existing parser and shipped-manifests integrity test). SKILL.md-only digests keep shipped-manifests integrity test green when skill.json gains new fields."
+          },
+          {
+            "id": "R3",
+            "status": "completed",
+            "note": "Verdict continue. Plan is decision-complete; no production edits made. Plan + Review traces recorded via `review trace --input`."
+          }
+        ],
+        "artifacts": []
+      }
     }
   ],
   "completion": null
