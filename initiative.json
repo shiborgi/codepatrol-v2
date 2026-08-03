@@ -1,0 +1,11 @@
+{
+  "schemaVersion": 1,
+  "type": "codepatrol-initiative",
+  "id": "INIT-3",
+  "title": "Parallel harness execution",
+  "slug": "parallel-harness-execution",
+  "intent": "Let several harnesses attack distinct Works at the same time — one harness per Work — with filesystem and shared-state isolation strong enough that no run can impact another",
+  "motivation": "The demand splits at the isolation boundary: where a run executes (its own worktree, never the shared checkout) is a different mechanism and a different verification from whether shared Git state (manifest refs, locks, the worktree registry) survives overlapping runs. Mixing them would make a failure unreadable.",
+  "ordering": "Isolation first, because the concurrency proof must exercise the final execution shape; proving safety and then changing where runs execute would prove nothing.",
+  "createdAt": "2026-08-03T16:45:14.388Z"
+}
