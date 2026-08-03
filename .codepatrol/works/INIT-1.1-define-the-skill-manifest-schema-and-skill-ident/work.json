@@ -1,0 +1,41 @@
+{
+  "schemaVersion": 1,
+  "type": "codepatrol-work",
+  "work": {
+    "id": "INIT-1.1-define-the-skill-manifest-schema-and-skill-ident",
+    "title": "Define the skill manifest schema and skill identity",
+    "description": "Give a skill a machine-readable identity the Core can validate: id, version, kind, declared capabilities, and a content digest, declared beside SKILL.md and parsed strictly. Follows the conventions src/core/initiative.ts already sets — an exported schema version and type, an id regex beside the others in src/core/identifiers.ts, a parser that refuses unknown fields, and a slugOf-style rule for anything derived from prose. Identity and validation only: no resolution, no dependency evaluation, no persistence on a run. Kinds start at the two the repository can justify today, stage and secondary; more are additive later. The seven shipped skills gain manifests, and package.json already ships skills/, so they travel with the release.",
+    "issueType": "Feature",
+    "priority": "p0",
+    "acceptance": [
+      "A skill manifest parses only with a valid id, version, kind, and declared capabilities, and a misspelled or unknown field is refused rather than dropped",
+      "Every skill under skills/ carries a manifest that parses, and its content digest is reproducible from the skill file alone",
+      "A CLI read lists the available skills with their id, version, kind, and digest, and changes nothing",
+      "Skill files stay harness-neutral: no manifest names a harness, and src/test/harness-adapters.test.ts still passes"
+    ],
+    "createdAt": "2026-08-03T11:16:22.452Z",
+    "requestedBy": "spec",
+    "initiative": {
+      "id": "INIT-1",
+      "position": 1
+    },
+    "origin": {
+      "createdAt": "2026-08-03T11:16:22.452Z"
+    }
+  },
+  "repository": {
+    "baseRef": "refs/heads/main"
+  },
+  "graph": {
+    "blockedBy": []
+  },
+  "issue": null,
+  "workflow": {
+    "state": "ready",
+    "stage": "plan",
+    "attempt": 1,
+    "updatedAt": "2026-08-03T11:16:22.452Z"
+  },
+  "attempts": [],
+  "completion": null
+}
