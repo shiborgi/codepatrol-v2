@@ -43,9 +43,15 @@ function unpublishedRefs(remote: string): GitSyncResult {
 function snapshotOf(manifest: WorkManifest): PublicationSnapshot {
   const latest = manifest.attempts.at(-1);
   const completion = manifest.completion;
+  // The board reports activity, not readiness: a Work no run has ever attacked
+  // stays Backlog, a live run shows its stage, a Work waiting between runs
+  // keeps the stage last attacked, and a terminal Work shows Done. The latest
+  // attempt's stage is the stage an attack last touched — workflow.stage is
+  // the stage the Work is ready for, which is what the board used to advertise
+  // and the defect this rule replaces.
   const projectStatus = completion !== null ? "Done"
     : latest === undefined ? "Backlog"
-      : PROJECT_STATUS_BY_STAGE[manifest.workflow.stage];
+      : PROJECT_STATUS_BY_STAGE[latest.stage];
   const projectOutcome = completion === null ? "None"
     : PROJECT_OUTCOME_BY_WORK_OUTCOME[completion.outcome];
   return { comments: manifestComments(manifest), terminal: completion !== null, projectStatus, projectOutcome };
