@@ -1,0 +1,11 @@
+{
+  "schemaVersion": 1,
+  "type": "codepatrol-initiative",
+  "id": "INIT-2",
+  "title": "Shareable Initiatives",
+  "slug": "shareable-initiatives",
+  "intent": "Publish and fetch the Initiative refs the way Work manifests already are, so an Initiative is repository state rather than machine state.",
+  "motivation": "An Initiative holds the intent, the motivation for a breakdown, and the ordering — the reasoning a flat Work list never carried. None of it is pushed today, so a clone sees seven Works belonging to an Initiative it cannot read. Worse, Initiative numbers are minted from what exists locally, so a second clone mints a number that is already taken and two Initiatives collide on one identifier. That failure had to be repaired by hand once already.",
+  "ordering": "One Work: the gap is a single namespace missing from one adapter, and splitting the push from the fetch would leave a half-shareable Initiative that is harder to reason about than either end state.",
+  "createdAt": "2026-08-03T11:24:49.393Z"
+}
