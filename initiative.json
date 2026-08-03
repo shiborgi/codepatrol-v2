@@ -1,0 +1,11 @@
+{
+  "schemaVersion": 1,
+  "type": "codepatrol-initiative",
+  "id": "INIT-4",
+  "title": "Board-visible next step",
+  "slug": "board-visible-next-step",
+  "intent": "Let anyone reading a Work or the Project board see what the last result decided comes next, without a second record that could disagree with the lifecycle",
+  "motivation": "One Work: the derivation and its projection are a single verification boundary. Shipping the board field without the shared derivation would entrench the duplication the demand asks to remove; shipping the derivation alone would leave the board blind.",
+  "ordering": "Single Work, no ordering.",
+  "createdAt": "2026-08-03T23:37:47.402Z"
+}
