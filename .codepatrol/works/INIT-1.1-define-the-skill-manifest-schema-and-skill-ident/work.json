@@ -36,10 +36,10 @@
     "number": 29
   },
   "workflow": {
-    "state": "active",
+    "state": "terminal",
     "stage": "ship",
     "attempt": 1,
-    "updatedAt": "2026-08-03T13:19:09.635Z"
+    "updatedAt": "2026-08-03T13:20:02.138Z"
   },
   "attempts": [
     {
@@ -540,13 +540,14 @@
       "stage": "ship",
       "attempt": 1,
       "runId": "7db7b1d9-3131-48d3-bda7-8c8c9e092ad9",
-      "status": "active",
+      "status": "completed",
       "execution": {
         "role": "shipper",
         "harness": "opencode",
         "model": "kimi-for-coding/k3"
       },
       "startedAt": "2026-08-03T13:19:09.635Z",
+      "finishedAt": "2026-08-03T13:20:02.138Z",
       "todo": [
         {
           "id": "S1",
@@ -560,8 +561,46 @@
           "id": "S3",
           "title": "Complete Ship with decision accept and authority user"
         }
+      ],
+      "result": {
+        "decision": "accept",
+        "summary": "Accept INIT-1.1. Candidate 66d2707b05fa677d612cedf75b3427ff10ae50c0 is the Change branch tip against baseline e22384d821ff509f3d3e86cb9ccb3bea1047cc30; Verify demonstrated all four acceptance criteria with fresh evidence and the policy requiredCommand npm run verify passed from the verifier run. The only checkpoint after the candidate is the canonical manifest projection at f2d6142. Authority: user, who explicitly authorized accept.",
+        "handoff": "# Ship: Define the skill manifest schema and skill identity (INIT-1.1)\n\n## Terminal outcome\n- decision: accept\n- authority: user (explicit)\n- candidateCommit: 66d2707b05fa677d612cedf75b3427ff10ae50c0\n- baselineCommit: e22384d821ff509f3d3e86cb9ccb3bea1047cc30\n- policyHash: 738b7dca7b2b865e7de12c3f1ca6c05da0d1762f30e202a18709b6290fafb7b4\n\n## Cited evidence (not reproduced)\n- Plan handoff: see availableResults plan/1.\n- Build handoff and 13 committed artifacts (paths/kinds/blobs): see availableResults build/1.\n- Verify handoff, two observations, and the requiredCommand trace with exitCode 0: see availableResults verify/1 and the verify attempt in `attempts`.\n\n## Outcome\nThe single integration commit lands on main; the archive ref `refs/heads/codepatrol/archive/INIT-1.1-define-the-skill-manifest-schema-and-skill-ident` preserves the full Change history. Open Change branch and worktree are removed.",
+        "todo": [
+          {
+            "id": "S1",
+            "status": "completed",
+            "note": "Verify handoff pins candidateCommit 66d2707b == branch tip; baselineCommit == targetCommit == e22384d; only canonical manifest projection follows the candidate."
+          },
+          {
+            "id": "S2",
+            "status": "completed",
+            "note": "Trace 2a9ac3c46f02 records the terminal rationale."
+          },
+          {
+            "id": "S3",
+            "status": "completed",
+            "note": "Completing with decision accept and authority user."
+          }
+        ],
+        "artifacts": [],
+        "authority": "user"
+      },
+      "traces": [
+        {
+          "id": "2a9ac3c46f02",
+          "type": "observation",
+          "message": "Accept. The Verify handoff pins candidateCommit 66d2707b05fa677d612cedf75b3427ff10ae50c0 against baseline e22384d821ff509f3d3e86cb9ccb3bea1047cc30 with policyHash 738b7dca7b2b865e7de12c3f1ca6c05da0d1762f30e202a18709b6290fafb7b4. The candidate equals the Change branch tip; npm run verify passed from the verifier run (245/245); the only checkpoint after the candidate is the canonical manifest projection at f2d6142. The user explicitly authorized accept with authority user.",
+          "at": "2026-08-03T13:19:39.607Z"
+        }
       ]
     }
   ],
-  "completion": null
+  "completion": {
+    "outcome": "accepted",
+    "via": "ship",
+    "authority": "user",
+    "finalizedAt": "2026-08-03T13:20:02.138Z",
+    "summary": "Accept INIT-1.1. Candidate 66d2707b05fa677d612cedf75b3427ff10ae50c0 is the Change branch tip against baseline e22384d821ff509f3d3e86cb9ccb3bea1047cc30; Verify demonstrated all four acceptance criteria with fresh evidence and the policy requiredCommand npm run verify passed from the verifier run. The only checkpoint after the candidate is the canonical manifest projection at f2d6142. Authority: user, who explicitly authorized accept."
+  }
 }
