@@ -34,11 +34,46 @@
     "number": 40
   },
   "workflow": {
-    "state": "ready",
+    "state": "active",
     "stage": "plan",
     "attempt": 1,
-    "updatedAt": "2026-08-03T16:45:14.389Z"
+    "updatedAt": "2026-08-03T16:48:27.966Z"
   },
-  "attempts": [],
+  "attempts": [
+    {
+      "stage": "plan",
+      "attempt": 1,
+      "runId": "2268c952-0427-4fa8-99dd-e617eda485d5",
+      "status": "active",
+      "execution": {
+        "role": "planner",
+        "harness": "opencode",
+        "model": "kimi-for-coding/k3"
+      },
+      "startedAt": "2026-08-03T16:48:27.966Z",
+      "todo": [
+        {
+          "id": "P1",
+          "title": "Inspect worktree lifecycle (Worktrees adapter, NEEDS_WORKTREE, start/handoff, cleanup)"
+        },
+        {
+          "id": "P2",
+          "title": "Decide the execution-directory rule per stage and worktree reuse/removal"
+        },
+        {
+          "id": "P3",
+          "title": "Decide test coverage incl. two concurrent Works and regression"
+        },
+        {
+          "id": "P4",
+          "title": "Write decision-complete plan covering all four acceptance criteria"
+        },
+        {
+          "id": "P5",
+          "title": "Record traces; complete Plan with decision continue"
+        }
+      ]
+    }
+  ],
   "completion": null
 }
