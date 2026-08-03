@@ -39,10 +39,10 @@
     "number": 31
   },
   "workflow": {
-    "state": "active",
-    "stage": "build",
+    "state": "ready",
+    "stage": "verify",
     "attempt": 1,
-    "updatedAt": "2026-08-03T22:45:13.378Z"
+    "updatedAt": "2026-08-03T23:02:24.403Z"
   },
   "attempts": [
     {
@@ -287,13 +287,14 @@
       "stage": "build",
       "attempt": 1,
       "runId": "d6596bfb-735e-4ac6-9c1a-8cafae3aca99",
-      "status": "active",
+      "status": "completed",
       "execution": {
         "role": "builder",
         "harness": "opencode",
         "model": "minimax-coding-plan/MiniMax-M3"
       },
       "startedAt": "2026-08-03T22:45:13.378Z",
+      "finishedAt": "2026-08-03T23:02:24.403Z",
       "todo": [
         {
           "id": "B1",
@@ -326,6 +327,93 @@
         {
           "id": "B8",
           "title": "Complete Build with continue"
+        }
+      ],
+      "result": {
+        "decision": "continue",
+        "summary": "The deterministic skill evaluation harness is in place. The strict suite schema (src/core/skill-suite.ts) parses scenario ids uniquely, refuses unknown fields, and validates content regexes and command argv. The runner (src/cli/skill-evaluation.ts) creates a throwaway repository per scenario, scrubs credentials from the child environment so the suite is offline by construction, and substitutes the runner-owned todo.json path for the suite's fixture-relative 'todo.json' so the CLI's JSON-input absoluteness check accepts it. Five statuses (passed, failed, error, skipped, unresolved) cover every outcome; every result carries the resolved skill identity and composition digest. The CLI gains `skill test <skill-id>` (src/cli/commands/skill.ts). The baseline protocol suite for codepatrol-verify (skills/codepatrol-verify/suite.json) has five passing scenarios; the broken-expectation test proves a deliberately wrong expectation makes the runner report failed. No model credentials or network reachability; CI shape is the default npm test glob.",
+        "handoff": "# Build: Add the deterministic skill evaluation harness (INIT-1.3)\n\n## What changed\n- src/core/skill-suite.ts (new) — SUITE_SCHEMA_VERSION 1, type `codepatrol-skill-suite`. Types: `SkillSuite`, `Scenario`, `Assertion` (three kinds: `content-includes`, `content-excludes`, `command` with optional `setup`, `exitCode`, `stdout`, `stderr`), `ScenarioResult` (five statuses: `passed`, `failed`, `error`, `skipped`, `unresolved`), `SuiteSummary`, `SuiteOutcome`. `parseSkillSuite` mirrors `parseSkillManifest`: unknown fields refuse, scenario ids are non-empty slugs (^[a-z][a-z0-9-]{0,63}$), duplicate scenario ids refuse STATE_CORRUPT, command argv is a non-empty string array.\n- src/cli/skill-evaluation.ts (new) — the runner. `runSkillSuite` creates a throwaway fixture and a sibling scratch directory per run, scrubs credential-ish variables (GITHUB_TOKEN, GH_TOKEN, CODECOV_TOKEN, OPENAI_API_KEY, ANTHROPIC_API_KEY), sets GIT_TERMINAL_PROMPT=0, GIT_CONFIG_GLOBAL=/dev/null, GIT_CONFIG_SYSTEM=/dev/null, CORE_PATHSH_CONFIRM=0, then invokes the CLI via spawn with `--workspace <fixture>` and substitutes the runner-owned absolute todo.json path for the suite's fixture-relative `todo.json`. Every scenario result carries `{ id, status, detail?, skill: { id, version, digest }, resolutionDigest }`. Command assertion failures report `failed`; setup failures report `error`. The runner cleans up its fixture and scratch directories in `finally`.\n- src/cli/commands/skill.ts — `skill test <skill-id>` action added to the existing CommandSpec. Loads `skills/<id>/suite.json`, runs it via `runShippedSuite`, and sets `setExitCode(1)` when `summary.failed > 0 || summary.errored > 0`. The summary string and usage are updated.\n- skills/codepatrol-verify/suite.json (new) — baseline protocol suite with five scenarios: `pin-candidate-and-baseline` (content assertions), `fresh-evidence-this-run` (content assertions on the *this* run rule), `return-targets-build-and-plan` (content assertions), `refuses-malformed-plan-start` (command assertion driving `plan start` with a malformed work id), `skill-list-succeeds` (command assertion proving the runner invokes the CLI and parses its stdout).\n- src/test/skill-suite.test.ts (new) — 16 tests: parser round-trip; refuses unknown and misspelled fields; refuses duplicate scenario ids; refuses non-slug scenario ids; refuses unknown assertion kinds; content-includes passes; content-includes fails on miss; content-excludes fails on match; command assertion passes; command assertion fails on exit code mismatch; setup non-zero surfaces as error; runner leaves the real repository untouched; deliberately broken expectation makes the runner report failed; every shipped suite parses and reports no failure (skipping skills without `suite.json`); scenario results carry the resolved skill identity and composition digest; the runner cleans up its scratch and fixture directories.\n\n## Validation\n- npm run typecheck: clean.\n- npm test: 300/300 pass (16 new skill-suite tests on top of 284 existing).\n- npm run smoke: pass.\n- node bin/codepatrol.js --help: lists `skill test <skill-id>`.\n- node bin/codepatrol.js skill test codepatrol-verify: returns the expected outcome with five passed scenarios.\n- Candidate commit e8e2b818fe0afa0083f6c0a33ed46775325d269b is on refs/heads/codepatrol/work/INIT-1.3-add-the-deterministic-skill-evaluation-harness; the worktree is clean.\n\n## Acceptance evidence\n1. Strict parse, stable unique ids — parser tests cover valid round-trip, unknown-field refusal, duplicate scenario id refusal, non-slug scenario id refusal, and unknown assertion kind refusal.\n2. Isolated fixture, real repo untouched, offline by construction — runner is wired so the CLI's `cwd` is the fixture workspace and the env has credentials scrubbed. The \"real repo untouched\" test reads `package.json` before and after a suite run and asserts byte-equality.\n3. Identity/digest on every result, five statuses — content-assertion tests verify pass/fail; command assertion tests verify pass/fail; setup test verifies error; the \"broken expectation\" test verifies failed; the \"identity\" test verifies skill/version/digest and resolutionDigest.\n4. Baseline passing suite + broken-expectation failure — `codepatrol-verify` ships five passing scenarios; the broken-expectation test flips one expectation and asserts the runner reports failed.\n5. CI without credentials — the runner scrubs credentials, sets `GIT_CONFIG_*` to `/dev/null`, and `GIT_TERMINAL_PROMPT=0`; the new tests are picked up by the existing `npm test` glob.\n\n## Files Build declared as artifacts\n- src/core/skill-suite.ts (new)\n- src/cli/skill-evaluation.ts (new)\n- src/cli/commands/skill.ts (modified)\n- skills/codepatrol-verify/suite.json (new)\n- src/test/skill-suite.test.ts (new)",
+        "todo": [
+          {
+            "id": "B1",
+            "status": "completed",
+            "note": "Inspected the v1 plan handoff and current source state (src/core/skill.ts strict v1 parser, src/cli/commands/skill.ts existing list/resolve, src/core/skill-resolution.ts, src/test/support/repo.ts createTestRepo, src/cli/commands/stage.ts argv parsing). Confirmed every reference resolves and the parser strictness pattern is reusable."
+          },
+          {
+            "id": "B2",
+            "status": "completed",
+            "note": "src/core/skill-suite.ts created with SUITE_SCHEMA_VERSION 1, strict parser rejecting unknown fields, non-slug ids, duplicate scenario ids, and unknown assertion kinds. Three assertion kinds modeled: content-includes, content-excludes, command (with optional setup)."
+          },
+          {
+            "id": "B3",
+            "status": "completed",
+            "note": "src/cli/skill-evaluation.ts creates a throwaway fixture and sibling scratch directory per run, scrubs credentials from the child environment (GITHUB_TOKEN, GH_TOKEN, CODECOV_TOKEN, OPENAI_API_KEY, ANTHROPIC_API_KEY), sets GIT_TERMINAL_PROMPT=0 and overrides GIT_CONFIG_GLOBAL/SYSTEM. Substitutes the runner-owned absolute todo.json path for the suite's fixture-relative 'todo.json'."
+          },
+          {
+            "id": "B4",
+            "status": "completed",
+            "note": "Runner returns SuiteOutcome with results carrying { id, status, detail?, skill: { id, version, digest }, resolutionDigest }. Summary counts passed/failed/errored/skipped/unresolved. The cleanup is in a finally block."
+          },
+          {
+            "id": "B5",
+            "status": "completed",
+            "note": "skills/codepatrol-verify/suite.json ships with five passing scenarios: three content scenarios pinning the fresh-evidence, pinned-candidate, and return-target rules; one command scenario driving `plan start` with a malformed work id; one command scenario proving the runner invokes `skill list` and reads stdout. The test suite includes the deliberately broken expectation test."
+          },
+          {
+            "id": "B6",
+            "status": "completed",
+            "note": "npm run typecheck clean; npm test 300/300 pass; npm run smoke passes; --help lists `skill test <skill-id>`."
+          },
+          {
+            "id": "B7",
+            "status": "completed",
+            "note": "Committed on codepatrol/work/INIT-1.3-add-the-deterministic-skill-evaluation-harness as e8e2b818fe0afa0083f6c0a33ed46775325d269b; worktree is clean."
+          },
+          {
+            "id": "B8",
+            "status": "completed",
+            "note": "Completing with decision continue."
+          }
+        ],
+        "artifacts": [
+          {
+            "path": "src/core/skill-suite.ts",
+            "kind": "source",
+            "blob": "2a48e12405876e5430298c6a3938d3c9b22a6047",
+            "description": "Strict suite schema with three assertion kinds and five result statuses."
+          },
+          {
+            "path": "src/cli/skill-evaluation.ts",
+            "kind": "source",
+            "blob": "d8aef824c76b36e2f72aeae4b8d4c5dc2f99e05f",
+            "description": "Deterministic runner with isolated throwaway fixtures and offline-by-construction env scrubbing."
+          },
+          {
+            "path": "src/cli/commands/skill.ts",
+            "kind": "cli",
+            "blob": "71be93c44dd91122028a419b7e5d5fff2151750a",
+            "description": "skill command gains the `test <skill-id>` action."
+          },
+          {
+            "path": "skills/codepatrol-verify/suite.json",
+            "kind": "skill-suite",
+            "blob": "5bc0426c39157e181ebe510fed67080dcd29d881",
+            "description": "Baseline protocol suite for codepatrol-verify with five passing scenarios."
+          },
+          {
+            "path": "src/test/skill-suite.test.ts",
+            "kind": "test",
+            "blob": "2dd65ddb3d3f678f8c78df4ebfa4986efc7b8101",
+            "description": "16 tests covering parser strictness, runner statuses, isolation, identity, the broken-expectation proof, and the shipped-suite wire."
+          }
+        ]
+      },
+      "traces": [
+        {
+          "id": "ff29990d87c2",
+          "type": "observation",
+          "message": "Build changes landed as commit e8e2b81 on codepatrol/work/INIT-1.3-add-the-deterministic-skill-evaluation-harness. The change adds a strict suite schema (src/core/skill-suite.ts), a deterministic runner with isolated throwaway fixtures and offline-by-construction env scrubbing (src/cli/skill-evaluation.ts), a `skill test <skill-id>` CLI action (src/cli/commands/skill.ts), and a baseline protocol suite for codepatrol-verify (skills/codepatrol-verify/suite.json) with five passing scenarios. The runner substitutes the runner-owned absolute todo.json path for the suite's fixture-relative 'todo.json' so the CLI's JSON-input absoluteness check accepts the runner's path; a sibling scratch directory holds the todo file outside both the fixture workspace and its worktrees. No model credentials, GitHub tokens, or network reachability — the runner scrubs them in the child environment. Validation: typecheck clean; 300/300 tests pass (16 new skill-suite tests on top of 284); smoke passes; --help lists `skill test <skill-id>`; manual invocation returns the expected outcome with five passed scenarios for codepatrol-verify.",
+          "at": "2026-08-03T23:01:57.937Z"
         }
       ]
     }
