@@ -32,7 +32,10 @@
       "INIT-1.2-resolve-a-stage-s-skill-composition-deterministi"
     ]
   },
-  "issue": null,
+  "issue": {
+    "repository": "shiborgi/codepatrol",
+    "number": 32
+  },
   "workflow": {
     "state": "ready",
     "stage": "plan",
