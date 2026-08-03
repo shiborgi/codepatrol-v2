@@ -24,7 +24,9 @@
     }
   },
   "repository": {
-    "baseRef": "refs/heads/main"
+    "baseRef": "refs/heads/main",
+    "createdFromCommit": "93cba36e895ff00a703f29b0a6842ef320ace5d9",
+    "baselineCommit": "93cba36e895ff00a703f29b0a6842ef320ace5d9"
   },
   "graph": {
     "blockedBy": []
@@ -34,10 +36,10 @@
     "number": 37
   },
   "workflow": {
-    "state": "ready",
+    "state": "active",
     "stage": "build",
     "attempt": 1,
-    "updatedAt": "2026-08-03T14:51:53.832Z"
+    "updatedAt": "2026-08-03T15:10:39.492Z"
   },
   "attempts": [
     {
@@ -196,6 +198,40 @@
         ],
         "artifacts": []
       }
+    },
+    {
+      "stage": "build",
+      "attempt": 1,
+      "runId": "40b715c9-0a56-45b3-8d4a-74e0509d361f",
+      "status": "active",
+      "execution": {
+        "role": "builder",
+        "harness": "opencode",
+        "model": "opencode-current"
+      },
+      "startedAt": "2026-08-03T15:10:39.492Z",
+      "todo": [
+        {
+          "id": "B1",
+          "title": "Add WORK_CODE regex and workCodeOf to src/core/identifiers.ts"
+        },
+        {
+          "id": "B2",
+          "title": "Add desiredIssueTitle to src/application/publication/reconcile.ts; use it in reconcile"
+        },
+        {
+          "id": "B3",
+          "title": "Use desiredIssueTitle at Issue creation in src/application/publication.ts"
+        },
+        {
+          "id": "B4",
+          "title": "Add 4 behavior tests in src/test/publication.test.ts (create, retitle, converge, duplicate-safe)"
+        },
+        {
+          "id": "B5",
+          "title": "Run npm run verify; commit; complete Build"
+        }
+      ]
     }
   ],
   "completion": null
