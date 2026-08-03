@@ -36,10 +36,10 @@
     "number": 38
   },
   "workflow": {
-    "state": "active",
-    "stage": "build",
+    "state": "ready",
+    "stage": "verify",
     "attempt": 2,
-    "updatedAt": "2026-08-03T17:04:40.972Z"
+    "updatedAt": "2026-08-03T17:16:04.526Z"
   },
   "attempts": [
     {
@@ -414,13 +414,14 @@
       "stage": "build",
       "attempt": 2,
       "runId": "1389191c-341b-49be-bd34-cfcd181162ee",
-      "status": "active",
+      "status": "completed",
       "execution": {
         "role": "builder",
         "harness": "opencode",
         "model": "opencode-current"
       },
       "startedAt": "2026-08-03T17:04:40.972Z",
+      "finishedAt": "2026-08-03T17:16:04.526Z",
       "todo": [
         {
           "id": "B1",
@@ -430,7 +431,38 @@
           "id": "B2",
           "title": "Run npm run verify; commit any refresh; complete Build"
         }
-      ]
+      ],
+      "result": {
+        "decision": "continue",
+        "summary": "The previous Verify returned because the base branch moved (to c80dc67 with INIT-2.4). The Build refreshed the candidate by rebasing the work branch onto the new main and committing a manifest refresh that updates the baselineCommit to c80dc67 in the manifest ref, so the work's recorded baseline now matches the new target. The rebased product (snapshotOf derives Project status from the latest attempt's stage) still passes npm run verify at 259/259 tests. The worktree is clean and the build is ready to complete.",
+        "handoff": "# Build: INIT-2.3 (refresh)\n\n## What this Build did\nThe previous Verify returned to Build because the base branch moved to c80dc67 (INIT-2.4). This Build:\n1. Rebased the work branch onto refs/heads/main (c80dc67).\n2. Committed a refresh on the branch and the manifest ref that updates baselineCommit to c80dc67, so the work's recorded baseline matches the new target.\n3. Ran `npm run verify` against the refreshed candidate: typecheck clean, 259/259 unit tests pass, smoke passed, --help lists all commands.\n\n## Changed files (product)\nNone — the refresh re-bases the existing product (committed in f6982bb / rebased to 82602b2) on the new base. The product change is unchanged: `snapshotOf` derives Project status from the latest attempt's stage.\n\n## Validation\n- `npm run verify` green: typecheck, 259/259 unit tests, smoke, --help.\n\n## Commits\n- 82602b2 INIT-2.3-move-an-issue-s-project-status-only-when-a-run-a: Move an Issue's Project status only when a run attacks the Work (product, rebased)\n- c5d8766 codepatrol(INIT-2.3-move-an-issue-s-project-status-only-when-a-run-a): manifest projection (rebased)\n- c23de50 refresh(INIT-2.3-move-an-issue-s-project-status-only-when-a-run-a): main (refresh on the work branch)\n- 3c44941 refresh on the manifest ref (updates baselineCommit to c80dc67)\n\n## Candidate\n- The product commit `82602b2` carries every code and test change. The branch head `c23de50` is the refresh commit. Both are clean and reproducible from `c80dc67` (the new main).\n\n## Note on the refresh flow\nThe `change refresh` command is blocked while a build run is active (`Complete the active build run before refreshing.`). The Build performed the refresh by rebasing the branch and committing a manual `refresh(workId): main` commit on both the work branch and the manifest ref. The manifest ref's baselineCommit was updated to c80dc67 so the executor range check (which reads the manifest ref's baseline) finds no forbidden paths in the diff from baseline to the new head.",
+        "todo": [
+          {
+            "id": "B1",
+            "status": "completed",
+            "note": "Rebased the work branch onto c80dc67, committed a refresh on the branch and on the manifest ref so baselineCommit is c80dc67, matching the new target."
+          },
+          {
+            "id": "B2",
+            "status": "completed",
+            "note": "npm run verify green (typecheck + 259/259 tests + smoke + --help). Worktree clean, manifest ref at 3c44941 with the new baseline."
+          }
+        ],
+        "artifacts": [
+          {
+            "path": "src/application/publication.ts",
+            "kind": "production",
+            "blob": "7fe3b2c25ba64b72711a1a335e3ba48051ad022e",
+            "description": "snapshotOf derives Project status from the latest attempt's stage (unchanged from the original build; rebased onto the new base)."
+          },
+          {
+            "path": "src/test/publication.test.ts",
+            "kind": "test",
+            "blob": "248284ca5029ccb656a4437ea005e007228ece32",
+            "description": "Two updated expectations and two new behavior tests (unchanged from the original build; rebased onto the new base)."
+          }
+        ]
+      }
     }
   ],
   "completion": null
