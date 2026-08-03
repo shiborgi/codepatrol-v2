@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 import { CodepatrolError } from "../core/errors.js";
+import { workCodeOf } from "../core/identifiers.js";
 import { createTestApp, type TestApp } from "./support/app.js";
 import { INITIATIVE_DOCUMENT_SCHEMA_VERSION, INITIATIVE_DOCUMENT_TYPE, parseInitiativeDocument, type InitiativeDocument } from "../core/initiative-document.js";
 import { FakeGitHub, FakeRemote } from "./support/github.js";
@@ -79,6 +80,7 @@ test("creates one labeled issue per Work, persists its link, and converges", asy
     assert.match(app.github.issues[0]?.body ?? "", /Local details/);
     assert.match(app.github.issues[0]?.body ?? "", /<!-- codepatrol:work:start -->[\s\S]*- Type: `Bug`[\s\S]*<!-- codepatrol:work:end -->/);
     assert.match(app.github.issues[0]?.body ?? "", /<!-- codepatrol-work-id:/);
+    assert.equal(app.github.issues[0]?.title, `${workCodeOf(workId)}: Local Work`, "the Issue opens with the Work id prefixed in the title");
     assert.deepEqual(app.github.issues[0]?.labels, ["codepatrol:type/bug"]);
     assert.deepEqual(first.warnings, []);
     assert.deepEqual((await app.store.read(workId)).manifest.issue, { repository: REPOSITORY, number: 1 });
@@ -91,6 +93,71 @@ test("creates one labeled issue per Work, persists its link, and converges", asy
     assert.deepEqual(second.warnings, [], "a converged issue produces no drift warnings");
     assert.equal(app.github.issues.length, 1);
     assert.equal(app.github.calls.filter((call) => call.op === "edit").length, edits, "repeated sync does not edit a converged issue");
+  } finally {
+    await app.cleanup();
+  }
+});
+
+test("an Issue linked before the title change is reconciled to carry the Work id on the next sync", async () => {
+  // A pre-change Issue is the one the system opened before this Work changed
+  // its title projection: the body marker and the issue link identify it as
+  // the Work's, but the title is the bare Work title. The next sync retitles
+  // it to the managed form so an Issue list reads the Work's id first.
+  const app = await createTestApp({ remoteRepository: REPOSITORY });
+  try {
+    const workId = await app.createWork({ title: "Bare-titled Work" });
+    await app.publication.reconcile({ repository: REPOSITORY, remote: "origin" });
+    app.github.issue(1).title = "Bare-titled Work";
+
+    const result = await app.publication.reconcile({ repository: REPOSITORY, remote: "origin" });
+
+    assert.deepEqual(result.issues.updated, [{ issue: 1, workId }], "the linked Issue is reconciled, not duplicated");
+    assert.equal(app.github.issue(1).title, `${workCodeOf(workId)}: Bare-titled Work`, "the title is reconciled to the managed form");
+  } finally {
+    await app.cleanup();
+  }
+});
+
+test("a repeated sync leaves the prefixed title untouched with no edit churn", async () => {
+  // Convergence: once the title carries the Work id, the comparison in
+  // reconcileIssueContent makes no further edit. The first sync after a
+  // retitle may edit, but a second one is a no-op on the title.
+  const app = await createTestApp({ remoteRepository: REPOSITORY });
+  try {
+    const workId = await app.createWork({ title: "Convergent Work" });
+    await app.publication.reconcile({ repository: REPOSITORY, remote: "origin" });
+    app.github.issue(1).title = "Convergent Work";
+    await app.publication.reconcile({ repository: REPOSITORY, remote: "origin" });
+    assert.equal(app.github.issue(1).title, `${workCodeOf(workId)}: Convergent Work`);
+
+    const editsBefore = app.github.calls.filter((call) => call.op === "edit").length;
+    const result = await app.publication.reconcile({ repository: REPOSITORY, remote: "origin" });
+
+    assert.deepEqual(result.issues.unchanged, [{ issue: 1, workId }], "a converged Issue is reported unchanged");
+    assert.equal(app.github.calls.filter((call) => call.op === "edit").length, editsBefore, "no edit call is made on a converged title");
+    assert.equal(app.github.issue(1).title, `${workCodeOf(workId)}: Convergent Work`, "the title stays prefixed");
+  } finally {
+    await app.cleanup();
+  }
+});
+
+test("retitling an Issue never causes a duplicate to be opened on a subsequent sync", async () => {
+  // Matching keys on the body marker, the stored issue link, and requestedBy —
+  // never on the title — so a retitled Issue still maps to its Work and no
+  // second Issue is opened on the next sync. The title is reconciled back to
+  // the managed form, which is the only edit the sync records.
+  const app = await createTestApp({ remoteRepository: REPOSITORY });
+  try {
+    const workId = await app.createWork({ title: "Retitled Work" });
+    await app.publication.reconcile({ repository: REPOSITORY, remote: "origin" });
+    app.github.issue(1).title = "A human editor changed the title";
+
+    const result = await app.publication.reconcile({ repository: REPOSITORY, remote: "origin" });
+
+    assert.equal(result.issues.created.length, 0, "no new Issue is opened for the Work whose title changed");
+    assert.deepEqual(result.issues.updated, [{ issue: 1, workId }], "the existing Issue is reconciled to the managed title");
+    assert.equal(app.github.issues.length, 1, "still exactly one Issue exists for the Work");
+    assert.equal(app.github.issue(1).title, `${workCodeOf(workId)}: Retitled Work`, "the title is restored to the prefixed form");
   } finally {
     await app.cleanup();
   }

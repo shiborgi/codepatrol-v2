@@ -9,7 +9,7 @@ import { manifestComments, reconcileIssueComments, type CommentSyncSummary, type
 import { ALL_PROJECTIONS, projecting, type Projections } from "./projections.js";
 import { indexWorks, matchIssue } from "./publication/mapping.js";
 import { initiativeSection } from "./publication/markers.js";
-import { desiredIssueBody, reconcileIssueContent, reconcileIssueState, type ProjectionWarning } from "./publication/reconcile.js";
+import { desiredIssueBody, desiredIssueTitle, reconcileIssueContent, reconcileIssueState, type ProjectionWarning } from "./publication/reconcile.js";
 
 interface IssueSummary {
   created: Array<{ issue: number; workId: string }>;
@@ -204,7 +204,7 @@ export class PublicationService {
         });
       }
       const issue = await this.github.create(resolved.nameWithOwner, {
-        title: entry.work.title,
+        title: desiredIssueTitle(entry),
         body: desiredIssueBody(entry),
         ...(ensured.status === "unavailable" ? {} : { labels: [desired.name] }),
       });

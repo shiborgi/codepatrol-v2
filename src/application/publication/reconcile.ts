@@ -1,4 +1,5 @@
 import type { WorkManifest } from "../../core/work-manifest.js";
+import { workCodeOf } from "../../core/identifiers.js";
 import { isManagedWorkTypeLabel, resolveWorkTypeLabel, type GitHubIssueClassificationConfig } from "../../core/work-type-labels.js";
 import type { GitHubIssue, GitHubIssues, GitHubIssueUpdate, GitHubLabels } from "../ports.js";
 import { addMarker, setManagedWorkSection } from "./markers.js";
@@ -26,6 +27,15 @@ export function desiredIssueBody(entry: WorkManifest): string {
     priority: entry.work.priority,
     stage: entry.workflow.stage,
   }), entry.work.id);
+}
+
+/**
+ * The Issue title a Work projects: the short code first, so a list, a board,
+ * and a search read it as a handle, then the Work title. Creation and
+ * reconciliation go through this one helper so the form can never drift.
+ */
+export function desiredIssueTitle(entry: WorkManifest): string {
+  return `${workCodeOf(entry.work.id)}: ${entry.work.title}`;
 }
 
 /**
@@ -57,7 +67,7 @@ export async function reconcileIssueContent(
   const hasDesired = issue.labels.includes(desired.name);
 
   const update: GitHubIssueUpdate = {
-    ...(issue.title === entry.work.title ? {} : { title: entry.work.title }),
+    ...(issue.title === desiredIssueTitle(entry) ? {} : { title: desiredIssueTitle(entry) }),
     ...(desiredBody === issue.body ? {} : { body: desiredBody }),
   };
 
