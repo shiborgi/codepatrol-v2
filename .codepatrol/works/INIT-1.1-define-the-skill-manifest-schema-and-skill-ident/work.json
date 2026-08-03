@@ -36,10 +36,10 @@
     "number": 29
   },
   "workflow": {
-    "state": "ready",
+    "state": "active",
     "stage": "verify",
     "attempt": 1,
-    "updatedAt": "2026-08-03T12:49:11.983Z"
+    "updatedAt": "2026-08-03T12:56:48.920Z"
   },
   "attempts": [
     {
@@ -374,6 +374,48 @@
           }
         }
       ]
+    },
+    {
+      "stage": "verify",
+      "attempt": 1,
+      "runId": "4a1acf9f-438e-46d5-9020-ee339abc3407",
+      "status": "active",
+      "execution": {
+        "role": "verifier",
+        "harness": "opencode",
+        "model": "kimi-for-coding/k3"
+      },
+      "startedAt": "2026-08-03T12:56:48.920Z",
+      "todo": [
+        {
+          "id": "V1",
+          "title": "Start Verify; pin candidateCommit and baselineCommit"
+        },
+        {
+          "id": "V2",
+          "title": "Inspect every changed file and blast radius in the pinned range"
+        },
+        {
+          "id": "V3",
+          "title": "Demonstrate each acceptance criterion with evidence"
+        },
+        {
+          "id": "V4",
+          "title": "Run every policy requiredCommand from this run and trace exitCode 0"
+        },
+        {
+          "id": "V5",
+          "title": "Record minimum evidence traces; complete with verdict"
+        }
+      ],
+      "verificationTarget": {
+        "attempt": 1,
+        "candidateCommit": "66d2707b05fa677d612cedf75b3427ff10ae50c0",
+        "manifestCommit": "f2d6142e3a76b1af4b4a29a70105ac8c0d16e9ed",
+        "baselineCommit": "e22384d821ff509f3d3e86cb9ccb3bea1047cc30",
+        "targetCommit": "e22384d821ff509f3d3e86cb9ccb3bea1047cc30",
+        "policyHash": "738b7dca7b2b865e7de12c3f1ca6c05da0d1762f30e202a18709b6290fafb7b4"
+      }
     }
   ],
   "completion": null
