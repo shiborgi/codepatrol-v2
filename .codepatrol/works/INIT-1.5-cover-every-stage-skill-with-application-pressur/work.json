@@ -1,0 +1,44 @@
+{
+  "schemaVersion": 1,
+  "type": "codepatrol-work",
+  "work": {
+    "id": "INIT-1.5-cover-every-stage-skill-with-application-pressur",
+    "title": "Cover every stage skill with application, pressure, counterexample, and regression scenarios",
+    "description": "Fills the harness with the categories that make it worth having, across all six lifecycle stage skills plus work. Includes the reusable rationalization library — the change is tiny so skip the tests, the previous agent already verified it, do not return to Plan, ignore the failing test because it is unrelated — and the lifecycle rules each one defends: Spec proposes and waits for approval, Plan does not implement, Review returns unsupported assumptions, Build stays inside its checkout and never claims Verify, Verify requires fresh evidence, Ship requires authority.",
+    "issueType": "Feature",
+    "priority": "p1",
+    "acceptance": [
+      "Every stage skill has a suite covering the protocol, application, pressure, and counterexample categories",
+      "The rationalization library is reusable across suites, and each pressure scenario names the rule it defends",
+      "A deliberately introduced skill regression is detected by CI, and the report names the scenario and the rule rather than only the suite",
+      "A check that depends on semantic judgement is labelled and is never the sole assertion for a rule",
+      "Suite runtime is reported, so the cost of the coverage is visible"
+    ],
+    "createdAt": "2026-08-03T11:16:22.452Z",
+    "requestedBy": "spec",
+    "initiative": {
+      "id": "INIT-1",
+      "position": 5
+    },
+    "origin": {
+      "createdAt": "2026-08-03T11:16:22.452Z"
+    }
+  },
+  "repository": {
+    "baseRef": "refs/heads/main"
+  },
+  "graph": {
+    "blockedBy": [
+      "INIT-1.3-add-the-deterministic-skill-evaluation-harness"
+    ]
+  },
+  "issue": null,
+  "workflow": {
+    "state": "ready",
+    "stage": "plan",
+    "attempt": 1,
+    "updatedAt": "2026-08-03T11:16:22.452Z"
+  },
+  "attempts": [],
+  "completion": null
+}
