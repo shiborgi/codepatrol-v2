@@ -1,0 +1,44 @@
+{
+  "schemaVersion": 1,
+  "type": "codepatrol-work",
+  "work": {
+    "id": "INIT-3.2-prove-concurrent-attacks-on-distinct-works-are-c",
+    "title": "Prove concurrent attacks on distinct Works are corruption-free",
+    "description": "Per-Work and repository ref locks exist, but nothing ever runs two Works concurrently, so a lock gap would only surface as a corrupted manifest in production. Add a concurrency suite that attacks several Works with overlapping stage runs — starts, traces, completions, and a sync in flight — and asserts every manifest records each transition exactly once, no run sees another's files, no lock deadlocks, and a repeated run converges. Any lock gap the suite exposes is fixed as part of this Work.",
+    "issueType": "Feature",
+    "priority": "p1",
+    "acceptance": [
+      "A test attacks several Works with overlapping stage runs and every manifest records each lifecycle transition exactly once",
+      "No concurrent run reads or writes another Work's files, and the suite fails if it does",
+      "The concurrent run completes within a bounded time, proving no lock deadlock",
+      "A sync overlapping the concurrent runs stays serialized and reports every Work correctly",
+      "The concurrency suite runs in CI without a remote"
+    ],
+    "createdAt": "2026-08-03T16:45:14.389Z",
+    "requestedBy": "spec",
+    "initiative": {
+      "id": "INIT-3",
+      "position": 2
+    },
+    "origin": {
+      "createdAt": "2026-08-03T16:45:14.389Z"
+    }
+  },
+  "repository": {
+    "baseRef": "refs/heads/main"
+  },
+  "graph": {
+    "blockedBy": [
+      "INIT-3.1-run-every-stage-of-a-work-in-its-own-worktree"
+    ]
+  },
+  "issue": null,
+  "workflow": {
+    "state": "ready",
+    "stage": "plan",
+    "attempt": 1,
+    "updatedAt": "2026-08-03T16:45:14.389Z"
+  },
+  "attempts": [],
+  "completion": null
+}
