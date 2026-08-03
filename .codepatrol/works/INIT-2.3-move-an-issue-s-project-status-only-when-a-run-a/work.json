@@ -24,7 +24,9 @@
     }
   },
   "repository": {
-    "baseRef": "refs/heads/main"
+    "baseRef": "refs/heads/main",
+    "createdFromCommit": "06f923650c7aaeaf77873d9b02c2631743f5fdd0",
+    "baselineCommit": "06f923650c7aaeaf77873d9b02c2631743f5fdd0"
   },
   "graph": {
     "blockedBy": []
@@ -34,10 +36,10 @@
     "number": 38
   },
   "workflow": {
-    "state": "ready",
+    "state": "active",
     "stage": "build",
     "attempt": 1,
-    "updatedAt": "2026-08-03T16:13:16.549Z"
+    "updatedAt": "2026-08-03T16:20:23.269Z"
   },
   "attempts": [
     {
@@ -196,6 +198,36 @@
         ],
         "artifacts": []
       }
+    },
+    {
+      "stage": "build",
+      "attempt": 1,
+      "runId": "400277fa-e1b2-4654-a1ed-d05506574b23",
+      "status": "active",
+      "execution": {
+        "role": "builder",
+        "harness": "opencode",
+        "model": "opencode-current"
+      },
+      "startedAt": "2026-08-03T16:20:23.269Z",
+      "todo": [
+        {
+          "id": "B1",
+          "title": "Update snapshotOf in src/application/publication.ts to derive Project status from the latest attempt's stage"
+        },
+        {
+          "id": "B2",
+          "title": "Update publication.test.ts expectations at lines 368 and 436 (status keeps last-attacked stage while waiting)"
+        },
+        {
+          "id": "B3",
+          "title": "Add two new tests in publication.test.ts: live run shows its stage, and terminal stability across syncs"
+        },
+        {
+          "id": "B4",
+          "title": "Run npm run verify; commit; complete Build"
+        }
+      ]
     }
   ],
   "completion": null
