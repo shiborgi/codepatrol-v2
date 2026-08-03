@@ -34,10 +34,10 @@
     "number": 40
   },
   "workflow": {
-    "state": "active",
-    "stage": "review",
+    "state": "ready",
+    "stage": "build",
     "attempt": 1,
-    "updatedAt": "2026-08-03T17:03:19.263Z"
+    "updatedAt": "2026-08-03T17:03:53.332Z"
   },
   "attempts": [
     {
@@ -151,13 +151,14 @@
       "stage": "review",
       "attempt": 1,
       "runId": "7ce6f7f9-bb22-4daf-884e-3effa4f54557",
-      "status": "active",
+      "status": "completed",
       "execution": {
         "role": "reviewer",
         "harness": "opencode",
         "model": "google/antigravity-gemini-3.1-pro"
       },
       "startedAt": "2026-08-03T17:03:19.263Z",
+      "finishedAt": "2026-08-03T17:03:53.332Z",
       "todo": [
         {
           "id": "R1",
@@ -174,7 +175,30 @@
           "title": "Write review report and seal verdict",
           "description": "Write report.md and evidence, curate traces.md, record the run, and checkpoint or return."
         }
-      ]
+      ],
+      "result": {
+        "decision": "continue",
+        "summary": "Plan is approved. The approach is deeply rigorous: shifting the materialization trigger out of specific 'builder' stages and directly onto first access effectively ensures total isolation.",
+        "handoff": "# Review Report\n\nThe plan eliminates the concurrency hazard across shared root checkouts natively. By deleting the restrictive `NEEDS_WORKTREE` set, every stage is fully isolated using existing idempotent allocation paths. The noted impact (early base projection and branch allocation) is exactly the intended trade-off. Verification strategy correctly highlights necessary updates in commit-count test expectations.",
+        "todo": [
+          {
+            "id": "R1",
+            "status": "completed",
+            "note": "Plan thoroughly covers all ACs with deep references to system behaviors mapping task paths perfectly."
+          },
+          {
+            "id": "R2",
+            "status": "completed",
+            "note": "Reference to `work-service.ts` modifications mapping `attach()` changes without touching backend lock mechanics is sound."
+          },
+          {
+            "id": "R3",
+            "status": "completed",
+            "note": "Verdict sealed: continue."
+          }
+        ],
+        "artifacts": []
+      }
     }
   ],
   "completion": null
