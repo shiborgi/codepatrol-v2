@@ -36,23 +36,24 @@
     "number": 36
   },
   "workflow": {
-    "state": "active",
-    "stage": "plan",
+    "state": "ready",
+    "stage": "review",
     "attempt": 1,
-    "updatedAt": "2026-08-03T12:35:44.016Z"
+    "updatedAt": "2026-08-03T12:40:32.950Z"
   },
   "attempts": [
     {
       "stage": "plan",
       "attempt": 1,
       "runId": "a6fade60-0d5f-4a1a-91a1-04c541a46841",
-      "status": "active",
+      "status": "completed",
       "execution": {
         "role": "planner",
         "harness": "opencode",
         "model": "kimi-for-coding/k3"
       },
       "startedAt": "2026-08-03T12:35:44.016Z",
+      "finishedAt": "2026-08-03T12:40:32.950Z",
       "todo": [
         {
           "id": "P1",
@@ -73,6 +74,75 @@
         {
           "id": "P5",
           "title": "Record traces; complete Plan with decision continue"
+        }
+      ],
+      "result": {
+        "decision": "continue",
+        "summary": "Initiative refs join the refs projection inside LocalGitRemote.sync only: refs/codepatrol/initiative/ is added to the local for-each-ref enumeration, the ls-remote query and its validation, and the scope filter (via initiativeOfWork, so a scoped sync carries exactly the Work's own Initiative). Deletion logic needs no change — Initiative refs structurally can never enter terminal cleanup — and tests plus the projection E2E pin every acceptance criterion.",
+        "handoff": "# Plan: Publish and fetch Initiative refs alongside Work manifests (INIT-2.1)\n\n## Finding (P1)\nThe refs projection names refs/codepatrol/manifest/ in exactly four places, all in src/adapters/local-git-remote.ts:\n1. matchesScope (line 69) — narrows a single-Work sync.\n2. localRefs (line 79) — local enumeration via for-each-ref.\n3. remoteRefs (line 87) — the remote query via ls-remote patterns.\n4. remoteRefs validation (line 91) — refuses refs outside the known prefixes.\n\nEverything else already works: Initiative refs are minted once by GitManifestStore (initiativeRef at manifest-store.ts:319, enumerated at line 407), PublicationService calls remote.sync only when projections.refs is enabled (publication.ts:144, 284) and reports skipped through the existing unpublishedRefs/undefined paths, and the cleanup loop keys terminal handling off activeWorkId, which only matches refs/heads/codepatrol/work/<id>.\n\n## Product files Build touches\n1. src/adapters/local-git-remote.ts — the only production-code change.\n2. src/test/local-git-remote.test.ts — real-git round-trip tests.\n3. src/test/publication.test.ts — skipped-path assertions.\n4. scripts/projection-e2e.mjs — remote Initiative ref assertion.\n5. src/test/documentation.test.ts — register the new E2E assertion string.\n\n## Adapter changes (src/adapters/local-git-remote.ts)\n- Import initiativeOfWork from ../core/initiative.js.\n- localRefs: add \"refs/codepatrol/initiative/\" to the for-each-ref pattern arguments (line 79).\n- remoteRefs: add \"refs/codepatrol/initiative/*\" to the ls-remote patterns (line 87), and extend the validation condition (line 91) to also accept refs starting with refs/codepatrol/initiative/.\n- matchesScope: for a scoped sync, also match ref.startsWith(`refs/codepatrol/initiative/${initiativeOfWork(workId)}-`). The trailing dash matters: it keeps INIT-2- from matching INIT-20-. An Initiative is not owned by one Work, so scope includes exactly the one Initiative the selected Work belongs to — never every Initiative (acceptance 2).\n- Nothing else changes. Deliberately untouched:\n  - Deletion: deletions and localDeletions are fed only through terminalActiveRefs, which requires activeWorkId(ref) — an Initiative ref never matches, so it is never deleted locally or remotely, including after every Work of that Initiative is terminal (acceptance 4). This is structural; the new tests pin it.\n  - publishableOutgoing: workIdForRef returns undefined for Initiative refs, so they are always publishable and never suppressed by incompleteTerminalWorks.\n  - Divergence: an Initiative ref whose local and remote hashes differ falls into the existing SYNC_CONFLICT branch, same as manifest refs — correct, since Initiative documents are minted once and immutable.\n\n## Tests\nsrc/test/local-git-remote.test.ts (real git, createBareRemote, following the existing tests' shape):\n1. publishes every local Initiative ref and a fresh clone reads back the same documents: source app creates a Work (minting refs/codepatrol/initiative/INIT-0-<slug>), syncs; assert the bare remote carries the Initiative ref with the same hash; a fresh target syncs and GitManifestStore.listInitiatives() on the target returns the identical Initiative document (acceptance 1).\n2. a second clone mints the next free number: on that target, apply a new Initiative document through the spec flow and assert the minted id is INIT-1, not INIT-0 (acceptance 3).\n3. a scoped sync publishes only the selected Work's Initiative: two Initiatives with one Work each; sync with scope { workId } for the INIT-1 Work; the remote gains refs/codepatrol/initiative/INIT-1-* and not refs/codepatrol/initiative/INIT-0-* (acceptance 2).\n4. never deletes an Initiative ref: run a Work to terminal, sync with cleanup (policy helper like the existing tests), assert the terminal work branch is gone remotely while the Initiative ref survives both locally and remotely; repeat the sync and assert it is still there (acceptance 4).\n\nsrc/test/publication.test.ts:\n5. Extend the no-remote lifecycle test (or add a sibling): with no remote, publication.automatic returns undefined and the local refs/codepatrol/initiative/ ref still exists with its original hash.\n6. Add a refs-projection-disabled case (projections { refs: false, issue: false, milestone: false, project: false } on an app with remoteRepository): publication reports the sync skipped (git refs empty via unpublishedRefs) and the local Initiative ref is untouched (acceptance 5).\n\nscripts/projection-e2e.mjs + src/test/documentation.test.ts:\n7. Next to the existing archive-ref assertion (projection-e2e.mjs:222), add: git ls-remote origin `refs/codepatrol/initiative/${applied.initiative}-*` is non-empty, checked as \"the Initiative ref exists remotely\" (acceptance 6). Add that exact string to the required-assertions list in documentation.test.ts:117 so the guard test enforces it.\n\n## Acceptance coverage\n1. Publish all + fresh-clone read-back — adapter patterns + test 1.\n2. Scoped sync publishes that Work's Initiative only — matchesScope via initiativeOfWork + test 3.\n3. Fetch brings remote-only Initiative refs down; second clone mints next free number — existing incoming/pulled path + tests 1–2.\n4. Never deleted — structural (no code path reaches it) + test 4.\n5. No remote / refs projection disabled → skipped, local refs untouched — existing publication paths + tests 5–6.\n6. E2E asserts the Initiative ref exists remotely — projection-e2e.mjs + documentation.test.ts guard.\n\n## Verification for Build\nnpm run verify (typecheck, unit tests, smoke, --help). The projection E2E itself runs in CI against GitHub; locally the documentation.test.ts guard proves the scenario asserts it.\n\n## Non-goals\nNo changes to PublicationService, projections configuration, manifest-store, or the GitHub projections (Issues/Milestones already project Initiatives). No new commands. No deletion or pruning of Initiative refs under any circumstance.",
+        "todo": [
+          {
+            "id": "P1",
+            "status": "completed",
+            "note": "Four naming sites, all in local-git-remote.ts: matchesScope, localRefs, remoteRefs query, remoteRefs validation. Publication and cleanup paths need no change."
+          },
+          {
+            "id": "P2",
+            "status": "completed",
+            "note": "Add refs/codepatrol/initiative/ to the same four spots; scoped sync derives the one Initiative via initiativeOfWork with a trailing-dash prefix; no-delete is structural and test-pinned."
+          },
+          {
+            "id": "P3",
+            "status": "completed",
+            "note": "Real-git round-trip tests in local-git-remote.test.ts, skipped-path assertions in publication.test.ts, and an ls-remote Initiative assertion in scripts/projection-e2e.mjs registered in documentation.test.ts."
+          },
+          {
+            "id": "P4",
+            "status": "completed",
+            "note": "Handoff covers all six acceptance criteria with exact files, line-level change sites, and test plan."
+          },
+          {
+            "id": "P5",
+            "status": "completed",
+            "note": "Three traces recorded (observation + two decisions); completing with decision continue."
+          }
+        ],
+        "artifacts": []
+      },
+      "traces": [
+        {
+          "id": "748b137fc9f8",
+          "type": "observation",
+          "message": "The refs projection names refs/codepatrol/manifest/ in exactly four places, all in src/adapters/local-git-remote.ts: matchesScope (scope filter, line 69), localRefs (for-each-ref enumeration, line 79), remoteRefs (ls-remote query line 87 and returned-ref validation line 91). Initiative refs are minted once by GitManifestStore (initiativeRef, manifest-store.ts:319) and enumerated locally at manifest-store.ts:407; publication.service only calls remote.sync when projections.refs is enabled, so the skipped path needs no change.",
+          "at": "2026-08-03T12:40:32.706Z",
+          "data": {
+            "files": [
+              "src/adapters/local-git-remote.ts",
+              "src/adapters/manifest-store.ts",
+              "src/application/publication.ts",
+              "scripts/projection-e2e.mjs",
+              "src/test/documentation.test.ts"
+            ]
+          }
+        },
+        {
+          "id": "8d7d2c5b9799",
+          "type": "decision",
+          "message": "Initiative refs join the sync by adding refs/codepatrol/initiative/ to the same four spots: the for-each-ref pattern list, the ls-remote pattern list, the returned-ref validation, and matchesScope. A scoped sync matches refs/codepatrol/initiative/<initiativeId>- derived from the Work id via initiativeOfWork (core/initiative.ts), so one Work publishes its own Initiative and no other; the trailing dash makes INIT-2- never match INIT-20-. No deletion logic changes: activeWorkId only matches work branches, so an Initiative ref can never enter terminalActiveRefs and is structurally never deleted; tests pin that rule.",
+          "at": "2026-08-03T12:40:32.781Z",
+          "data": {
+            "adapter": "src/adapters/local-git-remote.ts",
+            "noDelete": "structural, pinned by test"
+          }
+        },
+        {
+          "id": "3e630e4c8402",
+          "type": "decision",
+          "message": "Tests land in three places: real-git round-trip tests in local-git-remote.test.ts (publish all, scoped publishes only the selected Work's Initiative, fetch lets a fresh clone mint the next free Initiative number, terminal cleanup never deletes the Initiative ref), skipped-path assertions in publication.test.ts (no remote and refs projection disabled leave local Initiative refs untouched), and the projection E2E (scripts/projection-e2e.mjs) gains an ls-remote check that the Initiative ref exists remotely, with the assertion string registered in documentation.test.ts.",
+          "at": "2026-08-03T12:40:32.858Z",
+          "data": {
+            "e2eAssertion": "the Initiative ref exists remotely"
+          }
         }
       ]
     }
