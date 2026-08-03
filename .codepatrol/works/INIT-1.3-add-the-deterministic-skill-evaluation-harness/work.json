@@ -37,23 +37,24 @@
     "number": 31
   },
   "workflow": {
-    "state": "active",
-    "stage": "plan",
+    "state": "ready",
+    "stage": "review",
     "attempt": 1,
-    "updatedAt": "2026-08-03T21:52:58.062Z"
+    "updatedAt": "2026-08-03T21:55:12.385Z"
   },
   "attempts": [
     {
       "stage": "plan",
       "attempt": 1,
       "runId": "1462ae64-5094-4650-906b-8b4fcae0639f",
-      "status": "active",
+      "status": "completed",
       "execution": {
         "role": "planner",
         "harness": "opencode",
         "model": "kimi-for-coding/k3"
       },
       "startedAt": "2026-08-03T21:52:58.062Z",
+      "finishedAt": "2026-08-03T21:55:12.385Z",
       "todo": [
         {
           "id": "P1",
@@ -74,6 +75,84 @@
         {
           "id": "P5",
           "title": "Record traces; complete Plan with decision continue"
+        }
+      ],
+      "result": {
+        "decision": "continue",
+        "summary": "The evaluation harness: strict suites at skills/<id>/suite.json parsed by a new src/core/skill-suite.ts (unique stable scenario ids), two deterministic assertion kinds (content regexes over resolved skill files; codepatrol command runs against a throwaway fixture repository), per-scenario results carrying the resolved skill identity and resolution digest with passed|failed|error|skipped|unresolved, a `codepatrol skill test <id>` entry point, a baseline protocol suite for codepatrol-verify, and CI wiring through the existing npm test glob.",
+        "handoff": "# Plan: Add the deterministic skill evaluation harness (INIT-1.3)\n\n## Finding (P1)\nINIT-1.2 is on main: resolveComposition yields the ordered composition and digest a scenario result must carry. The deterministic, offline assertions available without a model are exactly two kinds: content assertions over the resolved skill files (what harness-adapters.test.ts does ad hoc) and command assertions driving the built CLI against a fixture repository (the Core enforcing the protocol the skill narrates — e.g. VERIFY_INCOMPLETE without fresh evidence). Fixture helpers exist only in src/test/support, so the runner owns its throwaway-repo creation in product code.\n\n## Product files Build touches\n1. src/core/skill-suite.ts (new) — SUITE_SCHEMA_VERSION 1, type codepatrol-skill-suite, SkillSuite/Scenario/Assertion/ScenarioResult types, and a strict parseSkillSuite mirroring parseSkillManifest: unknown fields refuse, scenario ids are non-empty slugs, duplicate ids refuse STATE_CORRUPT. Pure, filesystem-free.\n2. src/cli/skill-evaluation.ts (new) — the runner: loads the suite beside the skill, resolves the skill's composition (listShippedSkills + resolveComposition with HOST_CAPABILITIES), executes scenarios, captures results.\n3. src/cli/commands/skill.ts — add `skill test <skill-id>`: prints `{ skill: { id, version, digest }, resolutionDigest, results: [{ id, status, detail? }], summary }` and exits nonzero via setExitCode when any scenario is failed or error. Mutates nothing in the repository.\n4. skills/codepatrol-verify/suite.json (new) — the baseline protocol suite.\n5. src/test/skill-suite.test.ts (new) — parser, runner, isolation, and CI coverage tests.\n\n## Suite schema\n```json\n{ \"schemaVersion\": 1, \"type\": \"codepatrol-skill-suite\", \"skill\": \"codepatrol-verify\",\n  \"scenarios\": [ { \"id\": \"fresh-evidence-pinned\", \"title\": \"...\",\n    \"assertions\": [\n      { \"kind\": \"content-includes\", \"skill\": \"codepatrol-verify\", \"pattern\": \"from \\\\*\\\\*this\\\\*\\\\* run\" },\n      { \"kind\": \"command\", \"argv\": [\"plan\", \"start\", \"...\"], \"exitCode\": 2, \"stderr\": \"INVALID_INPUT\" } ] } ] }\n```\n- `content-includes` / `content-excludes`: a regex must / must not match the named resolved skill's SKILL.md.\n- `command`: run `node bin/codepatrol.js --workspace <fixture> <argv...>`; assert exit code and optional stdout/stderr regex. Optional `setup` arrays run first (e.g. spec apply).\n\n## Execution and isolation (acceptance 2)\nEach command scenario gets its own throwaway repository: mkdtemp outside the repository, `git init`, the built CLI invoked with `--workspace` pointed there, no remote ever configured, credential-ish environment scrubbed and GIT_TERMINAL_PROMPT=0 — offline by construction rather than by sandbox. The runner never accepts a path into the real repository; a test asserts the real repo is byte-identical before and after a suite run.\n\n## Results (acceptance 3)\nEvery scenario result carries the skill identity `{ id, version, digest }` and the resolution digest of the composition it resolved under. Statuses: passed, failed (an expectation did not hold), error (the scenario could not execute), skipped (a declared optional capability is absent), unresolved (the composition failed to resolve).\n\n## Baseline suite and the failure proof (acceptance 4)\nskills/codepatrol-verify/suite.json: content scenarios pin the fresh-evidence rule and the pinned-candidate rule in the skill text; one command scenario drives a fixture through spec apply and a malformed `plan start` to prove command execution end to end. The broken-expectation proof lives in the tests: flipping one expectation against this suite must make the runner report failed.\n\n## Tests (src/test/skill-suite.test.ts)\n- Parser: valid suite round-trips; unknown field refused; duplicate scenario ids refused; non-slug id refused (acceptance 1).\n- Runner: content pass/fail; command scenario pass; each failing assertion kind yields failed, an unrunnable scenario error, a missing optional capability skipped, an unresolvable composition unresolved (acceptance 3).\n- Isolation: the real repository is untouched by a suite run (acceptance 2).\n- Every shipped suite parses, and running them reports no failure — this test is the CI wiring, needing no credential or network (acceptances 1, 4, 5).\n- The deliberately broken expectation makes the runner report failed (acceptance 4).\n\n## Acceptance coverage\n1. Strict parse, stable unique ids — skill-suite.ts + parser tests.\n2. Isolated fixture, real repo untouched, offline by construction — runner + isolation test.\n3. Identity/digest on every result, five statuses — result capture + runner tests.\n4. Baseline passing suite + broken-expectation failure — verify suite + tests.\n5. CI without credentials — the shipped-suites test under the existing npm test glob.\n\n## Verification for Build\nnpm run verify (typecheck, full unit suite, smoke, --help showing skill test).\n\n## Non-goals\nNo model-backed evaluation (INIT-1.5's categories build on this mechanism). No persisted result history. No sandbox-level network blocking — offline by construction is the honest v1 boundary, stated here so Review can challenge it.",
+        "todo": [
+          {
+            "id": "P1",
+            "status": "completed",
+            "note": "Resolution on main; deterministic offline assertions are content regexes and fixture CLI commands; runner owns fixture creation."
+          },
+          {
+            "id": "P2",
+            "status": "completed",
+            "note": "skills/<id>/suite.json with strict core parser; content-includes/excludes + command assertions; per-scenario throwaway repo, offline by construction; results carry skill identity + resolution digest with five statuses."
+          },
+          {
+            "id": "P3",
+            "status": "completed",
+            "note": "Baseline suite on codepatrol-verify; broken-expectation proof in tests; CI via the npm test glob with no credentials."
+          },
+          {
+            "id": "P4",
+            "status": "completed",
+            "note": "Handoff covers all five acceptance criteria with schema, runner, isolation, and tests."
+          },
+          {
+            "id": "P5",
+            "status": "completed",
+            "note": "Three traces recorded (observation + two decisions); completing with decision continue."
+          }
+        ],
+        "artifacts": []
+      },
+      "traces": [
+        {
+          "id": "3aec9209c1cd",
+          "type": "observation",
+          "message": "INIT-1.2 is on main: resolveComposition gives the ordered composition and digest a suite result must carry. Fixture infrastructure exists in src/test/support (createTestRepo with a neutralized git environment) but lives in test code, so the runner must own its throwaway-repo creation in product code. The honest deterministic assertions available offline are two kinds: content assertions over the resolved skill files (what harness-adapters.test.ts does ad hoc today) and command assertions driving the built CLI against a fixture repository with no remote (protocol enforced by the Core the skill narrates).",
+          "at": "2026-08-03T21:55:12.133Z",
+          "data": {
+            "onMain": [
+              "src/core/skill-resolution.ts",
+              "src/core/skill.ts"
+            ],
+            "assertionKinds": [
+              "content",
+              "command"
+            ]
+          }
+        },
+        {
+          "id": "552cc4193a6a",
+          "type": "decision",
+          "message": "Suites live at skills/<id>/suite.json, parsed by a new strict src/core/skill-suite.ts (schemaVersion 1, type codepatrol-skill-suite, skill id must equal its directory, scenario ids are unique slugs — duplicates refused). Assertions v1: content-includes/content-excludes regexes over a resolved skill file, and command assertions that run codepatrol CLI argument arrays with expected exit code and optional output regex. The runner creates one throwaway repository per command scenario (mkdtemp, git init, no remote, scrubbed credential env, GIT_TERMINAL_PROMPT=0 — offline by construction) and never receives a path into the real repository. Every scenario result carries the skill identity (id, version, digest) and the resolution digest of the composition it resolved under, with status passed|failed|error|skipped|unresolved (skipped: declared optional capability absent; unresolved: the composition cannot resolve). Entry point: `codepatrol skill test <skill-id>` — a read that creates fixtures outside the repo and exits nonzero on any failure.",
+          "at": "2026-08-03T21:55:12.212Z",
+          "data": {
+            "suitePath": "skills/<id>/suite.json",
+            "command": "skill test <skill-id>",
+            "statuses": [
+              "passed",
+              "failed",
+              "error",
+              "skipped",
+              "unresolved"
+            ]
+          }
+        },
+        {
+          "id": "041234f46e96",
+          "type": "decision",
+          "message": "The baseline protocol suite goes to codepatrol-verify (the crispest protocol: fresh evidence, pinned candidate, VERIFY_INCOMPLETE): content scenarios pin the fresh-evidence and pinned-range rules in the skill text, and one command scenario drives a fixture through spec apply and a malformed plan start to prove command execution end to end. The broken-expectation proof is a test that flips one expectation against the same suite and requires the runner to report failed. CI wiring is the existing npm test glob: src/test/skill-suite.test.ts runs every shipped suite and asserts all pass, needs no credential, and a test asserts the real repository is never touched.",
+          "at": "2026-08-03T21:55:12.289Z",
+          "data": {
+            "baselineSuite": "skills/codepatrol-verify/suite.json",
+            "ci": "npm test glob"
+          }
         }
       ]
     }
