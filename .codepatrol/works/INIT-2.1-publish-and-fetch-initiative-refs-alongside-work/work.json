@@ -36,11 +36,46 @@
     "number": 36
   },
   "workflow": {
-    "state": "ready",
+    "state": "active",
     "stage": "plan",
     "attempt": 1,
-    "updatedAt": "2026-08-03T11:24:49.394Z"
+    "updatedAt": "2026-08-03T12:35:44.016Z"
   },
-  "attempts": [],
+  "attempts": [
+    {
+      "stage": "plan",
+      "attempt": 1,
+      "runId": "a6fade60-0d5f-4a1a-91a1-04c541a46841",
+      "status": "active",
+      "execution": {
+        "role": "planner",
+        "harness": "opencode",
+        "model": "kimi-for-coding/k3"
+      },
+      "startedAt": "2026-08-03T12:35:44.016Z",
+      "todo": [
+        {
+          "id": "P1",
+          "title": "Map every place the refs projection names refs/codepatrol/manifest/ (enumeration, remote query, validation, scope filter, cleanup)"
+        },
+        {
+          "id": "P2",
+          "title": "Decide how Initiative refs join publish/fetch, including scoped single-Work sync and no-delete rule"
+        },
+        {
+          "id": "P3",
+          "title": "Decide test coverage incl. projection end-to-end scenario asserting remote Initiative ref"
+        },
+        {
+          "id": "P4",
+          "title": "Write decision-complete plan covering all six acceptance criteria"
+        },
+        {
+          "id": "P5",
+          "title": "Record traces; complete Plan with decision continue"
+        }
+      ]
+    }
+  ],
   "completion": null
 }
