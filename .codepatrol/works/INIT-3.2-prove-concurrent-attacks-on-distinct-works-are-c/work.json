@@ -39,10 +39,10 @@
     "number": 41
   },
   "workflow": {
-    "state": "ready",
+    "state": "active",
     "stage": "ship",
     "attempt": 1,
-    "updatedAt": "2026-08-03T22:25:23.574Z"
+    "updatedAt": "2026-08-03T22:28:33.819Z"
   },
   "attempts": [
     {
@@ -549,6 +549,40 @@
         "targetCommit": "4d7a669e59383f8320be5fb23e6eff658cda1d15",
         "policyHash": "738b7dca7b2b865e7de12c3f1ca6c05da0d1762f30e202a18709b6290fafb7b4"
       }
+    },
+    {
+      "stage": "ship",
+      "attempt": 1,
+      "runId": "3a4a86ca-f0b4-4787-a8fe-5e80877de568",
+      "status": "active",
+      "execution": {
+        "role": "shipper",
+        "harness": "opencode",
+        "model": "minimax-coding-plan/MiniMax-M3"
+      },
+      "startedAt": "2026-08-03T22:28:33.819Z",
+      "todo": [
+        {
+          "id": "S1",
+          "title": "Inspect Work, Change inspection, and verification snapshot"
+        },
+        {
+          "id": "S2",
+          "title": "Confirm inspection is clean, target matches verification snapshot, canonical manifest checkpoints only"
+        },
+        {
+          "id": "S3",
+          "title": "Trace the terminal rationale"
+        },
+        {
+          "id": "S4",
+          "title": "Complete Ship with accept and authority user"
+        },
+        {
+          "id": "S5",
+          "title": "Confirm the single integration commit on the base and the archive ref"
+        }
+      ]
     }
   ],
   "completion": null
