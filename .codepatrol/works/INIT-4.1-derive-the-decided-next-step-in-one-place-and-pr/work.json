@@ -1,0 +1,42 @@
+{
+  "schemaVersion": 1,
+  "type": "codepatrol-work",
+  "work": {
+    "id": "INIT-4.1-derive-the-decided-next-step-in-one-place-and-pr",
+    "title": "Derive the decided next step in one place and project it onto the board",
+    "description": "The next step a stage result decided is implicit: nextCommand recomputes it from workflow state, and the Project board cannot show it — Status reports what was last attacked, Outcome the terminal result, and nothing says what comes next. Introduce one core derivation — plan, review, build, verify, ship, or done — that every consumer shares, nextCommand first, and project it onto a new single-select Project field reconciled on sync exactly like Status and Outcome. Deliberately not a persisted manifest field: the derivation reads workflow state, so the attribute can never drift from the pipeline it describes.",
+    "issueType": "Feature",
+    "priority": "p2",
+    "acceptance": [
+      "One core derivation yields the decided next step — plan, review, build, verify, ship, or done — for any Work state, and work show exposes it",
+      "nextCommand and the Project projection read that same derivation rather than each computing their own",
+      "The Project board carries a Next field per Work, created when missing and reconciled on sync like Status and Outcome",
+      "A terminal Work shows done on the board, and a sync with no state change edits no field",
+      "The projection end-to-end scenario asserts the Next field on the board, and no manifest schema changes"
+    ],
+    "createdAt": "2026-08-03T23:37:47.404Z",
+    "requestedBy": "spec",
+    "initiative": {
+      "id": "INIT-4",
+      "position": 1
+    },
+    "origin": {
+      "createdAt": "2026-08-03T23:37:47.404Z"
+    }
+  },
+  "repository": {
+    "baseRef": "refs/heads/main"
+  },
+  "graph": {
+    "blockedBy": []
+  },
+  "issue": null,
+  "workflow": {
+    "state": "ready",
+    "stage": "plan",
+    "attempt": 1,
+    "updatedAt": "2026-08-03T23:37:47.404Z"
+  },
+  "attempts": [],
+  "completion": null
+}
