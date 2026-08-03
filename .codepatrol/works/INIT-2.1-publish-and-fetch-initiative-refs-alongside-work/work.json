@@ -1,0 +1,43 @@
+{
+  "schemaVersion": 1,
+  "type": "codepatrol-work",
+  "work": {
+    "id": "INIT-2.1-publish-and-fetch-initiative-refs-alongside-work",
+    "title": "Publish and fetch Initiative refs alongside Work manifests",
+    "description": "Add refs/codepatrol/initiative/ to every place the refs projection already names refs/codepatrol/manifest/: the local enumeration, the remote query, the validation of what the remote returned, and the scope filter that narrows a single-Work sync. An Initiative is not owned by one Work, so a scoped sync publishes the Initiative its Work belongs to rather than every Initiative in the repository. Cleanup keeps the rule terminalization already follows — an Initiative ref is never deleted by synchronization, because it is the record of intent behind Works that may themselves be archived. The end state is the one the manifests already have: what the local repository decided, the remote carries, and a fresh clone can read.",
+    "issueType": "Bug",
+    "priority": "p1",
+    "acceptance": [
+      "Synchronizing publishes every Initiative ref the local repository holds, and a fresh clone reads back the same Initiative documents that were written",
+      "A sync scoped to one Work publishes that Work's Initiative and no other",
+      "Fetching brings down Initiative refs that exist only on the remote, so a second clone mints the next free number rather than one already taken",
+      "Synchronization never deletes an Initiative ref, including after every Work of that Initiative is terminal",
+      "With no remote, or with the refs projection disabled, publication reports skipped and the local Initiative refs are untouched",
+      "The projection end-to-end scenario asserts the Initiative ref exists remotely rather than only that its Works do"
+    ],
+    "createdAt": "2026-08-03T11:24:49.394Z",
+    "requestedBy": "spec",
+    "initiative": {
+      "id": "INIT-2",
+      "position": 1
+    },
+    "origin": {
+      "createdAt": "2026-08-03T11:24:49.394Z"
+    }
+  },
+  "repository": {
+    "baseRef": "refs/heads/main"
+  },
+  "graph": {
+    "blockedBy": []
+  },
+  "issue": null,
+  "workflow": {
+    "state": "ready",
+    "stage": "plan",
+    "attempt": 1,
+    "updatedAt": "2026-08-03T11:24:49.394Z"
+  },
+  "attempts": [],
+  "completion": null
+}
