@@ -51,6 +51,8 @@ test("completes the whole lifecycle with no remote configured", async () => {
   const app = await createTestApp({ defaultBranch: "trunk" });
   try {
     const workId = await app.createWork({ title: "No remote at all" });
+    const initiativeRef = "refs/codepatrol/initiative/INIT-0-test-initiative";
+    const initiativeHeadBefore = await app.repo.head(initiativeRef);
     assert.equal(await app.publication.automatic({ workId }), undefined);
 
     await app.runThrough(workId);
@@ -61,6 +63,7 @@ test("completes the whole lifecycle with no remote configured", async () => {
     assert.equal(view.change.verification.baselineCommit, view.repository.baselineCommit);
     assert.equal(await app.repo.commitCount("refs/heads/trunk"), 3, "bootstrap, the manifest projection, and the squash");
     assert.equal(app.github.calls.length, 0, "nothing reached GitHub");
+    assert.equal(await app.repo.head(initiativeRef), initiativeHeadBefore, "a no-remote publication never touches the local Initiative ref");
   } finally {
     await app.cleanup();
   }
@@ -404,6 +407,29 @@ test("publishes nothing when the repository configuration disables every project
     assert.equal(await app.publication.automatic({}), undefined);
     assert.equal(app.github.calls.length, 0, "nothing reached GitHub");
     assert.equal((app.remote as FakeRemote).calls.length, 0, "no refs were pushed");
+  } finally {
+    await app.cleanup();
+  }
+});
+
+test("a disabled refs projection never touches the local Initiative ref even when a remote is configured", async () => {
+  // The guard: refs projection is what writes Initiative refs to the remote.
+  // When the repository configuration turns it off, even with a remote
+  // configured the local Initiative ref is not synced — the local record is
+  // the source of truth until the projection is re-enabled.
+  const app = await createTestApp({ remoteRepository: REPOSITORY, projections: NOTHING });
+  try {
+    await app.createWork({ title: "Refs disabled" });
+    const initiativeRef = "refs/codepatrol/initiative/INIT-0-test-initiative";
+    const initiativeHeadBefore = await app.repo.head(initiativeRef);
+    assert.ok(initiativeHeadBefore, "the Initiative ref exists locally after the Work is created");
+
+    const result = await app.publication.reconcile({ repository: REPOSITORY, remote: "origin" });
+
+    assert.deepEqual(result.git.beforeIssues.refs, [], "the refs projection is disabled, so the pre-issue sync reports no activity");
+    assert.deepEqual(result.git.afterIssues.refs, [], "the refs projection is disabled, so the post-issue sync reports no activity");
+    assert.equal((app.remote as FakeRemote).calls.length, 0, "remote.sync is never called when refs projection is off");
+    assert.equal(await app.repo.head(initiativeRef), initiativeHeadBefore, "the local Initiative ref is untouched");
   } finally {
     await app.cleanup();
   }
