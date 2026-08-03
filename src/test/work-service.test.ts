@@ -854,3 +854,44 @@ test("refuses a self-dependency at creation", async () => {
     await repo.cleanup();
   }
 });
+
+test("the short INIT-x.y code resolves to the full Work id at every service entry", async () => {
+  // The number pair is unique by construction, so the short code INIT-x.y maps
+  // to exactly one Work. Every WorkService entry method must accept the code
+  // and behave exactly as the full id does.
+  const repo = await createTestRepo();
+  try {
+    const service = serviceFor(repo);
+    const created = await createWork(repo, service, { type: "Task", title: "Resolves" });
+    const code = `INIT-${created.identity.initiative.id.match(/^INIT-(\d+)$/)?.[1]}.1`;
+
+    const byCode = await service.show(code);
+    assert.equal(byCode.identity.id, created.identity.id, "show resolves the short code to the same Work view");
+
+    const started = await service.start("plan", code, "test-harness", "test-model", TODO);
+    assert.equal(started.workId, created.identity.id, "start resolves the short code and pins the canonical id on the run");
+  } finally {
+    await repo.cleanup();
+  }
+});
+
+test("an unknown short code fails with INVALID_WORK_ID naming what was passed", async () => {
+  // The resolver must not invent an id from a code that names no Work: an
+  // unknown short code is the same shape of error the format validator
+  // raised before, naming the input so the caller can fix it.
+  const repo = await createTestRepo();
+  try {
+    const service = serviceFor(repo);
+    const created = await createWork(repo, service, { type: "Task", title: "Existing" });
+    assert.match(created.identity.id, /^INIT-\d+\.\d+-/, "the fixture minted a known Work id");
+
+    // A short code that names no Work: the resolver matches no id and the
+    // service surfaces INVALID_WORK_ID with the input visible in the message.
+    await assert.rejects(
+      service.start("plan", "INIT-0.99", "test-harness", "test-model", TODO),
+      (error: unknown) => error instanceof CodepatrolError && error.code === "INVALID_WORK_ID" && /INIT-0\.99/.test((error as CodepatrolError).message),
+    );
+  } finally {
+    await repo.cleanup();
+  }
+});

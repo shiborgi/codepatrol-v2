@@ -1,5 +1,5 @@
 import { CodepatrolError } from "../core/errors.js";
-import { GIT_HASH, WORK_ID } from "../core/identifiers.js";
+import { GIT_HASH, WORK_CODE, WORK_ID } from "../core/identifiers.js";
 import { INITIATIVE_ID, initiativePath, initiativeRef, parseInitiative, serializeInitiative, type Initiative } from "../core/initiative.js";
 import {
   archiveRef,
@@ -146,6 +146,37 @@ export class GitManifestStore {
       right.manifest.work.createdAt.localeCompare(left.manifest.work.createdAt)
       || left.manifest.work.id.localeCompare(right.manifest.work.id),
     );
+  }
+
+  /**
+   * Resolves a caller-supplied identifier to the canonical slugged Work id.
+   * A full WORK_ID returns as-is. A short WORK_CODE (INIT-<n>.<p>) is matched
+   * against the same enumeration list() uses; exactly one Work carries the
+   * number pair by construction, so a single match is the only possible
+   * outcome. Anything else, or no match, raises INVALID_WORK_ID — the same
+   * code the validation surfaces today — so callers do not branch on form.
+   *
+   * Existence of the resolved id stays read's job: this method's contract is
+   * to translate a human-typed handle into the stored form, not to confirm
+   * the Work still exists.
+   */
+  async resolve(idOrCode: string): Promise<string> {
+    if (WORK_ID.test(idOrCode)) return idOrCode;
+    if (!WORK_CODE.test(idOrCode)) throw new CodepatrolError("INVALID_WORK_ID", `Invalid work id: ${idOrCode}.`);
+    const prefix = `${idOrCode}-`;
+    const found = new Set<string>();
+    for (const ref of lines((await executeGit(this.workspace, ["for-each-ref", "--format=%(refname)", "refs/codepatrol/manifest/", "refs/heads/codepatrol/archive/"])).stdout)) {
+      const id = /^refs\/(?:codepatrol\/manifest|heads\/codepatrol\/archive)\/(.+)$/.exec(ref)?.[1];
+      if (id !== undefined && id.startsWith(prefix) && WORK_ID.test(id)) found.add(id);
+    }
+    const base = await this.baseRef();
+    for (const name of lines((await executeGit(this.workspace, ["ls-tree", "-r", "--name-only", base, "--", ".codepatrol/works"], { accept: [0, 128] })).stdout)) {
+      const id = /^\.codepatrol\/works\/(.+)\/work\.json$/.exec(name)?.[1];
+      if (id !== undefined && id.startsWith(prefix) && WORK_ID.test(id)) found.add(id);
+    }
+    if (found.size === 0) throw new CodepatrolError("INVALID_WORK_ID", `Invalid work id: ${idOrCode}.`);
+    if (found.size > 1) throw new CodepatrolError("STATE_CORRUPT", `Short code ${idOrCode} matched multiple Works: ${[...found].sort().join(", ")}.`);
+    return [...found][0]!;
   }
 
   /**

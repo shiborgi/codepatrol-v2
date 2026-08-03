@@ -3,6 +3,7 @@ import path from "node:path";
 import type { GitRefSync, GitRemote, GitSyncResult } from "../application/ports.js";
 import { CodepatrolError } from "../core/errors.js";
 import { GIT_HASH, WORK_ID } from "../core/identifiers.js";
+import { initiativeOfWork } from "../core/initiative.js";
 import { manifestPath, parseWorkManifest, type WorkManifest } from "../core/work-manifest.js";
 import { executeGit, githubRepository, lines, resolveBaseRef, WITHOUT_HOOKS } from "./git-command.js";
 import { withGitRefLock } from "./git-lock.js";
@@ -67,16 +68,19 @@ export class LocalGitRemote implements GitRemote {
   }
 
   private matchesScope(ref: string, baseRef: string, workId?: string): boolean {
-    return workId === undefined
-      || ref === baseRef
-      || ref === `refs/heads/codepatrol/work/${workId}`
-      || ref === `refs/heads/codepatrol/archive/${workId}`
-      || ref.startsWith(`refs/heads/codepatrol/recovery/${workId}/`)
-      || ref === `refs/codepatrol/manifest/${workId}`;
+    if (workId === undefined) return true;
+    if (ref === baseRef) return true;
+    if (ref === `refs/heads/codepatrol/work/${workId}`) return true;
+    if (ref === `refs/heads/codepatrol/archive/${workId}`) return true;
+    if (ref.startsWith(`refs/heads/codepatrol/recovery/${workId}/`)) return true;
+    if (ref === `refs/codepatrol/manifest/${workId}`) return true;
+    const initiativeId = initiativeOfWork(workId);
+    if (initiativeId !== undefined && ref.startsWith(`refs/codepatrol/initiative/${initiativeId}-`)) return true;
+    return false;
   }
 
   private async localRefs(baseRef: string, workId?: string): Promise<Map<string, string>> {
-    const raw = await executeGit(this.workspace, ["for-each-ref", "--format=%(refname) %(objectname)", baseRef, "refs/heads/codepatrol/", "refs/codepatrol/manifest/"]);
+    const raw = await executeGit(this.workspace, ["for-each-ref", "--format=%(refname) %(objectname)", baseRef, "refs/heads/codepatrol/", "refs/codepatrol/manifest/", "refs/codepatrol/initiative/"]);
     return new Map(lines(raw.stdout).map((line) => {
       const separator = line.lastIndexOf(" ");
       return [line.slice(0, separator), line.slice(separator + 1)] as const;
@@ -84,11 +88,11 @@ export class LocalGitRemote implements GitRemote {
   }
 
   private async remoteRefs(remote: string, baseRef: string, workId?: string): Promise<Map<string, string>> {
-    const raw = await executeGit(this.workspace, ["ls-remote", remote, baseRef, "refs/heads/codepatrol/*", "refs/codepatrol/manifest/*"]);
+    const raw = await executeGit(this.workspace, ["ls-remote", remote, baseRef, "refs/heads/codepatrol/*", "refs/codepatrol/manifest/*", "refs/codepatrol/initiative/*"]);
     const refs = new Map<string, string>();
     for (const line of lines(raw.stdout)) {
       const [hash, ref] = line.split(/\s+/);
-      if (hash === undefined || ref === undefined || !GIT_HASH.test(hash) || (!ref.startsWith("refs/heads/codepatrol/") && !ref.startsWith("refs/codepatrol/manifest/") && ref !== baseRef)) {
+      if (hash === undefined || ref === undefined || !GIT_HASH.test(hash) || (!ref.startsWith("refs/heads/codepatrol/") && !ref.startsWith("refs/codepatrol/manifest/") && !ref.startsWith("refs/codepatrol/initiative/") && ref !== baseRef)) {
         throw new CodepatrolError("GIT_ERROR", "Git returned malformed remote refs.");
       }
       if (this.matchesScope(ref, baseRef, workId)) refs.set(ref, hash);

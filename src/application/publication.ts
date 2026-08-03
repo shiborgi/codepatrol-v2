@@ -1,7 +1,6 @@
 import type { GitManifestStore } from "../adapters/manifest-store.js";
 import type { GitHubIssue, GitHubProject, GitHubIssues, GitHubLabels, GitHubMilestones, GitHubProjects, GitHubRepository, GitRemote, GitSyncResult } from "./ports.js";
 import { CodepatrolError } from "../core/errors.js";
-import { WORK_ID } from "../core/identifiers.js";
 import { PROJECT_OUTCOME_BY_WORK_OUTCOME, PROJECT_STATUS_BY_STAGE, type ProjectOutcome, type ProjectStatus } from "../core/types.js";
 import type { WorkManifest } from "../core/work-manifest.js";
 import { defaultIssueClassification, resolveWorkTypeLabel, type GitHubIssueClassificationConfig } from "../core/work-type-labels.js";
@@ -9,7 +8,7 @@ import { manifestComments, reconcileIssueComments, type CommentSyncSummary, type
 import { ALL_PROJECTIONS, projecting, type Projections } from "./projections.js";
 import { indexWorks, matchIssue } from "./publication/mapping.js";
 import { initiativeSection } from "./publication/markers.js";
-import { desiredIssueBody, reconcileIssueContent, reconcileIssueState, type ProjectionWarning } from "./publication/reconcile.js";
+import { desiredIssueBody, desiredIssueTitle, reconcileIssueContent, reconcileIssueState, type ProjectionWarning } from "./publication/reconcile.js";
 
 interface IssueSummary {
   created: Array<{ issue: number; workId: string }>;
@@ -44,9 +43,15 @@ function unpublishedRefs(remote: string): GitSyncResult {
 function snapshotOf(manifest: WorkManifest): PublicationSnapshot {
   const latest = manifest.attempts.at(-1);
   const completion = manifest.completion;
+  // The board reports activity, not readiness: a Work no run has ever attacked
+  // stays Backlog, a live run shows its stage, a Work waiting between runs
+  // keeps the stage last attacked, and a terminal Work shows Done. The latest
+  // attempt's stage is the stage an attack last touched — workflow.stage is
+  // the stage the Work is ready for, which is what the board used to advertise
+  // and the defect this rule replaces.
   const projectStatus = completion !== null ? "Done"
     : latest === undefined ? "Backlog"
-      : PROJECT_STATUS_BY_STAGE[manifest.workflow.stage];
+      : PROJECT_STATUS_BY_STAGE[latest.stage];
   const projectOutcome = completion === null ? "None"
     : PROJECT_OUTCOME_BY_WORK_OUTCOME[completion.outcome];
   return { comments: manifestComments(manifest), terminal: completion !== null, projectStatus, projectOutcome };
@@ -93,14 +98,18 @@ export class PublicationService {
 
   async automatic(input: { remote?: string; workId?: string }): Promise<PublicationResult | undefined> {
     const remote = input.remote ?? "origin";
-    if (input.workId !== undefined) await this.store.read(input.workId);
+    let workId: string | undefined;
+    if (input.workId !== undefined) {
+      workId = await this.store.resolve(input.workId);
+      await this.store.read(workId);
+    }
     // A resolvable remote is not permission to use it: a repository that has
     // turned every projection off must reach GitHub no more than one without a
     // remote does.
     if (!projecting(this.projections)) return undefined;
     const repository = await this.remote.resolveRepository(remote);
     if (repository === undefined) return undefined;
-    return this.reconcile({ repository, remote, ...(input.workId === undefined ? {} : { workId: input.workId }) });
+    return this.reconcile({ repository, remote, ...(workId === undefined ? {} : { workId }) });
   }
 
   private async resolveIssues(
@@ -130,13 +139,13 @@ export class PublicationService {
   }
 
   private async syncExclusive(input: { repository?: string; remote: string; workId?: string }): Promise<PublicationResult> {
-    if (input.workId !== undefined && !WORK_ID.test(input.workId)) throw new CodepatrolError("INVALID_WORK_ID", `Invalid work id: ${input.workId}.`, 2);
+    const workId = input.workId === undefined ? undefined : await this.store.resolve(input.workId);
     const requested = input.repository ?? await this.remote.resolveRepository(input.remote);
     if (requested === undefined) {
       throw new CodepatrolError("INVALID_ARGUMENT", `Remote ${input.remote} is not a configured GitHub remote; pass --repo <owner/name>.`, 2);
     }
     const resolved = await this.github.resolve(requested);
-    const scope = input.workId === undefined ? undefined : { workId: input.workId };
+    const scope = workId === undefined ? undefined : { workId };
     const policy = { isTerminal: (workId: string) => this.isTerminal(workId) };
 
     // Phase 1: publish refs without cleanup so terminal branches survive until
@@ -146,8 +155,8 @@ export class PublicationService {
       : unpublishedRefs(input.remote);
 
     const allEntries = (await this.store.list()).map((revision) => revision.manifest);
-    if (input.workId !== undefined && !allEntries.some((entry) => entry.work.id === input.workId)) {
-      throw new CodepatrolError("WORK_NOT_FOUND", `Work not found: ${input.workId}.`);
+    if (workId !== undefined && !allEntries.some((entry) => entry.work.id === workId)) {
+      throw new CodepatrolError("WORK_NOT_FOUND", `Work not found: ${workId}.`);
     }
     const entryById = new Map(allEntries.map((entry) => [entry.work.id, entry]));
     const summary: IssueSummary = { created: [], updated: [], unchanged: [], unclaimed: [] };
@@ -159,7 +168,7 @@ export class PublicationService {
     // a disabled projection must not even ask GitHub who the viewer is.
     const viewer = this.projections.issue ? await this.github.viewer() : "";
     const issueByWork = this.projections.issue
-      ? await this.resolveIssues(resolved, entryById, viewer, summary, input.workId)
+      ? await this.resolveIssues(resolved, entryById, viewer, summary, workId)
       : new Map<string, GitHubIssue>();
 
     for (const [workId, issue] of issueByWork) {
@@ -167,9 +176,9 @@ export class PublicationService {
       entryById.set(workId, linked.manifest);
     }
 
-    const published = input.workId === undefined
+    const published = workId === undefined
       ? [...entryById.values()]
-      : [entryById.get(input.workId)].filter((entry): entry is WorkManifest => entry !== undefined);
+      : [entryById.get(workId)].filter((entry): entry is WorkManifest => entry !== undefined);
     const publication = new Map<string, PublicationSnapshot>();
     for (const entry of [...published].sort((left, right) => left.work.id.localeCompare(right.work.id))) {
       publication.set(entry.work.id, snapshotOf(entry));
@@ -204,7 +213,7 @@ export class PublicationService {
         });
       }
       const issue = await this.github.create(resolved.nameWithOwner, {
-        title: entry.work.title,
+        title: desiredIssueTitle(entry),
         body: desiredIssueBody(entry),
         ...(ensured.status === "unavailable" ? {} : { labels: [desired.name] }),
       });

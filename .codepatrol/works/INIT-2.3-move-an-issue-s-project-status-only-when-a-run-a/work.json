@@ -26,7 +26,7 @@
   "repository": {
     "baseRef": "refs/heads/main",
     "createdFromCommit": "06f923650c7aaeaf77873d9b02c2631743f5fdd0",
-    "baselineCommit": "06f923650c7aaeaf77873d9b02c2631743f5fdd0"
+    "baselineCommit": "c80dc67115c4d32957e6a1416c0140d02518c2a7"
   },
   "graph": {
     "blockedBy": []

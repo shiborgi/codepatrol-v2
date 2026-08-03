@@ -1,7 +1,8 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 import { CodepatrolError } from "../core/errors.js";
-import { createTestApp, type TestApp } from "./support/app.js";
+import { workCodeOf } from "../core/identifiers.js";
+import { createTestApp, DONE_TODO, TODO, type TestApp } from "./support/app.js";
 import { INITIATIVE_DOCUMENT_SCHEMA_VERSION, INITIATIVE_DOCUMENT_TYPE, parseInitiativeDocument, type InitiativeDocument } from "../core/initiative-document.js";
 import { FakeGitHub, FakeRemote } from "./support/github.js";
 import { mkdir, writeFile } from "node:fs/promises";
@@ -45,12 +46,36 @@ test("validates a selected Work before skipping an absent remote", async () => {
   }
 });
 
+test("a scoped publication accepts the short INIT-x.y code and publishes only that Work", async () => {
+  // The scope filter downstream of the resolver must receive the canonical id,
+  // not the short code, so the scoping behavior is identical to passing the
+  // full id: the selected Work is published and nothing else is touched.
+  const app = await createTestApp({ remoteRepository: REPOSITORY });
+  try {
+    const workA = await app.createWork({ title: "Work A" });
+    const workB = await app.createWork({ title: "Work B" });
+    const shortA = workA.match(/^(INIT-\d+\.\d+)-/)?.[1] ?? workA;
+    const shortB = workB.match(/^(INIT-\d+\.\d+)-/)?.[1] ?? workB;
+
+    const result = await app.publication.reconcile({ repository: REPOSITORY, remote: "origin", workId: shortB });
+
+    assert.equal(result.issues.created.length, 1, "the scoped publication creates only the targeted Issue");
+    assert.deepEqual(result.issues.created[0], { issue: 1, workId: workB });
+    assert.equal(app.github.issues.length, 1, "the unselected Work is not touched");
+    assert.notEqual(shortA, shortB, "the two Works have distinct short codes, so the test actually exercises resolution");
+  } finally {
+    await app.cleanup();
+  }
+});
+
 test("completes the whole lifecycle with no remote configured", async () => {
   // The defining property: GitHub is a projection, so its absence is a
   // supported way to run rather than a degraded one.
   const app = await createTestApp({ defaultBranch: "trunk" });
   try {
     const workId = await app.createWork({ title: "No remote at all" });
+    const initiativeRef = "refs/codepatrol/initiative/INIT-0-test-initiative";
+    const initiativeHeadBefore = await app.repo.head(initiativeRef);
     assert.equal(await app.publication.automatic({ workId }), undefined);
 
     await app.runThrough(workId);
@@ -61,6 +86,7 @@ test("completes the whole lifecycle with no remote configured", async () => {
     assert.equal(view.change.verification.baselineCommit, view.repository.baselineCommit);
     assert.equal(await app.repo.commitCount("refs/heads/trunk"), 3, "bootstrap, the manifest projection, and the squash");
     assert.equal(app.github.calls.length, 0, "nothing reached GitHub");
+    assert.equal(await app.repo.head(initiativeRef), initiativeHeadBefore, "a no-remote publication never touches the local Initiative ref");
   } finally {
     await app.cleanup();
   }
@@ -76,6 +102,7 @@ test("creates one labeled issue per Work, persists its link, and converges", asy
     assert.match(app.github.issues[0]?.body ?? "", /Local details/);
     assert.match(app.github.issues[0]?.body ?? "", /<!-- codepatrol:work:start -->[\s\S]*- Type: `Bug`[\s\S]*<!-- codepatrol:work:end -->/);
     assert.match(app.github.issues[0]?.body ?? "", /<!-- codepatrol-work-id:/);
+    assert.equal(app.github.issues[0]?.title, `${workCodeOf(workId)}: Local Work`, "the Issue opens with the Work id prefixed in the title");
     assert.deepEqual(app.github.issues[0]?.labels, ["codepatrol:type/bug"]);
     assert.deepEqual(first.warnings, []);
     assert.deepEqual((await app.store.read(workId)).manifest.issue, { repository: REPOSITORY, number: 1 });
@@ -88,6 +115,71 @@ test("creates one labeled issue per Work, persists its link, and converges", asy
     assert.deepEqual(second.warnings, [], "a converged issue produces no drift warnings");
     assert.equal(app.github.issues.length, 1);
     assert.equal(app.github.calls.filter((call) => call.op === "edit").length, edits, "repeated sync does not edit a converged issue");
+  } finally {
+    await app.cleanup();
+  }
+});
+
+test("an Issue linked before the title change is reconciled to carry the Work id on the next sync", async () => {
+  // A pre-change Issue is the one the system opened before this Work changed
+  // its title projection: the body marker and the issue link identify it as
+  // the Work's, but the title is the bare Work title. The next sync retitles
+  // it to the managed form so an Issue list reads the Work's id first.
+  const app = await createTestApp({ remoteRepository: REPOSITORY });
+  try {
+    const workId = await app.createWork({ title: "Bare-titled Work" });
+    await app.publication.reconcile({ repository: REPOSITORY, remote: "origin" });
+    app.github.issue(1).title = "Bare-titled Work";
+
+    const result = await app.publication.reconcile({ repository: REPOSITORY, remote: "origin" });
+
+    assert.deepEqual(result.issues.updated, [{ issue: 1, workId }], "the linked Issue is reconciled, not duplicated");
+    assert.equal(app.github.issue(1).title, `${workCodeOf(workId)}: Bare-titled Work`, "the title is reconciled to the managed form");
+  } finally {
+    await app.cleanup();
+  }
+});
+
+test("a repeated sync leaves the prefixed title untouched with no edit churn", async () => {
+  // Convergence: once the title carries the Work id, the comparison in
+  // reconcileIssueContent makes no further edit. The first sync after a
+  // retitle may edit, but a second one is a no-op on the title.
+  const app = await createTestApp({ remoteRepository: REPOSITORY });
+  try {
+    const workId = await app.createWork({ title: "Convergent Work" });
+    await app.publication.reconcile({ repository: REPOSITORY, remote: "origin" });
+    app.github.issue(1).title = "Convergent Work";
+    await app.publication.reconcile({ repository: REPOSITORY, remote: "origin" });
+    assert.equal(app.github.issue(1).title, `${workCodeOf(workId)}: Convergent Work`);
+
+    const editsBefore = app.github.calls.filter((call) => call.op === "edit").length;
+    const result = await app.publication.reconcile({ repository: REPOSITORY, remote: "origin" });
+
+    assert.deepEqual(result.issues.unchanged, [{ issue: 1, workId }], "a converged Issue is reported unchanged");
+    assert.equal(app.github.calls.filter((call) => call.op === "edit").length, editsBefore, "no edit call is made on a converged title");
+    assert.equal(app.github.issue(1).title, `${workCodeOf(workId)}: Convergent Work`, "the title stays prefixed");
+  } finally {
+    await app.cleanup();
+  }
+});
+
+test("retitling an Issue never causes a duplicate to be opened on a subsequent sync", async () => {
+  // Matching keys on the body marker, the stored issue link, and requestedBy —
+  // never on the title — so a retitled Issue still maps to its Work and no
+  // second Issue is opened on the next sync. The title is reconciled back to
+  // the managed form, which is the only edit the sync records.
+  const app = await createTestApp({ remoteRepository: REPOSITORY });
+  try {
+    const workId = await app.createWork({ title: "Retitled Work" });
+    await app.publication.reconcile({ repository: REPOSITORY, remote: "origin" });
+    app.github.issue(1).title = "A human editor changed the title";
+
+    const result = await app.publication.reconcile({ repository: REPOSITORY, remote: "origin" });
+
+    assert.equal(result.issues.created.length, 0, "no new Issue is opened for the Work whose title changed");
+    assert.deepEqual(result.issues.updated, [{ issue: 1, workId }], "the existing Issue is reconciled to the managed title");
+    assert.equal(app.github.issues.length, 1, "still exactly one Issue exists for the Work");
+    assert.equal(app.github.issue(1).title, `${workCodeOf(workId)}: Retitled Work`, "the title is restored to the prefixed form");
   } finally {
     await app.cleanup();
   }
@@ -295,7 +387,7 @@ test("tracks the stage on the board and closes the issue only when terminal", as
 
     await app.runStage("plan", workId);
     const planned = await app.publication.reconcile({ repository: REPOSITORY, remote: "origin", workId });
-    assert.deepEqual(planned.project.statuses, [{ workId, status: "Review", outcome: "None" }]);
+    assert.deepEqual(planned.project.statuses, [{ workId, status: "Plan", outcome: "None" }], "the board keeps the last-attacked stage while the Work waits for the next run");
     assert.equal(app.github.issue(issue.number).state, "open");
     assert.ok(app.github.commentsFor(issue.number).some((comment) => /Codepatrol · `plan`/.test(comment.body)));
 
@@ -363,7 +455,7 @@ test("leaves the local fact intact when publication fails", async () => {
     // The Work advanced regardless; sync converges later.
     assert.equal((await app.works.show(workId)).stage, "review");
     const recovered = await app.publication.reconcile({ repository: REPOSITORY, remote: "origin", workId });
-    assert.deepEqual(recovered.project.statuses, [{ workId, status: "Review", outcome: "None" }]);
+    assert.deepEqual(recovered.project.statuses, [{ workId, status: "Plan", outcome: "None" }], "the board keeps the last-attacked stage while the Work waits for the next run");
   } finally {
     await app.cleanup();
   }
@@ -404,6 +496,29 @@ test("publishes nothing when the repository configuration disables every project
     assert.equal(await app.publication.automatic({}), undefined);
     assert.equal(app.github.calls.length, 0, "nothing reached GitHub");
     assert.equal((app.remote as FakeRemote).calls.length, 0, "no refs were pushed");
+  } finally {
+    await app.cleanup();
+  }
+});
+
+test("a disabled refs projection never touches the local Initiative ref even when a remote is configured", async () => {
+  // The guard: refs projection is what writes Initiative refs to the remote.
+  // When the repository configuration turns it off, even with a remote
+  // configured the local Initiative ref is not synced — the local record is
+  // the source of truth until the projection is re-enabled.
+  const app = await createTestApp({ remoteRepository: REPOSITORY, projections: NOTHING });
+  try {
+    await app.createWork({ title: "Refs disabled" });
+    const initiativeRef = "refs/codepatrol/initiative/INIT-0-test-initiative";
+    const initiativeHeadBefore = await app.repo.head(initiativeRef);
+    assert.ok(initiativeHeadBefore, "the Initiative ref exists locally after the Work is created");
+
+    const result = await app.publication.reconcile({ repository: REPOSITORY, remote: "origin" });
+
+    assert.deepEqual(result.git.beforeIssues.refs, [], "the refs projection is disabled, so the pre-issue sync reports no activity");
+    assert.deepEqual(result.git.afterIssues.refs, [], "the refs projection is disabled, so the post-issue sync reports no activity");
+    assert.equal((app.remote as FakeRemote).calls.length, 0, "remote.sync is never called when refs projection is off");
+    assert.equal(await app.repo.head(initiativeRef), initiativeHeadBefore, "the local Initiative ref is untouched");
   } finally {
     await app.cleanup();
   }
@@ -509,6 +624,60 @@ test("an unconfigured workspace falls back to the default Issue classification",
   const app = await createTestApp();
   try {
     assert.deepEqual((await readPublicationSettings(app.repo.root)).classification, defaultIssueClassification());
+  } finally {
+    await app.cleanup();
+  }
+});
+
+test("the board shows the stage of a live run, not the stage the Work is ready for", async () => {
+  // A live run is the activity the board should report. Starting a Review run
+  // moves the status to Review as soon as the run opens, before it completes.
+  const app = await createTestApp({ remoteRepository: REPOSITORY });
+  try {
+    const workId = await app.createWork({ title: "Live run" });
+    await app.runStage("plan", workId);
+    await app.publication.reconcile({ repository: REPOSITORY, remote: "origin", workId });
+    const lastReconcileStatus = (): string => {
+      const calls = app.github.calls.filter((call) => call.op === "reconcile");
+      return (calls.at(-1)?.args as { status: string }).status;
+    };
+    assert.equal(lastReconcileStatus(), "Plan", "after a Plan run completes the board sits at Plan while the Work waits");
+
+    const started = await app.works.start("review", workId, "test-harness", "test-model", TODO);
+    const result = await app.publication.reconcile({ repository: REPOSITORY, remote: "origin", workId });
+    assert.deepEqual(result.project.statuses, [{ workId, status: "Review", outcome: "None" }], "the board moves to Review as soon as the run starts");
+    assert.equal(lastReconcileStatus(), "Review");
+
+    await app.works.complete("review", workId, started.runId, {
+      decision: "continue",
+      summary: "review continues",
+      handoff: "next",
+      todo: DONE_TODO,
+      artifacts: [],
+    });
+  } finally {
+    await app.cleanup();
+  }
+});
+
+test("a terminal Work projects Done and a repeated sync with no new run does not move the status", async () => {
+  // Status changes are reconciliation, not free-form state: once a Work is
+  // terminal its Project status is Done, and a sync with no new run writes
+  // the same value back, so the board value never moves.
+  const app = await createTestApp({ remoteRepository: REPOSITORY });
+  try {
+    const workId = await app.createWork({ title: "Terminal stability" });
+    await app.runThrough(workId);
+    await app.publication.reconcile({ repository: REPOSITORY, remote: "origin", workId });
+    const lastReconcileArgs = (): { issue: number; status: string; outcome: string } => {
+      const calls = app.github.calls.filter((call) => call.op === "reconcile");
+      return calls.at(-1)?.args as { issue: number; status: string; outcome: string };
+    };
+    assert.deepEqual(lastReconcileArgs(), { issue: 1, status: "Done", outcome: "Accepted" }, "the terminal status is Done");
+
+    const result = await app.publication.reconcile({ repository: REPOSITORY, remote: "origin", workId });
+    assert.deepEqual(result.project.statuses, [{ workId, status: "Done", outcome: "Accepted" }], "the derived status is unchanged");
+    assert.deepEqual(lastReconcileArgs(), { issue: 1, status: "Done", outcome: "Accepted" }, "the second sync writes the same status back, so the board value does not move");
   } finally {
     await app.cleanup();
   }
