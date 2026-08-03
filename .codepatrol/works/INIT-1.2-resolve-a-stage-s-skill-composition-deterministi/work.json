@@ -38,10 +38,10 @@
     "number": 30
   },
   "workflow": {
-    "state": "active",
-    "stage": "verify",
+    "state": "ready",
+    "stage": "ship",
     "attempt": 1,
-    "updatedAt": "2026-08-03T21:19:18.908Z"
+    "updatedAt": "2026-08-03T21:24:56.838Z"
   },
   "attempts": [
     {
@@ -391,13 +391,14 @@
       "stage": "verify",
       "attempt": 1,
       "runId": "b90953f4-f4d2-4378-9649-f955591273eb",
-      "status": "active",
+      "status": "completed",
       "execution": {
         "role": "verifier",
         "harness": "opencode",
         "model": "google/antigravity-gemini-3.1-pro"
       },
       "startedAt": "2026-08-03T21:19:18.908Z",
+      "finishedAt": "2026-08-03T21:24:56.838Z",
       "todo": [
         {
           "id": "V1",
@@ -425,7 +426,121 @@
           "description": "Run verify complete."
         }
       ],
+      "result": {
+        "decision": "continue",
+        "summary": "Verification complete. Candidate clean, skill composition logic strictly determines pure resolutions, all tests passed.",
+        "handoff": "# Verification Report\n\nCandidate `51bb15ee36017fae072889493c13ae9f3a0300ad` was verified successfully.\n\n## Acceptance\n- All acceptance criteria strictly adhere to pure function deterministic stage composition testing.\n- `npm run verify` executed successfully.\n\nNo product issues identified.",
+        "todo": [
+          {
+            "id": "V1",
+            "status": "completed",
+            "note": "Pinned candidate to 51bb15ee36017fae072889493c13ae9f3a0300ad."
+          },
+          {
+            "id": "V2",
+            "status": "completed",
+            "note": "Inspected changed files. Deterministic composition via pure function mapping exactly one stage validated."
+          },
+          {
+            "id": "V3",
+            "status": "completed",
+            "note": "Executed npm run verify."
+          },
+          {
+            "id": "V4",
+            "status": "completed",
+            "note": "Recorded traces and evidence."
+          },
+          {
+            "id": "V5",
+            "status": "completed",
+            "note": "Completed verify stage."
+          }
+        ],
+        "artifacts": []
+      },
+      "traces": [
+        {
+          "id": "4e545e340de8",
+          "type": "observation",
+          "message": "Candidate pinned at 51bb15ee36017fae072889493c13ae9f3a0300ad with baseline at c291684e0a80caee89ff5231def3cec2b278524f.",
+          "at": "2026-08-03T21:19:48.797Z",
+          "data": {
+            "candidate": "51bb15ee36017fae072889493c13ae9f3a0300ad",
+            "baseline": "c291684e0a80caee89ff5231def3cec2b278524f"
+          }
+        },
+        {
+          "id": "eab27185dcda",
+          "type": "observation",
+          "message": "Inspected changed files. src/core/skill-resolution.ts correctly exposes resolveComposition to deterministic order and validate capabilities. Tests successfully assert the exactly-one stage skill, test capabilities validation and dependencies.",
+          "at": "2026-08-03T21:20:00.830Z",
+          "data": {
+            "files": [
+              "src/core/skill-resolution.ts",
+              "src/test/skill-resolution.test.ts",
+              "src/cli/commands/skill.ts",
+              "src/core/skill.ts"
+            ]
+          }
+        },
+        {
+          "id": "45f64f4c0869",
+          "type": "command",
+          "message": "Executed npm run verify as required by policy.",
+          "at": "2026-08-03T21:22:34.628Z",
+          "command": [
+            "npm",
+            "run",
+            "verify"
+          ],
+          "exitCode": 0
+        },
+        {
+          "id": "a0cf364e650a",
+          "type": "command",
+          "message": "npm run verify exited with 0",
+          "at": "2026-08-03T21:24:56.837Z",
+          "data": {
+            "source": "codepatrol",
+            "workId": "INIT-1.2-resolve-a-stage-s-skill-composition-deterministi",
+            "runId": "b90953f4-f4d2-4378-9649-f955591273eb",
+            "attempt": 1,
+            "candidateCommit": "51bb15ee36017fae072889493c13ae9f3a0300ad",
+            "policyHash": "738b7dca7b2b865e7de12c3f1ca6c05da0d1762f30e202a18709b6290fafb7b4",
+            "startedAt": "2026-08-03T21:22:54.014Z",
+            "finishedAt": "2026-08-03T21:24:56.796Z",
+            "stdout": {
+              "digest": "2646294ac965f886783df6a25a62bffc6bb14798b7fac2102a3edf2789efbc4c",
+              "bytes": 27923,
+              "truncated": true,
+              "redactions": 0
+            },
+            "stderr": {
+              "digest": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+              "bytes": 0,
+              "truncated": false,
+              "redactions": 0
+            },
+            "outputLog": ".codepatrol/runtime/works/INIT-1.2-resolve-a-stage-s-skill-composition-deterministi/current/verify/01.log"
+          },
+          "command": [
+            "npm",
+            "run",
+            "verify"
+          ],
+          "exitCode": 0
+        }
+      ],
       "verificationTarget": {
+        "attempt": 1,
+        "candidateCommit": "51bb15ee36017fae072889493c13ae9f3a0300ad",
+        "manifestCommit": "5df9f10e94274c9f78cc618a66795b2d09dfe97c",
+        "baselineCommit": "c291684e0a80caee89ff5231def3cec2b278524f",
+        "targetCommit": "c291684e0a80caee89ff5231def3cec2b278524f",
+        "policyHash": "738b7dca7b2b865e7de12c3f1ca6c05da0d1762f30e202a18709b6290fafb7b4"
+      },
+      "verifiedCandidate": {
         "attempt": 1,
         "candidateCommit": "51bb15ee36017fae072889493c13ae9f3a0300ad",
         "manifestCommit": "5df9f10e94274c9f78cc618a66795b2d09dfe97c",
