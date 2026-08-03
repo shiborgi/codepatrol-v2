@@ -1,0 +1,44 @@
+{
+  "schemaVersion": 1,
+  "type": "codepatrol-work",
+  "work": {
+    "id": "INIT-1.4-record-the-effective-skill-composition-on-every",
+    "title": "Record the effective skill composition on every stage attempt",
+    "description": "Bind a run to the skills it declared it ran under. Stage start accepts the declared composition the way it already accepts --harness and --model (src/cli/commands/stage.ts), validates it against resolution, and stores the resolved identities, versions, digests, and resolution digest as an optional additive field on the attempt beside ExecutionIdentity. The record is immutable once written and survives into the terminal manifest. The honest boundary, stated the same way the harness and model are: the Core cannot know what the harness actually loaded. It can refuse a declaration that does not resolve and preserve what was declared, so an audit is possible and a false claim is at least recorded.",
+    "issueType": "Feature",
+    "priority": "p0",
+    "acceptance": [
+      "A stage attempt records the resolved skill identities, versions, digests, and resolution digest, and a declaration that does not resolve refuses the start",
+      "The recorded composition is unchanged by later attempts and is present in the manifest of a terminal Work",
+      "A manifest written without the field still parses, and schemaVersion stays 1",
+      "HandoffV1 exposes the effective composition, so an executor can read what it is running under",
+      "Every lifecycle transition, return, verification binding, and terminal outcome behaves as before"
+    ],
+    "createdAt": "2026-08-03T11:16:22.452Z",
+    "requestedBy": "spec",
+    "initiative": {
+      "id": "INIT-1",
+      "position": 4
+    },
+    "origin": {
+      "createdAt": "2026-08-03T11:16:22.452Z"
+    }
+  },
+  "repository": {
+    "baseRef": "refs/heads/main"
+  },
+  "graph": {
+    "blockedBy": [
+      "INIT-1.2-resolve-a-stage-s-skill-composition-deterministi"
+    ]
+  },
+  "issue": null,
+  "workflow": {
+    "state": "ready",
+    "stage": "plan",
+    "attempt": 1,
+    "updatedAt": "2026-08-03T11:16:22.452Z"
+  },
+  "attempts": [],
+  "completion": null
+}
