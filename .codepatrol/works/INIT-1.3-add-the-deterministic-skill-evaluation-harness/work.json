@@ -37,10 +37,10 @@
     "number": 31
   },
   "workflow": {
-    "state": "active",
-    "stage": "review",
+    "state": "ready",
+    "stage": "build",
     "attempt": 1,
-    "updatedAt": "2026-08-03T22:28:27.433Z"
+    "updatedAt": "2026-08-03T22:30:34.276Z"
   },
   "attempts": [
     {
@@ -160,13 +160,14 @@
       "stage": "review",
       "attempt": 1,
       "runId": "17c1ef69-5143-4e5f-9e78-483e7e66950d",
-      "status": "active",
+      "status": "completed",
       "execution": {
         "role": "reviewer",
         "harness": "opencode",
         "model": "minimax-coding-plan/MiniMax-M3"
       },
       "startedAt": "2026-08-03T22:28:27.433Z",
+      "finishedAt": "2026-08-03T22:30:34.276Z",
       "todo": [
         {
           "id": "R1",
@@ -182,6 +183,101 @@
           "id": "R3",
           "title": "Write review report and seal verdict",
           "description": "Write report.md and evidence, curate traces.md, record the run, and checkpoint or return."
+        }
+      ],
+      "result": {
+        "decision": "continue",
+        "summary": "Plan approved. The deterministic skill evaluation harness is decision-complete: every acceptance criterion maps to named tasks and files, every reference resolves against main, the CI shape needs no workflow change, and the non-goals are honest boundaries (no model evaluation, no persisted history, no sandbox network blocking — offline by construction).",
+        "handoff": "# Review Report: INIT-1.3 Add the deterministic skill evaluation harness\n\n## Verdict\n- decision: continue\n- rationale: plan is executable and decision-complete\n- return targets: none\n\n## R1 — SPEC-FORMAT / PLAN-FORMAT audit\nEvery acceptance criterion maps to a named task and to files that exist or will exist in the Build:\n\n| Acceptance | File / Test |\n|---|---|\n| 1. Strict parse, stable unique scenario ids, duplicates refused | src/core/skill-suite.ts + src/test/skill-suite.test.ts |\n| 2. Isolated fixture, real repo untouched, network off by construction | src/cli/skill-evaluation.ts + isolation test |\n| 3. Identity/digest on every result, five statuses | result capture + runner tests |\n| 4. Baseline passing suite + broken-expectation failure | skills/codepatrol-verify/suite.json + tests |\n| 5. CI without any model credential | npm test glob picks up src/test/skill-suite.test.ts |\n\nTasks form a strict DAG (P1 → P2 → P3 → P4 → P5). Each task names its file set. The blast radius is exactly the union of the five files the plan declares. The verification command is named: `npm run verify` (typecheck + tests + smoke + --help). The plan states the non-goals explicitly — model-backed evaluation, persisted history, sandbox network blocking — each one a deliberate boundary that Review could challenge but should not.\n\n## R2 — repository validation\nEvery reference in the handoff resolves against main:\n\n- src/core/skill.ts: parseSkillManifest, serializeSkillManifest, skillContentDigest, SKILL_SCHEMA_VERSION=1, SKILL_TYPE='codepatrol-skill' all present.\n- src/core/skill-resolution.ts: resolveComposition(stage, manifests, hostCapabilities) with sha256 digest over canonical JSON of entries — exactly what the runner needs.\n- src/cli/commands/skill.ts: listShippedSkills(directory) and HOST_CAPABILITIES = ['cli'] as const are present; the new `skill test <id>` action will sit beside `list` and `resolve` using the same parseArgs shape.\n- src/cli/command.ts: CommandContext.setExitCode is optional and wired in src/cli/main.ts to process.exitCode; src/cli/commands/doctor.ts demonstrates the pattern with setExitCode?.(1) on a failed check.\n- src/test/support/repo.ts: createTestRepo, createBareRemote, mkdtemp under tmpdir, neutralized GIT_ENV (GIT_CONFIG_GLOBAL=/dev/null, GIT_CONFIG_SYSTEM=/dev/null, GIT_TERMINAL_PROMPT=0, fixed identity/timezone). The plan correctly notes the runner must own its own throwaway-repo creation in product code — these helpers are test-only.\n- src/test/skill.test.ts and src/test/skill-resolution.test.ts: parser-discipline patterns (assert.deepEqual, try/catch helper that asserts CodepatrolError code). The new test file follows the same pattern.\n- .github/workflows/verify.yml: runs npm ci + typecheck + test + smoke; npm test glob picks up dist/test/*.test.js automatically. The new test file is wired without workflow changes.\n- bin/codepatrol.js: CLI entry point the command assertions will target.\n- No collision: a grep across src/ for SUITE_SCHEMA_VERSION, parseSkillSuite, runSkillSuite returns nothing — the plan introduces all three fresh.\n- docs/ has no skill-suite references; the plan does not promise doc updates in v1, which is correct (INIT-1.5 is the coverage expansion).\n\nNo hidden production edits. File set is exactly what the handoff declares.\n\n## Observations on the design choices\n\n1. The five-status vocabulary (passed|failed|error|skipped|unresolved) is precisely named and the trigger conditions for each are stated. The `skipped` status is for a declared optional capability being absent; the runner can implement this per-scenario or per-assertion without touching the resolver, which is correctly noted as strict (SKILL_CAPABILITY_UNMET on unmet capability is the resolver's contract).\n2. Offline-by-construction (mkdtemp, no remote, GIT_TERMINAL_PROMPT=0, credential-ish env scrubbed) is the right v1 boundary. Sandbox network blocking is a non-goal, named honestly; Review agrees this is the right call for v1 and not a step to slip.\n3. The strict parser mirrors parseSkillManifest's discipline: unknown fields refuse, scenario ids are slugs, duplicates refuse STATE_CORRUPT. This is consistent with the existing skill manifest discipline and keeps v1 narrow.\n4. The baseline suite targets codepatrol-verify — the crispest protocol skill — with content scenarios for fresh-evidence and pinned-candidate rules, plus one command scenario driving a fixture through spec apply and a malformed plan start. The broken-expectation proof is a test that flips one expectation and requires the runner to report failed. This is the minimum that proves the mechanism end to end, with full coverage deferred to INIT-1.5.\n5. `setExitCode?.(1)` on any failed or error scenario keeps the runner consistent with doctor.ts and ensures the CI integration is honest: a failing suite fails the job.\n\n## No returns required\nThe plan is executable, decision-complete, references all check out, and the non-goals are honest. Build proceeds.\n\n## Next command (do not invoke from this stage)\n```\ncodepatrol build start INIT-1.3-add-the-deterministic-skill-evaluation-harness --harness <harness> --model <model> --todo <todo.json>\n```",
+        "todo": [
+          {
+            "id": "R1",
+            "status": "completed",
+            "note": "Audited v1 plan against SPEC-FORMAT and PLAN-FORMAT. All five acceptance criteria map to named tasks and files. Tasks form a DAG. Verification command is named."
+          },
+          {
+            "id": "R2",
+            "status": "completed",
+            "note": "Validated every reference in the handoff against main. All paths exist, all symbols resolve, no collisions, CI shape needs no workflow change."
+          },
+          {
+            "id": "R3",
+            "status": "completed",
+            "note": "Review report written and verdict sealed as continue."
+          }
+        ],
+        "artifacts": []
+      },
+      "traces": [
+        {
+          "id": "cdc06a416d14",
+          "type": "observation",
+          "message": "Audited the v1 Plan handoff against SPEC-FORMAT and PLAN-FORMAT. All five acceptance criteria are testable and map cleanly onto named tasks: (1) strict parse and stable unique scenario ids → src/core/skill-suite.ts + parser tests; (2) isolated fixture, real repo untouched, network off by construction → src/cli/skill-evaluation.ts + isolation test; (3) identity/digest on every result with five statuses → result capture + runner tests; (4) baseline passing suite + broken-expectation failure → skills/codepatrol-verify/suite.json + tests; (5) CI without credentials → npm test glob picks up src/test/skill-suite.test.ts. Tasks form a strict DAG (P1 inspect → P2 design → P3 baseline/CI → P4 write handoff → P5 traces, no edges back). Each task names its file set: core parser (src/core/skill-suite.ts), runner (src/cli/skill-evaluation.ts), CLI integration (src/cli/commands/skill.ts), baseline suite (skills/codepatrol-verify/suite.json), tests (src/test/skill-suite.test.ts). The blast radius is the union of those files plus the existing skill-resolution surface. The plan names the verification command for Build (`npm run verify` = typecheck + tests + smoke + --help). The plan explicitly excludes model-backed evaluation, persisted history, and sandbox-level network blocking as non-goals — each one a deliberate boundary. The five-status vocabulary (passed|failed|error|skipped|unresolved) is precisely named, and the trigger conditions for each are stated. The schema is strict (unknown fields refuse, scenario id must be a non-empty slug, duplicate ids refuse), mirroring the parser discipline already established by src/core/skill.ts. The handoff covers every acceptance criterion; nothing is hidden.",
+          "at": "2026-08-03T22:29:58.572Z",
+          "data": {
+            "acceptanceToTaskMap": {
+              "1": "src/core/skill-suite.ts + parser tests",
+              "2": "src/cli/skill-evaluation.ts + isolation test",
+              "3": "result capture + runner tests",
+              "4": "skills/codepatrol-verify/suite.json + broken-expectation test",
+              "5": "npm test glob picks up src/test/skill-suite.test.ts"
+            },
+            "taskDag": [
+              "P1",
+              "P2",
+              "P3",
+              "P4",
+              "P5"
+            ],
+            "fileSet": [
+              "src/core/skill-suite.ts (new)",
+              "src/cli/skill-evaluation.ts (new)",
+              "src/cli/commands/skill.ts (extends skill test <id>)",
+              "skills/codepatrol-verify/suite.json (new)",
+              "src/test/skill-suite.test.ts (new)"
+            ],
+            "verifyCommand": "npm run verify",
+            "nonGoals": [
+              "model-backed evaluation",
+              "persisted result history",
+              "sandbox-level network blocking"
+            ],
+            "statuses": [
+              "passed",
+              "failed",
+              "error",
+              "skipped",
+              "unresolved"
+            ]
+          }
+        },
+        {
+          "id": "349f9781d050",
+          "type": "observation",
+          "message": "Validated every reference in the v1 Plan handoff against the live repository on main. (a) src/core/skill.ts exists at the expected path; exports parseSkillManifest, serializeSkillManifest, skillContentDigest, SKILL_SCHEMA_VERSION, SKILL_TYPE, SKILL_KINDS — all referenced symbols resolve. (b) src/core/skill-resolution.ts exists; exports resolveComposition(stage, manifests, hostCapabilities), SkillComposition, SkillCompositionEntry, SkillCompositionReason with the documented digest = sha256(canonical JSON) — the API the plan builds on is exactly present. (c) src/cli/commands/skill.ts exists; exports listShippedSkills(directory) and HOST_CAPABILITIES = ['cli'] as const; the new `skill test <id>` action will land alongside the existing `list` and `resolve` actions with the same parseArgs shape. (d) CommandSpec.run receives a context that exposes setExitCode (verified in src/cli/command.ts:19 and used by src/cli/commands/doctor.ts:12 to exit 1 on a failed check) — the runner can exit nonzero on failed/error scenarios without throwing. (e) src/test/support/repo.ts exists; exports createTestRepo, createBareRemote, mkdtemp-driven tmpdir directory, neutralized GIT_ENV (GIT_CONFIG_GLOBAL/SYSTEM = /dev/null, GIT_TERMINAL_PROMPT=0, fixed identity and timezone) — every fixture primitive the plan names already exists in the test support layer, except the runner needs its own because product code must not depend on src/test. The plan correctly notes this. (f) src/test/skill.test.ts and src/test/skill-resolution.test.ts exist with the parser-discipline patterns the new src/test/skill-suite.test.ts will mirror (assert.deepEqual, CodepatrolError code check via try/catch helper). (g) .github/workflows/verify.yml runs npm ci + typecheck + test + smoke; the npm test glob picks up dist/test/*.test.js automatically, so the new src/test/skill-suite.test.ts is wired by the existing CI without workflow changes. (h) node bin/codepatrol.js --help confirms the CLI entry point the command assertions target; bin/codepatrol.js exists at the root. (i) No source file today imports SUITE_SCHEMA_VERSION, parseSkillSuite, or runSkillSuite — confirmed by grep — so the plan does not collide with existing product code. (j) docs/ has no skill-suite references; the plan does not promise doc updates in v1, which is correct because INIT-1.5 is the coverage expansion. No hidden production edits; the file set is exactly what the handoff declares.",
+          "at": "2026-08-03T22:30:13.996Z",
+          "data": {
+            "verifiedPaths": {
+              "src/core/skill.ts": "exists; parseSkillManifest, serializeSkillManifest, skillContentDigest exported",
+              "src/core/skill-resolution.ts": "exists; resolveComposition with sha256 digest over canonical JSON",
+              "src/cli/commands/skill.ts": "exists; listShippedSkills + HOST_CAPABILITIES=['cli'] + parseArgs/exactPositionals",
+              "src/cli/command.ts": "setExitCode optional in CommandContext",
+              "src/cli/commands/doctor.ts": "uses context.setExitCode?.(1) on failed check",
+              "src/cli/main.ts": "setExitCode wired to process.exitCode",
+              "src/test/support/repo.ts": "createTestRepo, createBareRemote, mkdtemp, neutralized GIT_ENV",
+              "src/test/skill.test.ts": "parser pattern with corruptOf helper",
+              "src/test/skill-resolution.test.ts": "resolution tests",
+              ".github/workflows/verify.yml": "typecheck + test + smoke; npm test glob picks up dist/test/*.test.js",
+              "bin/codepatrol.js": "CLI entry point exists"
+            },
+            "noCollisions": [
+              "SUITE_SCHEMA_VERSION",
+              "parseSkillSuite",
+              "runSkillSuite"
+            ],
+            "ciShape": "npm test glob is automatic; no workflow change needed for the new test file",
+            "offlineByConstruction": "GIT_CONFIG_GLOBAL=/dev/null, GIT_CONFIG_SYSTEM=/dev/null, GIT_TERMINAL_PROMPT=0 are the existing primitives the runner must reuse to be offline by construction; no network sandbox"
+          }
         }
       ]
     }
