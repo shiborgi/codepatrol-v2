@@ -38,10 +38,10 @@
     "number": 30
   },
   "workflow": {
-    "state": "ready",
+    "state": "active",
     "stage": "verify",
     "attempt": 1,
-    "updatedAt": "2026-08-03T21:15:22.716Z"
+    "updatedAt": "2026-08-03T21:19:18.908Z"
   },
   "attempts": [
     {
@@ -386,6 +386,53 @@
           "at": "2026-08-03T21:14:55.250Z"
         }
       ]
+    },
+    {
+      "stage": "verify",
+      "attempt": 1,
+      "runId": "b90953f4-f4d2-4378-9649-f955591273eb",
+      "status": "active",
+      "execution": {
+        "role": "verifier",
+        "harness": "opencode",
+        "model": "google/antigravity-gemini-3.1-pro"
+      },
+      "startedAt": "2026-08-03T21:19:18.908Z",
+      "todo": [
+        {
+          "id": "V1",
+          "title": "Pin candidate and baseline commits",
+          "description": "Report verificationTarget.candidateCommit and baselineCommit."
+        },
+        {
+          "id": "V2",
+          "title": "Inspect changed files and test coverage",
+          "description": "Inspect every changed file and ensure it meets acceptance."
+        },
+        {
+          "id": "V3",
+          "title": "Execute required commands",
+          "description": "Run npm run verify."
+        },
+        {
+          "id": "V4",
+          "title": "Record traces and evidence",
+          "description": "Record minimum evidence (acceptance criteria outcomes, test diffs, clean candidate)."
+        },
+        {
+          "id": "V5",
+          "title": "Complete verify",
+          "description": "Run verify complete."
+        }
+      ],
+      "verificationTarget": {
+        "attempt": 1,
+        "candidateCommit": "51bb15ee36017fae072889493c13ae9f3a0300ad",
+        "manifestCommit": "5df9f10e94274c9f78cc618a66795b2d09dfe97c",
+        "baselineCommit": "c291684e0a80caee89ff5231def3cec2b278524f",
+        "targetCommit": "c291684e0a80caee89ff5231def3cec2b278524f",
+        "policyHash": "738b7dca7b2b865e7de12c3f1ca6c05da0d1762f30e202a18709b6290fafb7b4"
+      }
     }
   ],
   "completion": null
