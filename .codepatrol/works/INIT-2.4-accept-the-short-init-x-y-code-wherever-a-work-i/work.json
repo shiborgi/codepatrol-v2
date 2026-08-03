@@ -33,11 +33,46 @@
     "number": 39
   },
   "workflow": {
-    "state": "ready",
+    "state": "active",
     "stage": "plan",
     "attempt": 1,
-    "updatedAt": "2026-08-03T13:58:06.447Z"
+    "updatedAt": "2026-08-03T16:12:56.507Z"
   },
-  "attempts": [],
+  "attempts": [
+    {
+      "stage": "plan",
+      "attempt": 1,
+      "runId": "b4bcf6f7-9447-4799-b0c8-1ecb47b9381d",
+      "status": "active",
+      "execution": {
+        "role": "planner",
+        "harness": "opencode",
+        "model": "kimi-for-coding/k3"
+      },
+      "startedAt": "2026-08-03T16:12:56.507Z",
+      "todo": [
+        {
+          "id": "P1",
+          "title": "Map every place a work-id enters the CLI/services and where INVALID_WORK_ID is raised"
+        },
+        {
+          "id": "P2",
+          "title": "Decide the single resolution point for the short INIT-x.y code"
+        },
+        {
+          "id": "P3",
+          "title": "Decide test coverage (plan start, all commands, unknown code, full id unchanged)"
+        },
+        {
+          "id": "P4",
+          "title": "Write decision-complete plan covering all three acceptance criteria"
+        },
+        {
+          "id": "P5",
+          "title": "Record traces; complete Plan with decision continue"
+        }
+      ]
+    }
+  ],
   "completion": null
 }
