@@ -173,6 +173,26 @@ test("sync rejects an invalid Work id and surfaces publication failures", async 
   assert.equal(calls, 1);
 });
 
+test("sync --work accepts a short INIT-x.y code alongside the full id", async () => {
+  // The CLI flag is the boundary where a caller types a handle, so the short
+  // code must pass validation here even though the resolver is what the
+  // service ultimately relies on for existence.
+  const sync = command("sync");
+  const seen: string[] = [];
+  const fake: CommandContext = {
+    ...context(".", {}),
+    publication: {
+      automatic: async (input) => {
+        seen.push(input.workId ?? "");
+        throw new CodepatrolError("GH_ERROR", "publication failed");
+      },
+    },
+  };
+
+  await assert.rejects(sync.run(fake, ["--work", "INIT-0.1"]), (error: unknown) => error instanceof CodepatrolError && error.code === "GH_ERROR");
+  assert.deepEqual(seen, ["INIT-0.1"], "the short code passes CLI validation and is forwarded to the service unchanged");
+});
+
 test("public JSON examples pass the real CLI decoders", async () => {
   const controls = await mkdtemp(path.join(os.tmpdir(), "codepatrol-examples-"));
   const example = async (name: string): Promise<string> => {

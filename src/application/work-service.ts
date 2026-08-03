@@ -184,6 +184,7 @@ export class WorkService {
   }
 
   async show(workId: string): Promise<WorkView> {
+    workId = await this.store.resolve(workId);
     const revision = await this.store.read(workId);
     return viewOf(revision, await this.unresolvedBlockerIds(revision.manifest));
   }
@@ -215,16 +216,19 @@ export class WorkService {
   }
 
   async inspect(workId: string): Promise<RepositoryInspection> {
+    workId = await this.store.resolve(workId);
     const { manifest } = await this.store.read(workId);
     return this.worktrees.inspect(workId, manifest.repository.baseRef, manifest.repository.createdFromCommit, manifest.repository.baselineCommit);
   }
 
   async refresh(workId: string): Promise<WorkView> {
+    workId = await this.store.resolve(workId);
     return viewOf(await this.store.refresh(workId, this.clock.now().toISOString()));
   }
 
   /** Materializes the checkout on demand; a Work never depends on one existing. */
   async checkout(workId: string): Promise<string> {
+    workId = await this.store.resolve(workId);
     const revision = await this.store.read(workId);
     const manifest = revision.manifest;
     if (manifest.workflow.state === "terminal") throw new CodepatrolError("INVALID_TRANSITION", `Work is terminal: ${workId}.`);
@@ -281,6 +285,7 @@ export class WorkService {
   }
 
   async start(stage: Stage, workId: string, harness: string, model: string, todo: TodoItem[], options: { worktree?: boolean } = {}): Promise<StartResult> {
+    workId = await this.store.resolve(workId);
     if (harness.trim() === "" || model.trim() === "") throw new CodepatrolError("INVALID_INPUT", "Harness and model are required.");
     if (stage === "build") {
       const { manifest } = await this.store.read(workId);
@@ -348,6 +353,7 @@ export class WorkService {
   }
 
   async resume(stage: Stage, workId: string): Promise<StartResult> {
+    workId = await this.store.resolve(workId);
     const { manifest } = await this.store.read(workId);
     const active = manifest.attempts.at(-1);
     if (manifest.workflow.state !== "active" || active === undefined || active.status !== "active" || active.stage !== stage) {
@@ -384,6 +390,7 @@ export class WorkService {
    * per trace.
    */
   async trace(stage: Stage, workId: string, runId: string, entry: TraceInput): Promise<ManifestTrace> {
+    workId = await this.store.resolve(workId);
     const { manifest } = await this.store.read(workId);
     const active = manifest.attempts.at(-1);
     if (manifest.workflow.state !== "active" || active?.runId !== runId || active.stage !== stage) {
@@ -472,6 +479,7 @@ export class WorkService {
   }
 
   async complete(stage: Stage, workId: string, runId: string, input: ResultInput): Promise<WorkView & { integration?: IntegrationResult }> {
+    workId = await this.store.resolve(workId);
     return this.git.withLock(`work/${workId}`, () =>
       (["build", "verify", "ship"] as Stage[]).includes(stage)
         ? this.git.withLock("repository", () => this.completeLocked(stage, workId, runId, input))

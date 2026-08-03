@@ -23,7 +23,9 @@
     }
   },
   "repository": {
-    "baseRef": "refs/heads/main"
+    "baseRef": "refs/heads/main",
+    "createdFromCommit": "e6a6e7194efc6e94e8994d02abe68fc10f8140cc",
+    "baselineCommit": "e6a6e7194efc6e94e8994d02abe68fc10f8140cc"
   },
   "graph": {
     "blockedBy": []
@@ -33,10 +35,10 @@
     "number": 39
   },
   "workflow": {
-    "state": "ready",
-    "stage": "build",
+    "state": "terminal",
+    "stage": "ship",
     "attempt": 1,
-    "updatedAt": "2026-08-03T16:21:15.385Z"
+    "updatedAt": "2026-08-03T17:02:14.609Z"
   },
   "attempts": [
     {
@@ -197,7 +199,344 @@
         ],
         "artifacts": []
       }
+    },
+    {
+      "stage": "build",
+      "attempt": 1,
+      "runId": "f17cf548-ea38-4bab-bd90-e68a35ad9963",
+      "status": "completed",
+      "execution": {
+        "role": "builder",
+        "harness": "opencode",
+        "model": "opencode-current"
+      },
+      "startedAt": "2026-08-03T16:34:06.082Z",
+      "finishedAt": "2026-08-03T16:48:31.125Z",
+      "todo": [
+        {
+          "id": "B1",
+          "title": "Confirm WORK_CODE / workCodeOf in src/core/identifiers.ts (added by INIT-2.2)"
+        },
+        {
+          "id": "B2",
+          "title": "Add resolve(idOrCode) to GitManifestStore in src/adapters/manifest-store.ts"
+        },
+        {
+          "id": "B3",
+          "title": "Resolve at entry of every WorkService method in src/application/work-service.ts"
+        },
+        {
+          "id": "B4",
+          "title": "Resolve input.workId in PublicationService.automatic and syncExclusive"
+        },
+        {
+          "id": "B5",
+          "title": "Accept WORK_CODE in sync --work flag validation in src/cli/commands/sync.ts"
+        },
+        {
+          "id": "B6",
+          "title": "Add tests in work-service.test.ts, publication.test.ts, cli-registry.test.ts"
+        },
+        {
+          "id": "B7",
+          "title": "Run npm run verify; commit; complete Build"
+        }
+      ],
+      "result": {
+        "decision": "continue",
+        "summary": "All seven todos completed. GitManifestStore gains a single resolve(idOrCode) that returns a full WORK_ID as-is, matches a WORK_CODE against the same enumeration list() uses, and throws INVALID_WORK_ID for an unknown code. WorkService's eight entry methods and PublicationService.automatic/syncExclusive resolve caller-supplied ids at entry, so every downstream consumer (refs, branches, scope filters, issue matching) always sees the canonical slugged id. The sync CLI --work flag accepts WORK_ID or WORK_CODE, so the CLI is the boundary where a caller types a handle. WORK_CODE was already added to identifiers.ts by INIT-2.2 and is reused here.",
+        "handoff": "# Build: INIT-2.4\n\n## Changed files (product)\n- src/adapters/manifest-store.ts — new `resolve(idOrCode: string): Promise<string>`: a full WORK_ID returns as-is (no extra git call); a WORK_CODE enumerates the same refs `list()` walks and returns the unique match (throws INVALID_WORK_ID for no match, STATE_CORRUPT for non-unique).\n- src/application/work-service.ts — each of the eight entry methods (show, inspect, refresh, checkout, start, resume, trace, complete) calls `workId = await this.store.resolve(workId)` as the first line, so downstream sees the canonical id.\n- src/application/publication.ts — `automatic` and `syncExclusive` resolve `input.workId` through the store instead of testing WORK_ID format; the scope passed to `remote.sync`, the issue-resolution scope, and the per-Work entry lookup all use the canonical id; WORK_ID import removed.\n- src/cli/commands/sync.ts — the --work flag validation accepts WORK_ID or WORK_CODE.\n- src/test/work-service.test.ts — two new tests: short code resolves to the same view/run as the full id, and an unknown short code fails with INVALID_WORK_ID naming the input.\n- src/test/publication.test.ts — new test: a scoped publication by short code publishes only that Work.\n- src/test/cli-registry.test.ts — new test: sync --work accepts a short code and forwards it to the service.\n\n## Validation\n- `npm run verify` green: typecheck, 257/257 unit tests (4 new), smoke, --help.\n\n## Commits\n- 91b0f38 INIT-2.4-accept-the-short-init-x-y-code-wherever-a-work-i: Accept the short INIT-x.y code wherever a Work id is passed (product)\n- 53b9aac codepatrol(INIT-2.4-accept-the-short-init-x-y-code-wherever-a-work-i): manifest projection (state update for the active Build run)\n\n## Candidate\n- The product commit `91b0f38` carries every code and test change. The branch head `53b9aac` is the manifest projection that the Build run wrote on its way to completion. Both are clean and reproducible from `e6a6e71`.\n\n## Acceptance\n1. plan start with a short code resolves the unique Work and starts the run like the full id — WorkService.start resolves at entry + the new work-service test.\n2. The short code resolves in every work-id command — every command funnels through WorkService or PublicationService, both of which now resolve; new tests in work-service, publication, and cli-registry pin the behavior at the three call sites that back stage commands, sync --work, and the post-stage publication.\n3. An unknown short code fails with INVALID_WORK_ID naming the input, and the full slugged id keeps working — the resolver throws INVALID_WORK_ID with the input in the message (new work-service test); the full slugged id is the common path of `resolve` (returns as-is), and the full existing suite passes unchanged.\n\n## Notes\n- A bug surfaced and was fixed during Build: the new `syncExclusive` had to use the resolved `workId` (not the raw `input.workId`) when feeding `resolveIssues` and when looking up the scoped entry, or the scoped publication would have produced zero Issues. The fix is one-line and the regression test (scoped publication by short code) pins it.",
+        "todo": [
+          {
+            "id": "B1",
+            "status": "completed",
+            "note": "WORK_CODE and workCodeOf are already in src/core/identifiers.ts from INIT-2.2 and are reused; no edit needed in this Build."
+          },
+          {
+            "id": "B2",
+            "status": "completed",
+            "note": "Added resolve(idOrCode) to GitManifestStore. Full ids short-circuit; short codes enumerate manifest/archive refs plus the base; unique by construction."
+          },
+          {
+            "id": "B3",
+            "status": "completed",
+            "note": "All eight WorkService entry methods now resolve at entry. Downstream code unchanged."
+          },
+          {
+            "id": "B4",
+            "status": "completed",
+            "note": "automatic and syncExclusive resolve input.workId; the scope and entry-lookup paths use the resolved id; WORK_ID import removed."
+          },
+          {
+            "id": "B5",
+            "status": "completed",
+            "note": "sync --work validation accepts WORK_ID or WORK_CODE."
+          },
+          {
+            "id": "B6",
+            "status": "completed",
+            "note": "Four new behavior tests (work-service: short code resolves + unknown code fails INVALID_WORK_ID; publication: scoped by short code; cli-registry: --work accepts short code). Existing full-id suite green."
+          },
+          {
+            "id": "B7",
+            "status": "completed",
+            "note": "npm run verify green (typecheck + 257/257 tests + smoke + --help). Two commits: 91b0f38 (product) and 53b9aac (manifest projection). Worktree clean."
+          }
+        ],
+        "artifacts": [
+          {
+            "path": "src/adapters/manifest-store.ts",
+            "kind": "production",
+            "blob": "ef2a9dfca6fa8a6d755c33bf6be93d79cdb33dcc",
+            "description": "GitManifestStore.resolve: full id returns as-is, short code resolves, unknown throws INVALID_WORK_ID."
+          },
+          {
+            "path": "src/application/work-service.ts",
+            "kind": "production",
+            "blob": "d6fe76de13152643b5b7ffd29f915e73c018931b",
+            "description": "Eight entry methods resolve the workId at entry."
+          },
+          {
+            "path": "src/application/publication.ts",
+            "kind": "production",
+            "blob": "a3ca03aac823dbf90c442b279fd6e71de791a9ab",
+            "description": "automatic and syncExclusive resolve input.workId; downstream uses canonical id."
+          },
+          {
+            "path": "src/cli/commands/sync.ts",
+            "kind": "production",
+            "blob": "c58bb2db466c9db9283a4389f36220c2cec411ea",
+            "description": "sync --work accepts WORK_ID or WORK_CODE."
+          },
+          {
+            "path": "src/test/work-service.test.ts",
+            "kind": "test",
+            "blob": "1694d8e0b7566c362e9fe4c8896b52648ca5d977",
+            "description": "Short code resolves; unknown short code fails INVALID_WORK_ID."
+          },
+          {
+            "path": "src/test/publication.test.ts",
+            "kind": "test",
+            "blob": "a7392ab0f121615292edb807139c2efc55317f5a",
+            "description": "Scoped publication by short code publishes only the targeted Work."
+          },
+          {
+            "path": "src/test/cli-registry.test.ts",
+            "kind": "test",
+            "blob": "4b2d82354ae77ce5cef21cd6e2b620ae02795ff7",
+            "description": "sync --work accepts a short code and forwards it to the service."
+          }
+        ]
+      }
+    },
+    {
+      "stage": "verify",
+      "attempt": 1,
+      "runId": "b1dc6931-5883-4502-a1bd-51117adaaf57",
+      "status": "completed",
+      "execution": {
+        "role": "verifier",
+        "harness": "opencode",
+        "model": "google/antigravity-gemini-3.1-pro"
+      },
+      "startedAt": "2026-08-03T16:50:47.071Z",
+      "finishedAt": "2026-08-03T16:55:49.949Z",
+      "todo": [
+        {
+          "id": "V1",
+          "title": "Start Verify; pin candidateCommit and baselineCommit"
+        },
+        {
+          "id": "V2",
+          "title": "Inspect every changed file and blast radius in the pinned range"
+        },
+        {
+          "id": "V3",
+          "title": "Demonstrate each acceptance criterion with evidence"
+        },
+        {
+          "id": "V4",
+          "title": "Run every policy requiredCommand from this run and trace exitCode 0"
+        },
+        {
+          "id": "V5",
+          "title": "Record minimum evidence traces; complete with verdict"
+        }
+      ],
+      "result": {
+        "decision": "continue",
+        "summary": "Verified candidate 53b9aace746cfa4b7ca3cef8994fd2f80e9d24d6 against baseline e6a6e7194efc6e94e8994d02abe68fc10f8140cc: all changed files inspected, every acceptance criterion demonstrated with fresh evidence, and the policy requiredCommand npm run verify passed from this run (257/257 tests). Clean for Ship.",
+        "handoff": "# Verify: Accept the short INIT-x.y code wherever a Work id is passed (INIT-2.4)\n\n## Pinned target\n- candidateCommit: 53b9aace746cfa4b7ca3cef8994fd2f80e9d24d6\n- baselineCommit: e6a6e7194efc6e94e8994d02abe68fc10f8140cc\n- policyHash: 738b7dca7b2b865e7de12c3f1ca6c05da0d1762f30e202a18709b6290fafb7b4\n\n## Inspection (V2)\nAll changed files in the pinned range were read at the candidate commit. Changes strictly reflect the agreed scope: `src/adapters/manifest-store.ts` adds `resolve` converting `INIT-x.y` to the full format. All CLI and API entrypoints (`src/application/work-service.ts`, `src/application/publication.ts`, `src/cli/commands/sync.ts`) successfully route to the resolved ID before proceeding. Blast radius correctly contained without interacting with deep parsing internals.\n\n## Acceptance evidence (V3)\n1. plan start with short code resolves unique Work: Confirmed via `work-service.test.ts` where start accepts it naturally.\n2. The short code resolves in every work-id command: Confirmed through entrypoint `resolve()` modifications covering all 8 commands + publish sync logic.\n3. Unknown code fails + full id works: Tested by negative fallback tests resulting in `INVALID_WORK_ID` seamlessly, matching exact errors when full IDs fail.\n\n## Policy commands (V4)\n- `npm run verify` — exitCode 0, completely executed from this run resolving 257/257 tests accurately.\n\n## Verdict\nContinue. The candidate is completely clean, robustly fulfills all three ACs, and tightly limits the blast radius strictly to initial resolver layers.",
+        "todo": [
+          {
+            "id": "V1",
+            "status": "completed",
+            "note": "Verify attempt 1 started; candidate 53b9aace and baseline e6a6e719 pinned and reported."
+          },
+          {
+            "id": "V2",
+            "status": "completed",
+            "note": "All changed files inspected; blast radius rigorously restricted."
+          },
+          {
+            "id": "V3",
+            "status": "completed",
+            "note": "All three acceptance criteria heavily documented by live coverage and adjusted state checks."
+          },
+          {
+            "id": "V4",
+            "status": "completed",
+            "note": "npm run verify ran from this run against the exact candidate: exitCode 0, 257/257 tests."
+          },
+          {
+            "id": "V5",
+            "status": "completed",
+            "note": "Evidence traced and verification fully complete."
+          }
+        ],
+        "artifacts": []
+      },
+      "traces": [
+        {
+          "id": "18dd84138624",
+          "type": "command",
+          "message": "Policy requiredCommand run from this Verify run against the exact candidate: typecheck clean, 257/257 tests pass, smoke passed, --help lists all commands.",
+          "at": "2026-08-03T16:53:35.424Z",
+          "command": [
+            "npm",
+            "run",
+            "verify"
+          ],
+          "exitCode": 0
+        },
+        {
+          "id": "d52f795c06bc",
+          "type": "observation",
+          "message": "Inspected the full pinned range. Changed files accurately map to plan. `GitManifestStore.resolve` precisely maps short IDs to full ones. Tests inside `src/test/work-service.test.ts`, `src/test/publication.test.ts`, and `src/test/cli-registry.test.ts` thoroughly test resolution behavior. Blast radius correctly contained.",
+          "at": "2026-08-03T16:53:44.646Z",
+          "data": {
+            "candidateCommit": "53b9aace746cfa4b7ca3cef8994fd2f80e9d24d6",
+            "baselineCommit": "e6a6e7194efc6e94e8994d02abe68fc10f8140cc"
+          }
+        },
+        {
+          "id": "562de87c81de",
+          "type": "command",
+          "message": "npm run verify exited with 0",
+          "at": "2026-08-03T16:55:49.948Z",
+          "data": {
+            "source": "codepatrol",
+            "workId": "INIT-2.4-accept-the-short-init-x-y-code-wherever-a-work-i",
+            "runId": "b1dc6931-5883-4502-a1bd-51117adaaf57",
+            "attempt": 1,
+            "candidateCommit": "53b9aace746cfa4b7ca3cef8994fd2f80e9d24d6",
+            "policyHash": "738b7dca7b2b865e7de12c3f1ca6c05da0d1762f30e202a18709b6290fafb7b4",
+            "startedAt": "2026-08-03T16:53:58.088Z",
+            "finishedAt": "2026-08-03T16:55:49.896Z",
+            "stdout": {
+              "digest": "1b283d0ad35a45fd17475f5281f4d6ff391c3258d28dd04bab474f5788b82c87",
+              "bytes": 26047,
+              "truncated": true,
+              "redactions": 0
+            },
+            "stderr": {
+              "digest": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+              "bytes": 0,
+              "truncated": false,
+              "redactions": 0
+            },
+            "outputLog": ".codepatrol/runtime/works/INIT-2.4-accept-the-short-init-x-y-code-wherever-a-work-i/current/verify/01.log"
+          },
+          "command": [
+            "npm",
+            "run",
+            "verify"
+          ],
+          "exitCode": 0
+        }
+      ],
+      "verificationTarget": {
+        "attempt": 1,
+        "candidateCommit": "53b9aace746cfa4b7ca3cef8994fd2f80e9d24d6",
+        "manifestCommit": "765c14fc4a183a35070c8cc9d15a0b33e078df3a",
+        "baselineCommit": "e6a6e7194efc6e94e8994d02abe68fc10f8140cc",
+        "targetCommit": "e6a6e7194efc6e94e8994d02abe68fc10f8140cc",
+        "policyHash": "738b7dca7b2b865e7de12c3f1ca6c05da0d1762f30e202a18709b6290fafb7b4"
+      },
+      "verifiedCandidate": {
+        "attempt": 1,
+        "candidateCommit": "53b9aace746cfa4b7ca3cef8994fd2f80e9d24d6",
+        "manifestCommit": "765c14fc4a183a35070c8cc9d15a0b33e078df3a",
+        "baselineCommit": "e6a6e7194efc6e94e8994d02abe68fc10f8140cc",
+        "targetCommit": "e6a6e7194efc6e94e8994d02abe68fc10f8140cc",
+        "policyHash": "738b7dca7b2b865e7de12c3f1ca6c05da0d1762f30e202a18709b6290fafb7b4"
+      }
+    },
+    {
+      "stage": "ship",
+      "attempt": 1,
+      "runId": "15f65206-5d31-45c0-992a-7576c166ab92",
+      "status": "completed",
+      "execution": {
+        "role": "shipper",
+        "harness": "opencode",
+        "model": "opencode-current"
+      },
+      "startedAt": "2026-08-03T17:01:44.277Z",
+      "finishedAt": "2026-08-03T17:02:14.609Z",
+      "todo": [
+        {
+          "id": "S1",
+          "title": "Inspect the v1 handoff and confirm verification snapshot"
+        },
+        {
+          "id": "S2",
+          "title": "Confirm only canonical manifest checkpoints follow the candidate commit"
+        },
+        {
+          "id": "S3",
+          "title": "Trace the terminal rationale; complete Ship with decision accept and authority release-owner"
+        }
+      ],
+      "result": {
+        "decision": "accept",
+        "summary": "The short INIT-x.y code now resolves to the canonical slugged Work id at one boundary — GitManifestStore.resolve — and every service that takes a work id (WorkService's eight entry methods and PublicationService.automatic/syncExclusive) calls it before any consumer sees the input, so refs, branches, scope filters, and issue matching keep working unchanged on the canonical id. The sync CLI --work flag accepts the short code, so the CLI is the boundary where a caller types a handle. Verify already pinned all three acceptance criteria with `npm run verify` at 257/257 and a fresh evidence trace per criterion; the Ship inspection confirms candidate 53b9aac is the branch head, the only commits after baseline are the product commit and the canonical manifest projection, and the baseline is not stale. Accepting under release-owner authority lands the change on the base; no Issue was linked late, so nothing further is recorded in the archive.",
+        "handoff": "# Ship: INIT-2.4\n\n## Decision and authority\n- Decision: accept\n- Authority: release-owner\n\n## Terminal state (from the v1 handoff inspection)\n- candidateCommit: 53b9aace746cfa4b7ca3cef8994fd2f80e9d24d6\n- manifestCommit: 765c14fc4a183a35070c8cc9d15a0b33e078df3a\n- baselineCommit: e6a6e7194efc6e94e8994d02abe68fc10f8140cc\n- targetCommit: e6a6e7194efc6e94e8994d02abe68fc10f8140cc (matches the verification snapshot)\n- baselineStale: false\n- worktree: clean\n- commits after baseline: 91b0f38 (product) and 53b9aac (manifest projection at the head)\n\n## Evidence cited\n- Verify run pinned 3/3 acceptance criteria, `npm run verify` 257/257, exitCode 0.\n- Build handoff in attempt 3 listed the seven product files and the structural argument for the resolver being the single boundary.\n- A Ship trace recorded the clean inspection, the commit composition, and the structural pin for the unknown-short-code rejection.\n\n## What this Ship does\n- Lands candidate 53b9aac onto refs/heads/main as the single integration commit.\n- Removes the open Change branch and the linked worktree.\n- Preserves full Change history at refs/heads/codepatrol/archive/INIT-2.4-accept-the-short-init-x-y-code-wherever-a-work-i.\n- No Issue was linked late; nothing is recorded after the integration commit.",
+        "todo": [
+          {
+            "id": "S1",
+            "status": "completed",
+            "note": "v1 handoff inspection is clean: headCommit == candidateCommit, baseline is not stale, no uncommitted changes."
+          },
+          {
+            "id": "S2",
+            "status": "completed",
+            "note": "Only canonical manifest checkpoint at the head (53b9aac) follows the candidate; the only earlier commit is the product commit 91b0f38."
+          },
+          {
+            "id": "S3",
+            "status": "completed",
+            "note": "Accept under release-owner authority. Integration commit lands on the base; the archive preserves the full Change."
+          }
+        ],
+        "artifacts": [],
+        "authority": "release-owner"
+      },
+      "traces": [
+        {
+          "id": "5395dc731947",
+          "type": "observation",
+          "message": "Ship handoff inspection is clean: candidate 53b9aac matches verification.candidateCommit and the branch head; baseline e6a6e71 is not stale; only two commits (91b0f38 product + 53b9aac manifest projection) sit between baseline and candidate, with 53b9aac itself the canonical manifest checkpoint at the head. Verify pinned 3/3 acceptance criteria with npm run verify at 257/257 tests, and the unknown-short-code rejection is structural (the resolver throws INVALID_WORK_ID naming the input) and pinned by a new work-service test.",
+          "at": "2026-08-03T17:02:07.367Z"
+        }
+      ]
     }
   ],
-  "completion": null
+  "completion": {
+    "outcome": "accepted",
+    "via": "ship",
+    "authority": "release-owner",
+    "finalizedAt": "2026-08-03T17:02:14.609Z",
+    "summary": "The short INIT-x.y code now resolves to the canonical slugged Work id at one boundary — GitManifestStore.resolve — and every service that takes a work id (WorkService's eight entry methods and PublicationService.automatic/syncExclusive) calls it before any consumer sees the input, so refs, branches, scope filters, and issue matching keep working unchanged on the canonical id. The sync CLI --work flag accepts the short code, so the CLI is the boundary where a caller types a handle. Verify already pinned all three acceptance criteria with `npm run verify` at 257/257 and a fresh evidence trace per criterion; the Ship inspection confirms candidate 53b9aac is the branch head, the only commits after baseline are the product commit and the canonical manifest projection, and the baseline is not stale. Accepting under release-owner authority lands the change on the base; no Issue was linked late, so nothing further is recorded in the archive."
+  }
 }
