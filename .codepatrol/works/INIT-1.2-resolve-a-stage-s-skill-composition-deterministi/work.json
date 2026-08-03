@@ -36,23 +36,24 @@
     "number": 30
   },
   "workflow": {
-    "state": "active",
-    "stage": "plan",
+    "state": "ready",
+    "stage": "review",
     "attempt": 1,
-    "updatedAt": "2026-08-03T16:21:37.384Z"
+    "updatedAt": "2026-08-03T16:25:36.322Z"
   },
   "attempts": [
     {
       "stage": "plan",
       "attempt": 1,
       "runId": "9bf053e9-f1a5-4bc3-8523-ff5278235748",
-      "status": "active",
+      "status": "completed",
       "execution": {
         "role": "planner",
         "harness": "opencode",
         "model": "kimi-for-coding/k3"
       },
       "startedAt": "2026-08-03T16:21:37.384Z",
+      "finishedAt": "2026-08-03T16:25:36.322Z",
       "todo": [
         {
           "id": "P1",
@@ -73,6 +74,82 @@
         {
           "id": "P5",
           "title": "Record traces; complete Plan with decision continue"
+        }
+      ],
+      "result": {
+        "decision": "continue",
+        "summary": "Resolution is a new pure core module: resolveComposition(stage, manifests, hostCapabilities) selects the one stage skill by the codepatrol-<stage> id convention, closes over required dependencies, includes or omits recommended ones with reasons, refuses on conflicts (SKILL_CONFLICT), unmet capabilities (SKILL_CAPABILITY_UNMET), and zero/several stage matches (SKILL_UNRESOLVABLE), and emits a deterministic order plus a sha256 resolution digest of the resolved set. Manifests gain optional requires/recommends/conflicts under schemaVersion 1; `codepatrol skill resolve <stage>` prints the composition with per-skill reasons and mutates nothing.",
+        "handoff": "# Plan: Resolve a stage's skill composition deterministically (INIT-1.2)\n\n## Finding (P1)\nINIT-1.1 is on main: src/core/skill.ts (schemaVersion 1, strict parser over id/version/kind/capabilities/digest) and `codepatrol skill list` verifying all seven manifests. The manifest declares no dependencies or conflicts yet — this Work adds them additively under schemaVersion 1, so a manifest without the new fields still parses (the \"additive later\" rule INIT-1.1 set). Core stays filesystem-free; the CLI already owns the skills read via listShippedSkills.\n\n## Product files Build touches\n1. src/core/skill.ts — extend SkillManifest, parser, and serializer with optional `requires`, `recommends`, `conflicts`: arrays of unique skill-id tokens (SKILL_ID), each defaulting to absent. schemaVersion stays 1.\n2. src/core/skill-resolution.ts (new) — the pure resolver and its types/errors.\n3. src/cli/commands/skill.ts — add `skill resolve <stage>` to the existing command.\n4. skills/codepatrol-{plan,review,build,verify,ship}/skill.json — add `recommends: [\"codepatrol-work\"]` (digests are over SKILL.md, so they are unchanged). spec/work manifests unchanged.\n5. src/test/skill-resolution.test.ts (new); parser additions covered in src/test/skill.test.ts.\n\n## Resolver (src/core/skill-resolution.ts)\n```ts\nresolveComposition(stage: Stage, manifests: readonly SkillManifest[], hostCapabilities: readonly string[]): SkillComposition\n```\n- **Stage selection**: the stage skill is the manifest whose id is `codepatrol-${stage}` (convention, not a new field — nothing to drift). Zero matches or several matches refuse with CodepatrolError SKILL_UNRESOLVABLE naming the stage and the offending count.\n- **Closure**: start from the stage skill; iterate to a fixpoint over sorted ids — requires of every included skill must be in the available manifests (a missing required id refuses SKILL_UNRESOLVABLE naming both ends); recommends are included when available, omitted otherwise and reported with the reason \"recommended by <id>, not available\".\n- **Conflicts**: an included skill whose `conflicts` names another included skill refuses SKILL_CONFLICT naming both.\n- **Capabilities**: every capability of every included skill must appear in hostCapabilities, else SKILL_CAPABILITY_UNMET naming the skill and the capability.\n- **Order**: the stage skill first, then secondaries sorted by id. Fixed forever.\n- **Digest**: sha256 over the canonical JSON of `[{ id, version, digest }]` in that order — a pure function of the resolved set, so identical inputs give identical output and any change to a resolved skill's recorded digest changes the resolution digest.\n- Output: `{ stage, skills: [{ id, version, kind, digest }] (ordered), digest, included: [{ id, reason }], omitted: [{ id, reason }] }`. Reasons: \"the stage skill for <stage>\", \"required by <id>\", \"recommended by <id>\".\n- The precedence rule from the Work text — Core invariants, Work state, and repository policy outrank any skill; a secondary may add method and never alter lifecycle decisions or return rules — is stated in the module's doc comment. Resolution is selection, not governance.\n\n## CLI read (`codepatrol skill resolve <stage>`)\n- Validates the stage argument against STAGES (unknown stage → INVALID_ARGUMENT with usage).\n- Resolves over listShippedSkills (package-relative, as today) with the host capabilities the CLI provides: a named constant `HOST_CAPABILITIES = [\"cli\"]` in the command module — the one capability this host truthfully offers.\n- Prints the full composition JSON including per-inclusion and per-omission reasons; mutates nothing; needs no workspace or remote. `skill list` output is unchanged.\n\n## Tests\nsrc/test/skill-resolution.test.ts:\n- exactly one stage skill resolves; zero and several each refuse SKILL_UNRESOLVABLE (acceptance 1).\n- required dependencies resolve transitively; a missing required id refuses; a recommended skill is included with its reason or reported omitted with its reason; a declared conflict refuses SKILL_CONFLICT; an unmet capability refuses SKILL_CAPABILITY_UNMET (acceptance 2).\n- same inputs twice → identical order and digest; mutating one skill's digest changes the resolution digest (acceptance 3).\n- CLI: `skill resolve plan` prints the composition with reasons for codepatrol-plan and the included codepatrol-work, is sorted and idempotent, and an unknown stage refuses (acceptance 4).\nsrc/test/skill.test.ts (extended): parser accepts the new optional fields, refuses duplicates inside them, refuses non-skill-id tokens, and a manifest without them still parses.\n\n## Acceptance coverage\n1. Exactly one stage skill or named refusal — id-convention selection + SKILL_UNRESOLVABLE tests.\n2. Requires resolve, recommends included/omitted with reason, conflict/unmet capability refuse — closure + error tests.\n3. Deterministic order and digest, content-sensitive — digest tests.\n4. CLI read with reasons, mutating nothing — `skill resolve <stage>` + CLI test.\n\n## Verification for Build\nnpm run verify (typecheck, unit tests, smoke, --help showing skill resolve).\n\n## Non-goals\nNo recording of compositions on runs (INIT-1.4), no evaluation harness (INIT-1.3), no telemetry. No new capability tokens beyond \"cli\". No precedence enforcement mechanism — documentation only, as the Work fixes precedence in prose here.",
+        "todo": [
+          {
+            "id": "P1",
+            "status": "completed",
+            "note": "INIT-1.1 on main with strict v1 parser and skill list; dependency/conflict fields must be additive under schemaVersion 1."
+          },
+          {
+            "id": "P2",
+            "status": "completed",
+            "note": "resolveComposition in new src/core/skill-resolution.ts: id-convention stage selection, requires closure, reasoned recommends, SKILL_UNRESOLVABLE/SKILL_CONFLICT/SKILL_CAPABILITY_UNMET, stage-first ordering, sha256 digest of the ordered resolved set."
+          },
+          {
+            "id": "P3",
+            "status": "completed",
+            "note": "codepatrol skill resolve <stage> with HOST_CAPABILITIES [\"cli\"]; prints composition with reasons; mutates nothing."
+          },
+          {
+            "id": "P4",
+            "status": "completed",
+            "note": "Handoff covers all four acceptance criteria with module, errors, algorithm, CLI, and test plan."
+          },
+          {
+            "id": "P5",
+            "status": "completed",
+            "note": "Three traces recorded (observation + two decisions); completing with decision continue."
+          }
+        ],
+        "artifacts": []
+      },
+      "traces": [
+        {
+          "id": "00ad81122ac1",
+          "type": "observation",
+          "message": "INIT-1.1 is on main: src/core/skill.ts (schemaVersion 1, strict parser over id/version/kind/capabilities/digest) and `codepatrol skill list` verify all seven manifests. The manifest has no dependency or conflict fields yet — INIT-1.2 must add them additively under schemaVersion 1 (a manifest without them still parses), matching the \"additive later\" rule INIT-1.1 set. Resolution itself must stay pure like the rest of core; the CLI layer already owns the filesystem read via listShippedSkills.",
+          "at": "2026-08-03T16:25:36.079Z",
+          "data": {
+            "onMain": [
+              "src/core/skill.ts",
+              "src/cli/commands/skill.ts",
+              "skills/*/skill.json"
+            ],
+            "schemaVersion": 1
+          }
+        },
+        {
+          "id": "e71426a68a2f",
+          "type": "decision",
+          "message": "Resolution design: new pure module src/core/skill-resolution.ts exporting resolveComposition(stage, manifests, hostCapabilities). Stage-skill selection by the id convention codepatrol-<stage> (no new field, nothing to drift); zero or several matches refuse with SKILL_UNRESOLVABLE. The composition is the requires-closure of the stage skill plus present recommends (fixpoint, sorted iteration); a missing required id refuses SKILL_UNRESOLVABLE, a declared conflict refuses SKILL_CONFLICT, a capability outside the host set refuses SKILL_CAPABILITY_UNMET. Order: stage skill first, then secondaries by id. The resolution digest is sha256 over the canonical [{id,version,digest}] list in that order — a pure function of the resolved set, so any content change moves it. Manifest gains optional requires/recommends/conflicts arrays (unique skill-id tokens) under schemaVersion 1; the five stage skills declare recommends [\"codepatrol-work\"].",
+          "at": "2026-08-03T16:25:36.155Z",
+          "data": {
+            "module": "src/core/skill-resolution.ts",
+            "errors": [
+              "SKILL_UNRESOLVABLE",
+              "SKILL_CONFLICT",
+              "SKILL_CAPABILITY_UNMET"
+            ],
+            "order": "stage first, then secondaries by id"
+          }
+        },
+        {
+          "id": "16ff0a3d84f9",
+          "type": "decision",
+          "message": "CLI read: `codepatrol skill resolve <stage>` in the existing skill command — validates the stage against STAGES, resolves over listShippedSkills with the host capabilities the CLI provides ([\"cli\"] today, a named constant), and prints { stage, digest, skills (ordered, with version/kind/digest), included with a reason each, omitted with a reason each }. It mutates nothing and touches no workspace. The precedence rule from the Work text (Core invariants, Work state, and repository policy outrank any skill; a secondary never alters lifecycle decisions) is stated in the module's doc comment, not encoded — resolution is selection, not governance.",
+          "at": "2026-08-03T16:25:36.231Z",
+          "data": {
+            "command": "skill resolve <stage>",
+            "hostCapabilities": [
+              "cli"
+            ]
+          }
         }
       ]
     }
