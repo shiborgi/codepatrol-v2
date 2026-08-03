@@ -1,0 +1,44 @@
+{
+  "schemaVersion": 1,
+  "type": "codepatrol-work",
+  "work": {
+    "id": "INIT-1.3-add-the-deterministic-skill-evaluation-harness",
+    "title": "Add the deterministic skill evaluation harness",
+    "description": "A skill can be syntactically valid and still produce unsafe behavior: claiming success without fresh evidence, dropping test-first discipline under pressure, changing code at random instead of debugging. Reading the skill file cannot detect any of that. This Work delivers the runnable core: a strict suite and scenario schema with stable scenario ids, deterministic assertions, isolated fixture execution against a throwaway repository, and result capture carrying the exact skill identity and digest resolved for the scenario. Offline, no model credentials, no network. One baseline suite proves the mechanism end to end; full coverage follows.",
+    "issueType": "Feature",
+    "priority": "p1",
+    "acceptance": [
+      "A suite and its scenarios parse strictly, each scenario has a stable id, and duplicate ids are refused",
+      "Scenarios execute against an isolated fixture repository and never read or write the real repository, with network access disabled",
+      "Each result carries the resolved skill identity and digest and distinguishes passed, failed, error, skipped, and unresolved",
+      "At least one stage skill has a protocol suite that passes, and a deliberately broken expectation makes it fail",
+      "The suite runs in CI without any model credential"
+    ],
+    "createdAt": "2026-08-03T11:16:22.452Z",
+    "requestedBy": "spec",
+    "initiative": {
+      "id": "INIT-1",
+      "position": 3
+    },
+    "origin": {
+      "createdAt": "2026-08-03T11:16:22.452Z"
+    }
+  },
+  "repository": {
+    "baseRef": "refs/heads/main"
+  },
+  "graph": {
+    "blockedBy": [
+      "INIT-1.2-resolve-a-stage-s-skill-composition-deterministi"
+    ]
+  },
+  "issue": null,
+  "workflow": {
+    "state": "ready",
+    "stage": "plan",
+    "attempt": 1,
+    "updatedAt": "2026-08-03T11:16:22.452Z"
+  },
+  "attempts": [],
+  "completion": null
+}
