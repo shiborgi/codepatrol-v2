@@ -1,0 +1,209 @@
+{
+  "schemaVersion": 1,
+  "type": "codepatrol-work",
+  "work": {
+    "id": "INIT-3.2-prove-concurrent-attacks-on-distinct-works-are-c",
+    "title": "Prove concurrent attacks on distinct Works are corruption-free",
+    "description": "Per-Work and repository ref locks exist, but nothing ever runs two Works concurrently, so a lock gap would only surface as a corrupted manifest in production. Add a concurrency suite that attacks several Works with overlapping stage runs — starts, traces, completions, and a sync in flight — and asserts every manifest records each transition exactly once, no run sees another's files, no lock deadlocks, and a repeated run converges. Any lock gap the suite exposes is fixed as part of this Work.",
+    "issueType": "Feature",
+    "priority": "p1",
+    "acceptance": [
+      "A test attacks several Works with overlapping stage runs and every manifest records each lifecycle transition exactly once",
+      "No concurrent run reads or writes another Work's files, and the suite fails if it does",
+      "The concurrent run completes within a bounded time, proving no lock deadlock",
+      "A sync overlapping the concurrent runs stays serialized and reports every Work correctly",
+      "The concurrency suite runs in CI without a remote"
+    ],
+    "createdAt": "2026-08-03T16:45:14.389Z",
+    "requestedBy": "spec",
+    "initiative": {
+      "id": "INIT-3",
+      "position": 2
+    },
+    "origin": {
+      "createdAt": "2026-08-03T16:45:14.389Z"
+    }
+  },
+  "repository": {
+    "baseRef": "refs/heads/main"
+  },
+  "graph": {
+    "blockedBy": [
+      "INIT-3.1-run-every-stage-of-a-work-in-its-own-worktree"
+    ]
+  },
+  "issue": {
+    "repository": "shiborgi/codepatrol",
+    "number": 41
+  },
+  "workflow": {
+    "state": "ready",
+    "stage": "build",
+    "attempt": 1,
+    "updatedAt": "2026-08-03T20:59:44.385Z"
+  },
+  "attempts": [
+    {
+      "stage": "plan",
+      "attempt": 1,
+      "runId": "e7e50d13-836a-4aed-bb16-638c4f23ca92",
+      "status": "completed",
+      "execution": {
+        "role": "planner",
+        "harness": "opencode",
+        "model": "kimi-for-coding/k3"
+      },
+      "startedAt": "2026-08-03T20:49:26.929Z",
+      "finishedAt": "2026-08-03T20:51:01.551Z",
+      "todo": [
+        {
+          "id": "P1",
+          "title": "Inspect lock structure, test fixtures, and how tests can run stages concurrently"
+        },
+        {
+          "id": "P2",
+          "title": "Design the concurrency suite (overlap shape, assertions, deadlock bound, sync serialization)"
+        },
+        {
+          "id": "P3",
+          "title": "Decide where lock-gap fixes would land and CI wiring"
+        },
+        {
+          "id": "P4",
+          "title": "Write decision-complete plan covering all five acceptance criteria"
+        },
+        {
+          "id": "P5",
+          "title": "Record traces; complete Plan with decision continue"
+        }
+      ],
+      "result": {
+        "decision": "continue",
+        "summary": "The concurrency proof is a new src/test/concurrency.test.ts: two independent service instances over one repository interleave stage runs across three Works (starts before any completion), assert exactly-once transitions and per-Work file isolation, and overlap a real LocalGitRemote sync against a bare remote. Deadlock is bounded by the test timeout plus the lock's 30s GIT_LOCKED refusal. CI picks the file up via the existing npm test glob. Lock-gap fixes, only if the suite exposes them, land in the lock/store/worktree adapters inside this Work.",
+        "handoff": "# Plan: Prove concurrent attacks on distinct Works are corruption-free (INIT-3.2)\n\n## Finding (P1)\nConcurrency control is ref-lock based and already ordered: `sync` < `work/<id>` < `repository` (git-lock.ts:42-47), CAS acquisition via `update-ref` with a 30s deadline that refuses with GIT_LOCKED, AsyncLocalStorage re-entry for legitimately nested calls. Per-Work transitions serialize under `work/<id>` (manifest-store.ts:182/200), worktree-registry and base moves under `repository`, publication under `sync`. Nothing exercises two Works at once. Node is single-threaded, so in-process overlap means interleaved async calls; two service instances over one workspace run in independent async contexts and contend on the real ref CAS exactly as two processes would — the honest shape for this suite. CI runs `node --test dist/test/*.test.js` (package.json test script, verify.yml), so a new test file needs no workflow change (acceptance 5).\n\n## Product files Build touches\n1. src/test/concurrency.test.ts (new) — the suite below.\n2. Only if the suite exposes a gap: src/adapters/git-lock.ts, src/adapters/manifest-store.ts, src/adapters/worktree.ts. No preventive edits — the Work proves safety or fixes what it disproves.\n\n## The suite (P2)\nFixture: one test repository with two independent WorkService/GitManifestStore instances (same workspace, separate async contexts), three Works created through the normal spec-apply path, and a bare remote for the sync case.\n\n1. **Overlapping transitions, exactly once** — start plan on all three Works before completing any (every transition of A interleaves with B and C), then complete all three, then repeat the interleave through build with a distinct product file per Work. Assert each manifest records each stage transition exactly once, in order, with the right run ids (acceptance 1).\n2. **File isolation** — during the overlapping builds, each Work commits a file named for itself in its own worktree; assert the file is absent from the other Works' worktrees and from the main checkout (acceptance 2).\n3. **Bounded time** — the test carries an explicit timeout; combined with the lock's 30s acquire deadline, a deadlock fails as GIT_LOCKED or as a timeout instead of hanging CI (acceptance 3).\n4. **Sync overlap** — while runs are active, run LocalGitRemote.sync against the bare remote from both instances; assert both complete, the remote ends with every Work's refs, and the local repository stays consistent (acceptance 4).\n5. **Convergence** — a repeated identical sync after the storm reports every ref unchanged.\n\n## Acceptance coverage\n1. Exactly-once transitions under overlap — test 1.\n2. No cross-Work file visibility — test 2.\n3. Bounded completion, no deadlock — test 3.\n4. Overlapping sync serialized and correct — tests 4–5.\n5. Runs in CI without a remote — the suite needs no GitHub; the bare remote is a local directory; the npm test glob picks the file up.\n\n## Verification for Build\nnpm run verify (typecheck, the full unit suite including concurrency.test.ts, smoke, --help).\n\n## Non-goals\nNo multi-process stress driver (the in-process multi-instance shape exercises the same CAS paths deterministically; process-level driving is smoke's domain). No scheduler, queue, or parallelism feature — the suite proves what the locks already claim. No performance targets beyond the deadlock bound.",
+        "todo": [
+          {
+            "id": "P1",
+            "status": "completed",
+            "note": "Ordered ref-locks with CAS and 30s deadline; per-Work/repository/sync serialization mapped; in-process multi-instance contention is equivalent; CI glob picks up new tests."
+          },
+          {
+            "id": "P2",
+            "status": "completed",
+            "note": "concurrency.test.ts: 3 Works interleaved through plan and build, exactly-once assertions, per-Work file isolation, bounded time, real-remote sync overlap, convergence."
+          },
+          {
+            "id": "P3",
+            "status": "completed",
+            "note": "Fixes only on exposed gaps in git-lock/manifest-store/worktree; CI wiring automatic via the existing test glob."
+          },
+          {
+            "id": "P4",
+            "status": "completed",
+            "note": "Handoff covers all five acceptance criteria with fixture shape, tests, and the fix policy."
+          },
+          {
+            "id": "P5",
+            "status": "completed",
+            "note": "Two traces recorded (observation + decision); completing with decision continue."
+          }
+        ],
+        "artifacts": []
+      },
+      "traces": [
+        {
+          "id": "1a57d1068609",
+          "type": "observation",
+          "message": "Concurrency control is ref-lock based: ordered keys sync < work/<id> < repository (git-lock.ts:42-47), CAS acquisition via update-ref with a 30s deadline, AsyncLocalStorage re-entry. Per-Work transitions serialize under work/<id>; worktree registry and base moves serialize under repository; publication under sync. Node's single thread means in-process overlap comes from interleaved async calls with independent async contexts — two service instances on one workspace contend on the real ref CAS exactly as two processes would. CI already runs every dist/test/*.test.js via npm test, so a new test file is wired automatically.",
+          "at": "2026-08-03T20:51:01.380Z",
+          "data": {
+            "locks": [
+              "sync",
+              "work/<id>",
+              "repository"
+            ],
+            "acquireTimeoutMs": 30000
+          }
+        },
+        {
+          "id": "329fdb03132a",
+          "type": "decision",
+          "message": "The suite is a new src/test/concurrency.test.ts using two independent service instances over one test repository (separate async contexts, so the ref CAS serializes them like separate processes). Shape: create three Works; interleave plan start across all three before any completes, then complete them; assert each manifest records exactly one completed plan attempt and each Work's worktree holds only its own files. Overlap a real LocalGitRemote sync against a bare remote with the active runs and assert it completes serialized and reports every Work. The deadlock bound is the test timeout plus the lock's 30s GIT_LOCKED refusal — a deadlocked acquisition fails the test instead of hanging it. Lock-gap fixes, if the suite exposes any, land in git-lock.ts/manifest-store.ts/worktree.ts inside this Work.",
+          "at": "2026-08-03T20:51:01.459Z",
+          "data": {
+            "testFile": "src/test/concurrency.test.ts",
+            "mode": "in-process multi-instance + real git remote"
+          }
+        }
+      ]
+    },
+    {
+      "stage": "review",
+      "attempt": 1,
+      "runId": "1c23370a-fd5c-416d-b789-c45c3e9307c8",
+      "status": "completed",
+      "execution": {
+        "role": "reviewer",
+        "harness": "opencode",
+        "model": "google/antigravity-gemini-3.1-pro"
+      },
+      "startedAt": "2026-08-03T20:59:01.325Z",
+      "finishedAt": "2026-08-03T20:59:44.385Z",
+      "todo": [
+        {
+          "id": "R1",
+          "title": "Audit plan completeness against SPEC-FORMAT and PLAN-FORMAT",
+          "description": "Verify every acceptance criterion is testable and maps to tasks; task dependencies form a DAG; every task names its file set and verify command; blast radius covers union of task files."
+        },
+        {
+          "id": "R2",
+          "title": "Validate plan references against the repository",
+          "description": "Check that referenced paths, symbols, and verification commands exist and are executable. No hidden production edits."
+        },
+        {
+          "id": "R3",
+          "title": "Write review report and seal verdict",
+          "description": "Write report.md and evidence, curate traces.md, record the run, and checkpoint or return."
+        }
+      ],
+      "result": {
+        "decision": "continue",
+        "summary": "Plan is approved. Concurrency test suite is accurately designed and properly scopes the lock-gap fix contingency.",
+        "handoff": "# Review Report\n\nThe plan accurately identifies the lock architecture (`sync` < `work/<id>` < `repository`) and correctly chooses to use Node.js's asynchronous context to simulate and prove isolation across independent service instances within a single process. All acceptance criteria strictly map to test invariants, ensuring no hidden side effects.\n\nApproved to proceed.",
+        "todo": [
+          {
+            "id": "R1",
+            "status": "completed",
+            "note": "Audited plan; it complies strictly with SPEC-FORMAT and PLAN-FORMAT."
+          },
+          {
+            "id": "R2",
+            "status": "completed",
+            "note": "Verified existence of src/adapters/git-lock.ts, manifest-store.ts, and worktree.ts."
+          },
+          {
+            "id": "R3",
+            "status": "completed",
+            "note": "Review report written and verdict sealed as continue."
+          }
+        ],
+        "artifacts": []
+      },
+      "traces": [
+        {
+          "id": "aa9205983dcf",
+          "type": "observation",
+          "message": "Plan maps all acceptance criteria to specific test assertions inside src/test/concurrency.test.ts, satisfying SPEC-FORMAT and PLAN-FORMAT rules.",
+          "at": "2026-08-03T20:59:29.130Z"
+        },
+        {
+          "id": "bddc473ce9bd",
+          "type": "observation",
+          "message": "Referenced paths git-lock.ts, manifest-store.ts, and worktree.ts exist in src/adapters. The proposed test file src/test/concurrency.test.ts is in the correct directory for existing npm tests.",
+          "at": "2026-08-03T20:59:35.527Z"
+        }
+      ]
+    }
+  ],
+  "completion": null
+}
