@@ -31,7 +31,10 @@
       "INIT-1.1-define-the-skill-manifest-schema-and-skill-ident"
     ]
   },
-  "issue": null,
+  "issue": {
+    "repository": "shiborgi/codepatrol",
+    "number": 30
+  },
   "workflow": {
     "state": "ready",
     "stage": "plan",
