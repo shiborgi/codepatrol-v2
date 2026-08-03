@@ -34,10 +34,10 @@
     "number": 38
   },
   "workflow": {
-    "state": "active",
-    "stage": "review",
+    "state": "ready",
+    "stage": "build",
     "attempt": 1,
-    "updatedAt": "2026-08-03T16:12:52.791Z"
+    "updatedAt": "2026-08-03T16:13:16.549Z"
   },
   "attempts": [
     {
@@ -148,13 +148,14 @@
       "stage": "review",
       "attempt": 1,
       "runId": "5f9bddd7-c6cc-4e82-b109-6a8f01e20d09",
-      "status": "active",
+      "status": "completed",
       "execution": {
         "role": "reviewer",
         "harness": "opencode",
         "model": "google/antigravity-gemini-3.1-pro"
       },
       "startedAt": "2026-08-03T16:12:52.791Z",
+      "finishedAt": "2026-08-03T16:13:16.549Z",
       "todo": [
         {
           "id": "R1",
@@ -171,7 +172,30 @@
           "title": "Write review report and seal verdict",
           "description": "Write report.md and evidence, curate traces.md, record the run, and checkpoint or return."
         }
-      ]
+      ],
+      "result": {
+        "decision": "continue",
+        "summary": "Plan is approved. It precisely fixes the GitHub Project projection logic to reflect actual run activity rather than just readiness state.",
+        "handoff": "# Review Report\n\nThe plan accurately targets the single line in `snapshotOf` that derives the state, safely pivoting off `latestAttempt.stage`. It avoids sweeping over-complications, leaves unrelated features intact, and properly identifies necessary test updates.",
+        "todo": [
+          {
+            "id": "R1",
+            "status": "completed",
+            "note": "Plan successfully covers SPEC-FORMAT and PLAN-FORMAT. Task dependencies form a DAG, verification strategy is accurate."
+          },
+          {
+            "id": "R2",
+            "status": "completed",
+            "note": "References to publication.ts and its tests are completely accurate."
+          },
+          {
+            "id": "R3",
+            "status": "completed",
+            "note": "Verdict sealed: continue."
+          }
+        ],
+        "artifacts": []
+      }
     }
   ],
   "completion": null
