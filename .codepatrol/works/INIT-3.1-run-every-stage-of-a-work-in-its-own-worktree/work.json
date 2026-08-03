@@ -1,0 +1,41 @@
+{
+  "schemaVersion": 1,
+  "type": "codepatrol-work",
+  "work": {
+    "id": "INIT-3.1-run-every-stage-of-a-work-in-its-own-worktree",
+    "title": "Run every stage of a Work in its own worktree",
+    "description": "A stage run today executes against the main checkout unless Build happens to have code or --worktree was passed, so two harnesses attacking two Works share one directory and one's edits, builds, and test artifacts land in the other's view. Give every stage run of a Work the Work's own worktree as its execution directory: created on first need, reused by later stages of the same Work, distinct from every other Work's, and never the repository's main checkout. One harness per Work stays the rule — a Work already serializes its own runs — this Work makes many harnesses on many Works safe.",
+    "issueType": "Feature",
+    "priority": "p1",
+    "acceptance": [
+      "Every stage run of a Work receives that Work's own worktree as its execution directory, never the repository's main checkout",
+      "Two Works attacked at the same time hold two distinct worktree directories simultaneously",
+      "The worktree is created on first need and the same directory is handed to later stages of the same Work",
+      "A terminal Work's worktree is cleaned up the way terminal branch cleanup already is, and every existing lifecycle transition behaves as before"
+    ],
+    "createdAt": "2026-08-03T16:45:14.389Z",
+    "requestedBy": "spec",
+    "initiative": {
+      "id": "INIT-3",
+      "position": 1
+    },
+    "origin": {
+      "createdAt": "2026-08-03T16:45:14.389Z"
+    }
+  },
+  "repository": {
+    "baseRef": "refs/heads/main"
+  },
+  "graph": {
+    "blockedBy": []
+  },
+  "issue": null,
+  "workflow": {
+    "state": "ready",
+    "stage": "plan",
+    "attempt": 1,
+    "updatedAt": "2026-08-03T16:45:14.389Z"
+  },
+  "attempts": [],
+  "completion": null
+}
