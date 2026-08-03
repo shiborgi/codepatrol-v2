@@ -39,10 +39,10 @@
     "number": 31
   },
   "workflow": {
-    "state": "active",
+    "state": "terminal",
     "stage": "ship",
     "attempt": 1,
-    "updatedAt": "2026-08-03T23:37:02.359Z"
+    "updatedAt": "2026-08-03T23:37:47.984Z"
   },
   "attempts": [
     {
@@ -678,13 +678,14 @@
       "stage": "ship",
       "attempt": 1,
       "runId": "2378ca9c-88ef-4867-9581-fad3d3e190f4",
-      "status": "active",
+      "status": "completed",
       "execution": {
         "role": "shipper",
         "harness": "opencode",
         "model": "minimax-coding-plan/MiniMax-M3"
       },
       "startedAt": "2026-08-03T23:37:02.359Z",
+      "finishedAt": "2026-08-03T23:37:47.984Z",
       "todo": [
         {
           "id": "S1",
@@ -706,8 +707,56 @@
           "id": "S5",
           "title": "Confirm the single integration commit on the base and the archive ref"
         }
+      ],
+      "result": {
+        "decision": "accept",
+        "summary": "Accept the Work. The deterministic skill evaluation harness is in place: strict suite schema, throwaway-fixture runner with offline-by-construction env scrubbing, the `skill test <skill-id>` CLI action, and a five-scenario baseline protocol suite for codepatrol-verify. The 16-test suite plus the broken-expectation proof together cover all four acceptance criteria; npm run verify ran with exitCode 0. The verification snapshot's targetCommit and baselineCommit both still match the current state at Ship time, so assertShipVerification passes on both target and baseline (the base did move past baselineCommit at Build→Verify time with INIT-1.4's projection landing, but Verify→Ship is stable). Authority for the accept is the explicit user.",
+        "handoff": "# Ship: Add the deterministic skill evaluation harness (INIT-1.3)\n\n## Terminal outcome\n- decision: accept\n- authority: user (explicit)\n- candidateCommit: e8e2b818fe0afa0083f6c0a33ed46775325d269b\n- baselineCommit: 9d85a6dd092dad82b527d87b8211d172f7115eef\n- targetCommit: 880186a38a1c112bd036709241b1dfed4b3223ba\n- policyHash: 738b7dca7b2b865e7de12c3f1ca6c05da0d1762f30e202a18709b6290fafb7b4\n\n## Cited evidence (not reproduced)\n- Plan handoff: see availableResults plan/1.\n- Review handoff and verdict continue: see availableResults review/1.\n- Build handoff and 5 committed artifacts (paths/kinds/blobs): see availableResults build/1.\n- Verify handoff, observations, and the requiredCommand trace with exitCode 0: see availableResults verify/1 and the verify attempt in `attempts`.\n- Ship inspection observation: trace id 81424c7ec760 in the ship attempt.\n\n## Outcome\nThe single integration commit lands on main; the archive ref `refs/heads/codepatrol/archive/INIT-1.3-add-the-deterministic-skill-evaluation-harness` preserves the full Change history. Open Change branch and worktree are removed.",
+        "todo": [
+          {
+            "id": "S1",
+            "status": "completed",
+            "note": "Work ready for Ship with verifiedCandidate pinned to e8e2b81. change.verification.attempt=1; baselineCommit=9d85a6d; targetCommit=880186a; policyHash recorded."
+          },
+          {
+            "id": "S2",
+            "status": "completed",
+            "note": "inspection.clean=true; baselineStale=true (informational — base moved at Build→Verify time with INIT-1.4 projection); status=[]; commits=[e8e2b81]; changedFiles match Build-declared artifacts + canonical manifest. base target 880186a equals verification snapshot targetCommit. assertShipVerification passes on both target and baseline."
+          },
+          {
+            "id": "S3",
+            "status": "completed",
+            "note": "Terminal rationale: 16-test skill-suite suite plus the broken-expectation proof cover the four acceptance criteria; npm run verify ran with exitCode 0; offline by construction (credentials scrubbed, GIT_TERMINAL_PROMPT=0, GIT_CONFIG_* overridden)."
+          },
+          {
+            "id": "S4",
+            "status": "completed",
+            "note": "Completing with decision=accept and authority=user (explicit)."
+          },
+          {
+            "id": "S5",
+            "status": "completed",
+            "note": "Verified post-completion: exactly one integration commit on main; refs/heads/codepatrol/work/INIT-1.3-add-the-deterministic-skill-evaluation-harness removed; refs/heads/codepatrol/archive/INIT-1.3-add-the-deterministic-skill-evaluation-harness carries the full Change history."
+          }
+        ],
+        "artifacts": [],
+        "authority": "user"
+      },
+      "traces": [
+        {
+          "id": "81424c7ec760",
+          "type": "observation",
+          "message": "Ship inspection: candidateCommit e8e2b81 is the single commit ahead of baseline 9d85a6d. The verification targetCommit 880186a matches the current targetCommit 880186a (the base moved at Build→Verify time with INIT-1.4 projection landing on main; since verify, the target has been stable). The verification snapshot's baselineCommit 9d85a6d still matches the manifest's repository.baselineCommit, so assertShipVerification passes on both target and baseline. baselineStale=true is informational: the base moved past baselineCommit between Build and Ship, but Verify→Ship is stable. clean=true; status=[]; the 6 changed files are exactly the Build-declared artifacts (src/core/skill-suite.ts, src/cli/skill-evaluation.ts, src/cli/commands/skill.ts, skills/codepatrol-verify/suite.json, src/test/skill-suite.test.ts) plus the canonical manifest .codepatrol/works/INIT-1.3-add-the-deterministic-skill-evaluation-harness/work.json. No commits follow the candidate, so the canonical-manifest-only invariant holds vacuously. Verify evidence: requiredCommands command trace with exitCode 0 for `npm run verify` and inspection observations for changed files and pinned candidate are recorded in the verify attempt.",
+          "at": "2026-08-03T23:37:36.900Z"
+        }
       ]
     }
   ],
-  "completion": null
+  "completion": {
+    "outcome": "accepted",
+    "via": "ship",
+    "authority": "user",
+    "finalizedAt": "2026-08-03T23:37:47.984Z",
+    "summary": "Accept the Work. The deterministic skill evaluation harness is in place: strict suite schema, throwaway-fixture runner with offline-by-construction env scrubbing, the `skill test <skill-id>` CLI action, and a five-scenario baseline protocol suite for codepatrol-verify. The 16-test suite plus the broken-expectation proof together cover all four acceptance criteria; npm run verify ran with exitCode 0. The verification snapshot's targetCommit and baselineCommit both still match the current state at Ship time, so assertShipVerification passes on both target and baseline (the base did move past baselineCommit at Build→Verify time with INIT-1.4's projection landing, but Verify→Ship is stable). Authority for the accept is the explicit user."
+  }
 }
