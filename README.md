@@ -49,7 +49,7 @@ Backlog -> Plan -> Review -> Build -> Verify -> Ship
 - A Work requires an Issue Type of `Bug`, `Feature`, or `Task` and explicit acceptance criteria, and records status `Backlog`. It lives on its manifest ref and owns no branch and no worktree: a branch materializes only when something needs one, cut from the base as it stands at that moment.
 - Works may depend on each other. Plan and Review run while blocked; Build refuses to start until every blocker is **accepted**. A rolled-back, superseded, or cancelled blocker never releases its dependents. `codepatrol work graph` shows the whole graph and its executable frontier.
 - `change refresh` non-destructively updates any ready, non-terminal Work with a branch to the current base tip. It refuses active runs and invalidates a standing Verify.
-- Plan inspects the Work without a checkout by default. `--worktree` or `work checkout` materializes the Change branch and its isolated worktree when Plan genuinely needs one.
+- Every stage start attaches the Work's own worktree at `.codepatrol/runtime/worktrees/<work-id>` and returns it as `worktreeDirectory`, so Plan and Review run against the Work's checkout rather than the repository's main checkout. A backlog Work that has never started owns no branch and no worktree; creation still materializes nothing. `work checkout` is only needed to inspect a Work outside a stage.
 - Review may continue to Build or return only to Plan.
 - Build may continue to Verify or return only to Plan. Completion requires a clean worktree.
 - Verify examines the candidate head against the recorded baseline and target base. It may continue to Ship, return to Build for implementation defects, or return to Plan for premise or scope defects.
@@ -115,7 +115,7 @@ codepatrol --workspace /absolute/path/to/repository \
   --result /absolute/path/outside/repository/result.json
 ```
 
-Replace `plan` with `review`, `build`, `verify`, or `ship`. `start` returns `runId`, the v1 handoff, the Change inspection ref, and the worktree directory when one exists. `resume` discovers and returns the same active run with a freshly derived v1 handoff; it never starts another attempt. Keep using the main repository root for `--workspace`, including while repository commands run in a Change worktree.
+Replace `plan` with `review`, `build`, `verify`, or `ship`. `start` returns `runId`, the v1 handoff, the Change inspection ref, and the Work's worktree directory (created on first run, reused for later stages of the same Work). `resume` discovers and returns the same active run with a freshly derived v1 handoff; it never starts another attempt. Keep using the main repository root for `--workspace`, including while repository commands run in a Change worktree.
 
 ## Three Kinds Of Data
 

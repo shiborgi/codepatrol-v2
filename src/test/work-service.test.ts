@@ -1,4 +1,6 @@
 import assert from "node:assert/strict";
+import { access, mkdir, writeFile } from "node:fs/promises";
+import path from "node:path";
 import test from "node:test";
 import { ChangeIntegration } from "../adapters/integration.js";
 import { GitManifestStore } from "../adapters/manifest-store.js";
@@ -253,45 +255,112 @@ test("keeps a Work reachable after its worktree is deleted", async () => {
   }
 });
 
-test("a Plan that produces only a handoff leaves no branch behind", async () => {
+test("Plan attaches the Work's own worktree and materializes the branch", async () => {
+  // Every stage start attaches the Work's own worktree: Plan now materializes
+  // the branch from the base as it stands and projects the manifest into it,
+  // so a stage run never shares the repository's main checkout with another
+  // Work. A backlog Work that has never started still owns no branch.
   const repo = await createTestRepo({ defaultBranch: "trunk" });
   try {
     const service = serviceFor(repo);
-    const workId = (await createWork(repo, service, { type: "Task", title: "Handoff only" })).identity.id;
+    const workId = (await createWork(repo, service, { type: "Task", title: "Plan attaches" })).identity.id;
     const base = await repo.head("refs/heads/trunk");
-    await runStage(service, "plan", workId);
+    assert.equal(await repo.refExists(workBranchRef(workId)), false, "a backlog Work stays branchless across creation");
 
-    // No worktree was requested and no code exists, so nothing was created.
-    assert.equal(await repo.refExists(workBranchRef(workId)), false, "no branch for a handoff-only stage");
-    assert.equal(await repo.head("refs/heads/trunk"), base, "no projection reaches the base");
+    const started = await service.start("plan", workId, "h", "m", TODO);
+    const expected = `${repo.root}/.codepatrol/runtime/worktrees/${workId}`;
+    assert.equal(started.worktreeDirectory, expected, "Plan start attaches the Work's own worktree");
+    assert.equal(started.handoff.repository.worktreeDirectory, expected, "the handoff carries the Work's worktree directory");
+    assert.equal(started.worktreeDirectory === repo.root, false, "the Work's directory is never the repository root");
+    assert.notEqual(await repo.refExists(workBranchRef(workId)), false, "Plan start materializes the Change branch");
     const view = await service.show(workId);
-    assert.equal(view.repository.branch, null);
-    assert.equal(view.repository.baselineCommit, null, "a branchless Work has no baseline to drift from");
-    assert.equal(view.stage, "review");
+    assert.equal(view.repository.branch, workBranchRef(workId));
+    assert.notEqual(view.repository.baselineCommit, null, "the branch carries a baseline recorded at the cut");
+    assert.notEqual(view.repository.createdFromCommit, null);
+    assert.equal(view.repository.baselineCommit, view.repository.createdFromCommit);
 
-    // The next stage reuses what exists: still nothing, until content arrives.
-    await runStage(service, "review", workId);
-    assert.equal(await repo.refExists(workBranchRef(workId)), false);
+    assert.equal(await repo.commitCount("refs/heads/trunk"), 2, "bootstrap and the manifest projection at first run");
+    assert.notEqual(await repo.head("refs/heads/trunk"), base);
+
+    // Review attaches the same directory: the worktree is keyed to the Work's
+    // branch and created on first need, then reused for later stages.
+    await service.complete("plan", workId, started.runId, { decision: "continue", summary: "s", handoff: "h", todo: DONE, artifacts: [] });
+    const reviewed = await service.start("review", workId, "h", "m", TODO);
+    assert.equal(reviewed.worktreeDirectory, expected, "Review reuses the same Work worktree");
+    await service.complete("review", workId, reviewed.runId, { decision: "continue", summary: "s", handoff: "h", todo: DONE, artifacts: [] });
+
+    // No Work has produced code, yet the worktree directory persists.
+    assert.equal(await repo.refExists(workBranchRef(workId)), true, "the branch outlives the handoff-only stage");
   } finally {
     await repo.cleanup();
   }
 });
 
-test("Build cuts the branch from the base of the moment and records it then", async () => {
+test("two Works attacked at the same time hold two distinct worktrees", async () => {
+  // The shared-checkout hazard: each Work must see only its own code, the
+  // repository root must not be a stage's execution directory, and the
+  // directories must be distinct so two harnesses do not race on the same
+  // filesystem.
   const repo = await createTestRepo({ defaultBranch: "trunk" });
   try {
     const service = serviceFor(repo);
-    const workId = (await createWork(repo, service, { type: "Feature", title: "Cut late" })).identity.id;
-    await through(service, workId, ["plan", "review"]);
+    const alpha = (await createWork(repo, service, { type: "Feature", title: "Alpha" })).identity.id;
+    const bravo = (await createWork(repo, service, { type: "Feature", title: "Bravo" })).identity.id;
+
+    const alphaPlan = await service.start("plan", alpha, "h", "m", TODO);
+    const bravoPlan = await service.start("plan", bravo, "h", "m", TODO);
+
+    const alphaDir = alphaPlan.worktreeDirectory as string;
+    const bravoDir = bravoPlan.worktreeDirectory as string;
+    assert.notEqual(alphaDir, null);
+    assert.notEqual(bravoDir, null);
+    assert.notEqual(alphaDir, bravoDir, "two Works hold two distinct worktree directories");
+    assert.equal(alphaDir, `${repo.root}/.codepatrol/runtime/worktrees/${alpha}`);
+    assert.equal(bravoDir, `${repo.root}/.codepatrol/runtime/worktrees/${bravo}`);
+    assert.equal(alphaDir === repo.root || bravoDir === repo.root, false, "neither directory is the repository root");
+
+    // Each Work's worktree is independent: writing into one is invisible from
+    // the other, and the manifest ref lives on its own branch per Work.
+    await mkdir(path.join(alphaDir, "edits"), { recursive: true });
+    await mkdir(path.join(bravoDir, "edits"), { recursive: true });
+    await writeFile(path.join(alphaDir, "edits", "alpha.txt"), "alpha", "utf8");
+    await writeFile(path.join(bravoDir, "edits", "bravo.txt"), "bravo", "utf8");
+    assert.equal(await access(path.join(alphaDir, "edits", "alpha.txt")).then(() => true, () => false), true, "alpha's edit is visible in alpha's worktree");
+    assert.equal(await access(path.join(bravoDir, "edits", "bravo.txt")).then(() => true, () => false), true, "bravo's edit is visible in bravo's worktree");
+    assert.equal(await access(path.join(alphaDir, "edits", "bravo.txt")).then(() => true, () => false), false, "alpha's worktree cannot see bravo's edits");
+    assert.equal(await access(path.join(bravoDir, "edits", "alpha.txt")).then(() => true, () => false), false, "bravo's worktree cannot see alpha's edits");
+
+    // Each Work's worktree is checked out on its own Change branch: a file
+    // committed inside one Work's worktree lands on that Work's branch alone.
+    await writeFile(path.join(alphaDir, "alpha-product.txt"), "alpha product", "utf8");
+    await repo.gitIn(alphaDir, "add", "alpha-product.txt");
+    await repo.gitIn(alphaDir, "commit", "-q", "-m", "alpha product change");
+    const alphaBranchCommits = (await repo.git("log", "--format=%s", workBranchRef(alpha))).trim().split("\n");
+    const bravoBranchCommits = (await repo.git("log", "--format=%s", workBranchRef(bravo))).trim().split("\n");
+    assert.ok(alphaBranchCommits.includes("alpha product change"), "alpha's branch carries alpha's commits");
+    assert.equal(bravoBranchCommits.includes("alpha product change"), false, "bravo's branch does not carry alpha's commits");
+  } finally {
+    await repo.cleanup();
+  }
+});
+
+test("Plan cuts the branch from the base of the moment and records it then", async () => {
+  // The first stage run materializes the branch: this is now Plan, not Build.
+  // The branch is cut from the base as it stands at first run, and later
+  // stages of the same Work reuse the same branch.
+  const repo = await createTestRepo({ defaultBranch: "trunk" });
+  try {
+    const service = serviceFor(repo);
+    const workId = (await createWork(repo, service, { type: "Feature", title: "Cut at first run" })).identity.id;
     // The Work waited in the backlog while the base moved on.
     await repo.write("base-moved.txt", "later work\n");
     const currentBase = await repo.commit("advance base while the Work waits");
 
-    const built = await service.start("build", workId, "h", "m", TODO);
+    const started = await service.start("plan", workId, "h", "m", TODO);
 
-    assert.notEqual(built.worktreeDirectory, null);
+    assert.notEqual(started.worktreeDirectory, null);
     const cutPoint = await repo.head(workBranchRef(workId));
-    assert.equal(await repo.git("rev-parse", `${workBranchRef(workId)}^`), currentBase, "the branch is cut from the base as it stands now");
+    assert.equal(await repo.git("rev-parse", `${workBranchRef(workId)}^`), currentBase, "the branch is cut from the base as it stands at first run");
     const view = await service.show(workId);
     assert.equal(view.repository.baselineCommit, cutPoint, "the baseline is recorded at the cut, not at creation");
     assert.equal(view.repository.createdFromCommit, cutPoint);
@@ -299,12 +368,12 @@ test("Build cuts the branch from the base of the moment and records it then", as
     assert.ok(!(await service.inspect(workId)).changedFiles.includes("base-moved.txt"), "files the base gained before the cut are not attributed to the Change");
 
     // A second stage reuses the branch rather than cutting a new one.
-    await service.complete("build", workId, built.runId, { decision: "continue", summary: "s", handoff: "h", todo: DONE, artifacts: [] });
-    const afterBuild = await repo.head(workBranchRef(workId));
-    const verified = await service.start("verify", workId, "h", "m", TODO);
-    assert.equal(await repo.head(workBranchRef(workId)), afterBuild, "the next stage reuses the existing branch");
+    await service.complete("plan", workId, started.runId, { decision: "continue", summary: "s", handoff: "h", todo: DONE, artifacts: [] });
+    const afterPlan = await repo.head(workBranchRef(workId));
+    const reviewed = await service.start("review", workId, "h", "m", TODO);
+    assert.equal(await repo.head(workBranchRef(workId)), afterPlan, "the next stage reuses the existing branch");
     assert.equal((await service.show(workId)).repository.baselineCommit, cutPoint, "the baseline is recorded exactly once");
-    await service.complete("verify", workId, verified.runId, { decision: "continue", summary: "s", handoff: "h", todo: DONE, artifacts: [] });
+    await service.complete("review", workId, reviewed.runId, { decision: "continue", summary: "s", handoff: "h", todo: DONE, artifacts: [] });
   } finally {
     await repo.cleanup();
   }

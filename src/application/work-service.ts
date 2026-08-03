@@ -96,9 +96,6 @@ export interface ResultInput {
   authority?: string;
 }
 
-/** Stages that materialize a checkout, because they read or write code. */
-const NEEDS_WORKTREE: ReadonlySet<Stage> = new Set<Stage>(["build", "verify", "ship"]);
-
 function nextCommand(view: Omit<WorkView, "nextCommand">): string | null {
   if (view.state === "terminal") return null;
   if (view.stage === "build" && view.graph.unresolvedBlockers.length > 0) {
@@ -284,7 +281,7 @@ export class WorkService {
     };
   }
 
-  async start(stage: Stage, workId: string, harness: string, model: string, todo: TodoItem[], options: { worktree?: boolean } = {}): Promise<StartResult> {
+  async start(stage: Stage, workId: string, harness: string, model: string, todo: TodoItem[], _options: { worktree?: boolean } = {}): Promise<StartResult> {
     workId = await this.store.resolve(workId);
     if (harness.trim() === "" || model.trim() === "") throw new CodepatrolError("INVALID_INPUT", "Harness and model are required.");
     if (stage === "build") {
@@ -295,13 +292,16 @@ export class WorkService {
     const at = this.clock.now().toISOString();
     const execution = { role: STAGE_ROLES[stage], harness: harness.trim(), model: model.trim() };
 
-    // The branch appears only when something needs one: a stage that reads or
-    // writes code, or an explicit worktree request. It is cut from the base as
-    // it stands now, and the manifest is projected into the base so the record
-    // reaches it. A stage that produces only a handoff leaves nothing behind.
+    // The branch materializes on the first stage run so every stage of this
+    // Work attaches its own worktree and never shares the repository's main
+    // checkout with another Work. It is cut from the base as it stands now and
+    // the manifest is projected into the base so the record reaches it. A
+    // backlog Work that has not started owns no branch; creation still
+    // materializes nothing. The --worktree option is kept for compatibility
+    // and is now a no-op: every stage attaches unconditionally.
     const before = await this.store.read(workId);
     if (before.manifest.workflow.state === "terminal") throw new CodepatrolError("INVALID_TRANSITION", `Work is terminal: ${workId}.`);
-    if ((NEEDS_WORKTREE.has(stage) || options.worktree === true) && before.codeHead === undefined) {
+    if (before.codeHead === undefined) {
       await this.worktrees.materialize(workId, before.manifest.repository.baseRef, serializeManifest(before.manifest));
     }
 
@@ -325,9 +325,7 @@ export class WorkService {
       `${stage}(${workId}): start`,
     );
     const manifest = revision.manifest;
-    const worktreeDirectory = NEEDS_WORKTREE.has(stage) || options.worktree === true
-      ? await this.worktrees.attach(workId, serializeManifest(manifest))
-      : await this.worktrees.find(workBranchRef(workId)) ?? null;
+    const worktreeDirectory = await this.worktrees.attach(workId, serializeManifest(manifest));
 
     const root = this.runtimeRoot(workId);
     await rm(root, { recursive: true, force: true });
@@ -360,10 +358,8 @@ export class WorkService {
       throw new CodepatrolError("INVALID_TRANSITION", `No ${stage} run is active for ${workId}.`);
     }
     const contents = serializeManifest(manifest);
-    if (NEEDS_WORKTREE.has(stage)) await this.worktrees.materialize(workId, manifest.repository.baseRef, contents);
-    const worktreeDirectory = NEEDS_WORKTREE.has(stage)
-      ? await this.worktrees.attach(workId, contents)
-      : await this.worktrees.find(workBranchRef(workId)) ?? null;
+    await this.worktrees.materialize(workId, manifest.repository.baseRef, contents);
+    const worktreeDirectory = await this.worktrees.attach(workId, contents);
     const root = this.runtimeRoot(workId);
     await mkdir(root, { recursive: true });
     const inputFile = path.join(root, "input.json");

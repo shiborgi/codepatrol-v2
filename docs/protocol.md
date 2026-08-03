@@ -225,7 +225,7 @@ The start/resume response contains this derived handoff contract:
     "createdFromCommit": "<git-commit>",
     "manifestPath": ".codepatrol/works/<work-id>/work.json",
     "inspectionRef": "refs/heads/codepatrol/work/<work-id>",
-    "worktreeDirectory": null,
+    "worktreeDirectory": "<absolute-path>/.codepatrol/runtime/worktrees/<work-id>",
     "baselineCommit": "<git-commit>"
   },
   "change": {
@@ -279,7 +279,7 @@ The start/resume response contains this derived handoff contract:
 
 The same handoff is returned inline by `start`/`resume` and cached at `inputFile`; executors consume the inline value and do not read `.codepatrol/**`. Fields are stage-sensitive:
 
-- Plan normally has `worktreeDirectory: null`; its `inspectionRef` names the existing Change branch head. `--worktree` may materialize a checkout.
+- Every stage start returns the Work's own worktree as `worktreeDirectory` — Plan and Review no longer run in the repository's main checkout. A backlog Work that has never started still owns no branch and no worktree; creation never materializes one.
 - Build receives the isolated Change worktree and the frozen baseline.
 - Verify uses the active attempt's `verificationTarget.candidateCommit` as the exact candidate. `inspection.headCommit` includes the later Verify-start manifest checkpoint and is not the candidate.
 - Ship receives the current inspection plus the standing `change.verification` snapshot. It checks that commits after the verified candidate touch only the canonical manifest.
