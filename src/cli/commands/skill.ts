@@ -4,10 +4,21 @@ import { fileURLToPath } from "node:url";
 import { exactPositionals, parseArgs } from "../args.js";
 import type { CommandSpec } from "../command.js";
 import { CodepatrolError } from "../../core/errors.js";
+import { resolveComposition } from "../../core/skill-resolution.js";
 import { parseSkillManifest, skillContentDigest, type SkillManifest } from "../../core/skill.js";
+import { STAGES } from "../../core/types.js";
 
 // The CLI is the only layer allowed to read the filesystem; core stays pure.
 const shippedSkillsDirectory = path.resolve(fileURLToPath(import.meta.url), "../../../../skills");
+
+/**
+ * The capabilities this CLI host truthfully offers. The resolver uses the
+ * intersection of the included skills' declared capabilities and this set to
+ * decide whether a stage can run on this host. Adding a new capability is a
+ * real change: it requires the host to actually support it, not just declare
+ * it.
+ */
+const HOST_CAPABILITIES = ["cli"] as const;
 
 /**
  * Reads the skills this codepatrol installation ships: each skills/<id>/
@@ -37,14 +48,19 @@ export async function listShippedSkills(directory: string): Promise<SkillManifes
 /**
  * Skills, read back.
  *
- * Reports what this installation ships, not workspace state: the skills
- * directory resolves package-relative, no remote is needed, and nothing is
- * written.
+ * `list` reports what this installation ships, not workspace state: the
+ * skills directory resolves package-relative, no remote is needed, and
+ * nothing is written.
+ *
+ * `resolve <stage>` reports the composition a stage would execute against:
+ * the stage skill, its required dependencies, and the available
+ * recommendations, with a reason per inclusion and per omission. The command
+ * mutates nothing and does not need a workspace.
  */
 export const skillCommand: CommandSpec = {
   name: "skill",
-  summary: "List the shipped skills with their identity. Changes nothing.",
-  usage: ["skill list"],
+  summary: "List the shipped skills with their identity, or resolve a stage's composition. Changes nothing.",
+  usage: ["skill list", "skill resolve <stage>"],
   async run(_context, rawArgs) {
     const action = rawArgs[0];
     const args = parseArgs(rawArgs.slice(1), []);
@@ -59,6 +75,17 @@ export const skillCommand: CommandSpec = {
       }));
       return { skills };
     }
-    throw new CodepatrolError("INVALID_ARGUMENT", "skill action must be list.", 2);
+    if (action === "resolve") {
+      const [stage] = args.positionals;
+      if (stage === undefined || args.positionals.length !== 1) {
+        throw new CodepatrolError("INVALID_ARGUMENT", "skill resolve requires exactly one stage argument.", 2);
+      }
+      if (!(STAGES as readonly string[]).includes(stage)) {
+        throw new CodepatrolError("INVALID_ARGUMENT", `Unknown stage for skill resolve: ${stage}. Expected one of ${STAGES.join(", ")}.`, 2);
+      }
+      const manifests = await listShippedSkills(shippedSkillsDirectory);
+      return resolveComposition(stage as (typeof STAGES)[number], manifests, [...HOST_CAPABILITIES]);
+    }
+    throw new CodepatrolError("INVALID_ARGUMENT", "skill action must be list or resolve.", 2);
   },
 };
