@@ -38,10 +38,10 @@
     "number": 30
   },
   "workflow": {
-    "state": "active",
+    "state": "terminal",
     "stage": "ship",
     "attempt": 1,
-    "updatedAt": "2026-08-03T21:48:10.138Z"
+    "updatedAt": "2026-08-03T21:48:44.451Z"
   },
   "attempts": [
     {
@@ -553,13 +553,14 @@
       "stage": "ship",
       "attempt": 1,
       "runId": "17c32a00-960f-446f-a91a-106173a221a7",
-      "status": "active",
+      "status": "completed",
       "execution": {
         "role": "shipper",
         "harness": "opencode",
         "model": "minimax-coding-plan/MiniMax-M3"
       },
       "startedAt": "2026-08-03T21:48:10.138Z",
+      "finishedAt": "2026-08-03T21:48:44.451Z",
       "todo": [
         {
           "id": "S1",
@@ -581,8 +582,56 @@
           "id": "S5",
           "title": "Confirm the single integration commit on the base and the archive ref"
         }
+      ],
+      "result": {
+        "decision": "accept",
+        "summary": "Accept the Work. The change adds a pure resolver (resolveComposition) and the additive requires/recommends/conflicts fields under schemaVersion 1, exposes `skill resolve <stage>`, and updates the five stage skill manifests. The CLI mutates nothing; the host capability is the honest `[\"cli\"]` constant. Verification ran npm run verify with exitCode 0 and recorded the policy-hash evidence. Authority for the accept is the explicit user.",
+        "handoff": "# Ship: Resolve a stage's skill composition deterministically (INIT-1.2)\n\n## Terminal outcome\n- decision: accept\n- authority: user (explicit)\n- candidateCommit: 51bb15ee36017fae072889493c13ae9f3a0300ad\n- baselineCommit: c291684e0a80caee89ff5231def3cec2b278524f\n- policyHash: 738b7dca7b2b865e7de12c3f1ca6c05da0d1762f30e202a18709b6290fafb7b4\n\n## Cited evidence (not reproduced)\n- Plan handoff: see availableResults plan/1.\n- Review handoff and verdict continue: see availableResults review/1.\n- Build handoff and 10 committed artifacts (paths/kinds/blobs): see availableResults build/1.\n- Verify handoff, observations, and the requiredCommand trace with exitCode 0: see availableResults verify/1 and the verify attempt in `attempts`.\n- Ship inspection observation: trace id 60af7c0ba7c4 in the ship attempt.\n\n## Outcome\nThe single integration commit lands on main; the archive ref `refs/heads/codepatrol/archive/INIT-1.2-resolve-a-stage-s-skill-composition-deterministi` preserves the full Change history. Open Change branch and worktree are removed.",
+        "todo": [
+          {
+            "id": "S1",
+            "status": "completed",
+            "note": "Work ready for Ship with verifiedCandidate pinned to 51bb15ee. change.verification.attempt=1; baselineCommit=c291684; targetCommit=c291684; policyHash recorded."
+          },
+          {
+            "id": "S2",
+            "status": "completed",
+            "note": "inspection.clean=true; baselineStale=false; status=[]; commits=[51bb15ee]; changedFiles match Build-declared artifacts + canonical manifest. base target c291684 equals verification snapshot targetCommit. canonical-manifest-only invariant holds (51bb15ee IS the candidate, no commits after it in range)."
+          },
+          {
+            "id": "S3",
+            "status": "completed",
+            "note": "Terminal rationale: additive schemaVersion 1 fields keep INIT-1.1's promise; pure resolver module fits Core's filesystem-free rule; CLI mutates nothing and uses the honest HOST_CAPABILITIES = ['cli']; SKILL.md digests preserved so shipped-manifests integrity test stays green; verify recorded requiredCommands npm run verify with exitCode 0."
+          },
+          {
+            "id": "S4",
+            "status": "completed",
+            "note": "Completing with decision=accept and authority=user (explicit)."
+          },
+          {
+            "id": "S5",
+            "status": "completed",
+            "note": "Verified post-completion: exactly one integration commit on main; refs/heads/codepatrol/work/INIT-1.2-resolve-a-stage-s-skill-composition-deterministi removed; refs/heads/codepatrol/archive/INIT-1.2-resolve-a-stage-s-skill-composition-deterministi carries the full Change history."
+          }
+        ],
+        "artifacts": [],
+        "authority": "user"
+      },
+      "traces": [
+        {
+          "id": "60af7c0ba7c4",
+          "type": "observation",
+          "message": "Ship inspection: candidateCommit 51bb15ee is the single commit ahead of baseline c291684; base target c291684 matches the verification snapshot's targetCommit c291684; baselineStale=false; clean=true; status=[]; the 11 changed files are exactly the Build-declared artifacts (src/core/skill.ts, src/core/skill-resolution.ts, src/cli/commands/skill.ts, five stage skill manifests, src/test/skill.test.ts, src/test/skill-resolution.test.ts) plus the canonical manifest .codepatrol/works/INIT-1.2-resolve-a-stage-s-skill-composition-deterministi/work.json. No commits follow the candidate, so the canonical-manifest-only invariant holds vacuously. Verify evidence: requiredCommands command trace with exitCode 0 for `npm run verify` and inspection observations for changed files and pinned candidate are recorded in the verify attempt.",
+          "at": "2026-08-03T21:48:35.788Z"
+        }
       ]
     }
   ],
-  "completion": null
+  "completion": {
+    "outcome": "accepted",
+    "via": "ship",
+    "authority": "user",
+    "finalizedAt": "2026-08-03T21:48:44.451Z",
+    "summary": "Accept the Work. The change adds a pure resolver (resolveComposition) and the additive requires/recommends/conflicts fields under schemaVersion 1, exposes `skill resolve <stage>`, and updates the five stage skill manifests. The CLI mutates nothing; the host capability is the honest `[\"cli\"]` constant. Verification ran npm run verify with exitCode 0 and recorded the policy-hash evidence. Authority for the accept is the explicit user."
+  }
 }
