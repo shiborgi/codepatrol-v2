@@ -37,11 +37,46 @@
     "number": 31
   },
   "workflow": {
-    "state": "ready",
+    "state": "active",
     "stage": "plan",
     "attempt": 1,
-    "updatedAt": "2026-08-03T11:16:22.452Z"
+    "updatedAt": "2026-08-03T21:52:58.062Z"
   },
-  "attempts": [],
+  "attempts": [
+    {
+      "stage": "plan",
+      "attempt": 1,
+      "runId": "1462ae64-5094-4650-906b-8b4fcae0639f",
+      "status": "active",
+      "execution": {
+        "role": "planner",
+        "harness": "opencode",
+        "model": "kimi-for-coding/k3"
+      },
+      "startedAt": "2026-08-03T21:52:58.062Z",
+      "todo": [
+        {
+          "id": "P1",
+          "title": "Inspect skill-resolution output (INIT-1.2), test fixture infra, and suite/scenario shape options"
+        },
+        {
+          "id": "P2",
+          "title": "Design suite/scenario schema, fixture isolation, assertion model, and result capture"
+        },
+        {
+          "id": "P3",
+          "title": "Decide the baseline protocol suite, the broken-expectation proof, and CI wiring"
+        },
+        {
+          "id": "P4",
+          "title": "Write decision-complete plan covering all five acceptance criteria"
+        },
+        {
+          "id": "P5",
+          "title": "Record traces; complete Plan with decision continue"
+        }
+      ]
+    }
+  ],
   "completion": null
 }
