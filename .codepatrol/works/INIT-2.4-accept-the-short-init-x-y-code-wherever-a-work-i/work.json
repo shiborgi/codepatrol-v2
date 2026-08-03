@@ -1,0 +1,40 @@
+{
+  "schemaVersion": 1,
+  "type": "codepatrol-work",
+  "work": {
+    "id": "INIT-2.4-accept-the-short-init-x-y-code-wherever-a-work-i",
+    "title": "Accept the short INIT-x.y code wherever a Work id is passed",
+    "description": "Every command that takes <work-id> validates against WORK_ID, which demands the full slugged id, so `plan start INIT-2.1` fails with INVALID_WORK_ID and the caller copies a forty-character slug the system already knows. Resolve the short INIT-<n>.<p> code — unique by construction, since initiative and position identify one Work — at the single boundary where Work ids enter the CLI, so plan and every other command accept it. The full slugged id keeps working unchanged, and an unknown code fails with the same INVALID_WORK_ID it raises today.",
+    "issueType": "Feature",
+    "priority": "p2",
+    "acceptance": [
+      "codepatrol plan start with a short INIT-x.y code resolves the unique Work with that number pair and starts the run exactly as the full id does",
+      "The short code resolves in every command that takes a work-id — work show, change show, sync, and the stage commands — not only in plan",
+      "An unknown short code fails with INVALID_WORK_ID naming what was passed, and the full slugged id keeps working unchanged"
+    ],
+    "createdAt": "2026-08-03T13:58:06.447Z",
+    "requestedBy": "spec",
+    "initiative": {
+      "id": "INIT-2",
+      "position": 4
+    },
+    "origin": {
+      "createdAt": "2026-08-03T13:58:06.447Z"
+    }
+  },
+  "repository": {
+    "baseRef": "refs/heads/main"
+  },
+  "graph": {
+    "blockedBy": []
+  },
+  "issue": null,
+  "workflow": {
+    "state": "ready",
+    "stage": "plan",
+    "attempt": 1,
+    "updatedAt": "2026-08-03T13:58:06.447Z"
+  },
+  "attempts": [],
+  "completion": null
+}
