@@ -36,10 +36,10 @@
     "number": 38
   },
   "workflow": {
-    "state": "active",
-    "stage": "verify",
-    "attempt": 1,
-    "updatedAt": "2026-08-03T16:32:21.121Z"
+    "state": "ready",
+    "stage": "build",
+    "attempt": 2,
+    "updatedAt": "2026-08-03T16:40:20.798Z"
   },
   "attempts": [
     {
@@ -203,7 +203,7 @@
       "stage": "build",
       "attempt": 1,
       "runId": "400277fa-e1b2-4654-a1ed-d05506574b23",
-      "status": "completed",
+      "status": "invalidated",
       "execution": {
         "role": "builder",
         "harness": "opencode",
@@ -275,13 +275,14 @@
       "stage": "verify",
       "attempt": 1,
       "runId": "ec0e58de-56a1-45a5-9c12-95782967f3e3",
-      "status": "active",
+      "status": "returned",
       "execution": {
         "role": "verifier",
         "harness": "opencode",
         "model": "google/antigravity-gemini-3.1-pro"
       },
       "startedAt": "2026-08-03T16:32:21.121Z",
+      "finishedAt": "2026-08-03T16:40:20.798Z",
       "todo": [
         {
           "id": "V1",
@@ -302,6 +303,102 @@
         {
           "id": "V5",
           "title": "Record minimum evidence traces; complete with verdict"
+        }
+      ],
+      "result": {
+        "decision": "return",
+        "summary": "The base branch moved during Verify. Returning to Build for a refresh.",
+        "handoff": "The base branch has advanced to e6a6e7194efc6e94e8994d02abe68fc10f8140cc. Please run `codepatrol change refresh` and reconstruct the candidate.",
+        "todo": [
+          {
+            "id": "V1",
+            "status": "completed",
+            "note": "Verify attempt 1 started; candidate 3591774e and baseline 06f92365 pinned and reported."
+          },
+          {
+            "id": "V2",
+            "status": "completed",
+            "note": "All changed files inspected; blast radius rigorously restricted."
+          },
+          {
+            "id": "V3",
+            "status": "completed",
+            "note": "All four acceptance criteria heavily documented by live coverage and adjusted state checks."
+          },
+          {
+            "id": "V4",
+            "status": "completed",
+            "note": "npm run verify ran from this run against the exact candidate: exitCode 0, 255/255 tests."
+          },
+          {
+            "id": "V5",
+            "status": "failed",
+            "note": "Base moved. Returning to Build."
+          }
+        ],
+        "artifacts": [],
+        "returnTo": "build",
+        "reasons": [
+          "Base branch moved to e6a6e7194efc6e94e8994d02abe68fc10f8140cc. Refresh needed."
+        ]
+      },
+      "traces": [
+        {
+          "id": "50626ccb58b9",
+          "type": "command",
+          "message": "Policy requiredCommand run from this Verify run against the exact candidate: typecheck clean, 255/255 tests pass, smoke passed, --help lists all commands.",
+          "at": "2026-08-03T16:35:05.569Z",
+          "command": [
+            "npm",
+            "run",
+            "verify"
+          ],
+          "exitCode": 0
+        },
+        {
+          "id": "0f8480837b86",
+          "type": "observation",
+          "message": "Inspected the full pinned range. Changed files accurately map to plan. `snapshotOf` securely updated to use `latest.stage` rather than `manifest.workflow.stage`. Tests in `publication.test.ts` thoroughly test backlog state, active/waiting state, and terminal stability. Blast radius correctly contained.",
+          "at": "2026-08-03T16:35:14.048Z",
+          "data": {
+            "candidateCommit": "3591774e6a8d310a36cc63cca57987ef0cdcc96a",
+            "baselineCommit": "06f923650c7aaeaf77873d9b02c2631743f5fdd0"
+          }
+        },
+        {
+          "id": "f33e966a0657",
+          "type": "command",
+          "message": "npm run verify exited with 0",
+          "at": "2026-08-03T16:39:56.466Z",
+          "data": {
+            "source": "codepatrol",
+            "workId": "INIT-2.3-move-an-issue-s-project-status-only-when-a-run-a",
+            "runId": "ec0e58de-56a1-45a5-9c12-95782967f3e3",
+            "attempt": 1,
+            "candidateCommit": "3591774e6a8d310a36cc63cca57987ef0cdcc96a",
+            "policyHash": "738b7dca7b2b865e7de12c3f1ca6c05da0d1762f30e202a18709b6290fafb7b4",
+            "startedAt": "2026-08-03T16:37:54.588Z",
+            "finishedAt": "2026-08-03T16:39:56.416Z",
+            "stdout": {
+              "digest": "03e47b09e069166d9a9a0ef1a11cbdea290a2354cd14949cfb7a28df47e9f3b4",
+              "bytes": 25858,
+              "truncated": true,
+              "redactions": 0
+            },
+            "stderr": {
+              "digest": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+              "bytes": 0,
+              "truncated": false,
+              "redactions": 0
+            },
+            "outputLog": ".codepatrol/runtime/works/INIT-2.3-move-an-issue-s-project-status-only-when-a-run-a/current/verify/01.log"
+          },
+          "command": [
+            "npm",
+            "run",
+            "verify"
+          ],
+          "exitCode": 0
         }
       ],
       "verificationTarget": {
