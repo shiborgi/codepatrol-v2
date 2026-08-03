@@ -36,10 +36,10 @@
     "number": 40
   },
   "workflow": {
-    "state": "active",
-    "stage": "build",
+    "state": "ready",
+    "stage": "verify",
     "attempt": 1,
-    "updatedAt": "2026-08-03T18:06:50.386Z"
+    "updatedAt": "2026-08-03T18:47:05.994Z"
   },
   "attempts": [
     {
@@ -206,13 +206,14 @@
       "stage": "build",
       "attempt": 1,
       "runId": "788dde54-95d0-49ff-b1c4-21cae54e5e80",
-      "status": "active",
+      "status": "completed",
       "execution": {
         "role": "builder",
         "harness": "opencode",
         "model": "minimax-coding-plan/MiniMax-M3"
       },
       "startedAt": "2026-08-03T18:06:50.386Z",
+      "finishedAt": "2026-08-03T18:47:05.994Z",
       "todo": [
         {
           "id": "B1",
@@ -245,6 +246,127 @@
         {
           "id": "B8",
           "title": "Verify worktree clean; complete Build with continue"
+        }
+      ],
+      "result": {
+        "decision": "continue",
+        "summary": "Every stage start of a Work now attaches the Work's own worktree. src/application/work-service.ts drops the NEEDS_WORKTREE distinction so start() and resume() always materialize the Work's branch when absent and attach the Work's worktree, returning its absolute path as worktreeDirectory. The --worktree option is preserved as a no-op. A backlog Work that has never started still owns no branch. skills/codepatrol-plan/SKILL.md, docs/protocol.md, docs/architecture.md, and README.md are updated to describe the new rule. The shipped test suite adds 'Plan attaches the Work's own worktree and materializes the branch', renames 'Build cuts the branch from the base of the moment and records it then' to 'Plan cuts ...' (the cut now happens at first run, not at build), and adds 'two Works attacked at the same time hold two distinct worktrees' that proves directory isolation and branch isolation.",
+        "handoff": "# Build: Run every stage of a Work in its own worktree (INIT-3.1)\n\n## What changed\n- src/application/work-service.ts — removed the NEEDS_WORKTREE constant. start() and resume() now always materialize the Work's branch when absent and call attach(), so worktreeDirectory is the Work's own worktree for every stage. The options parameter on start() is renamed to _options since the --worktree flag is now a no-op kept for API compatibility. The comment near start() spells out the new rule.\n- skills/codepatrol-plan/SKILL.md — step 5 now states every stage start attaches the Work's own worktree and returns it as worktreeDirectory. `work checkout` is only needed outside a stage.\n- skills/codepatrol-plan/skill.json — digest updated to match the new SKILL.md bytes.\n- docs/protocol.md — the example handoff shows worktreeDirectory as an absolute path; the stage-sensitive fields note reflects that every stage returns the Work's worktree.\n- docs/architecture.md — the Git Model section and rule 3 are rewritten to describe first-run materialization and per-stage worktree attachment.\n- README.md — the Plan bullet and the stage command description reflect that start returns the Work's worktree directory.\n- src/test/work-service.test.ts — replaced the obsolete handoff-only-Plan test with 'Plan attaches the Work's own worktree and materializes the branch'; renamed and restructured the cut-time test to 'Plan cuts the branch from the base of the moment and records it then'; added 'two Works attacked at the same time hold two distinct worktrees' that proves distinct directories, write isolation between worktrees, and per-Work branch isolation.\n\n## Validation\n- npm run typecheck: clean.\n- npm test: 260/260 pass.\n- npm run smoke: pass.\n- node bin/codepatrol.js --help: prints the expected surface.\n- Candidate commit df73d738f6d05aeb38061935f09d92d5b77cdd1f is on refs/heads/codepatrol/work/INIT-3.1-run-every-stage-of-a-work-in-its-own-worktree; the worktree is clean.\n\n## Acceptance evidence\n1. Every stage run receives the Work's own worktree — start()/resume() unconditionally attach; 'Plan attaches the Work's own worktree and materializes the branch' asserts worktreeDirectory, branch existence, baseline, and base projection.\n2. Two Works hold two distinct directories — 'two Works attacked at the same time hold two distinct worktrees' asserts the paths differ and the peer Work's worktree cannot see this Work's edits.\n3. Created on first need, reused by later stages — same test asserts Review reuses the directory Plan attached; the cross-stage assertion is in 'Plan attaches the Work's own worktree and materializes the branch' (Review reuses the same path).\n4. Terminal cleanup behaves as before — no adapter changes; existing integration and cleanup tests stay green (e.g. 'an accepted Work adds exactly one commit to the base' still expects bootstrap + projection + squash; 'a rolled-back Work adds zero commits to the base' still expects 2 base commits).\n\n## Files Build declared as artifacts\n- src/application/work-service.ts\n- skills/codepatrol-plan/SKILL.md\n- skills/codepatrol-plan/skill.json\n- docs/protocol.md\n- docs/architecture.md\n- README.md\n- src/test/work-service.test.ts",
+        "todo": [
+          {
+            "id": "B1",
+            "status": "completed",
+            "note": "Inspected the v1 plan handoff, current source state (work-service.ts, worktree.ts, integration.ts), test fixtures, and skill docs. Confirmed the only state that needs to change is the start()/resume() NEEDS_WORKTREE gate."
+          },
+          {
+            "id": "B2",
+            "status": "completed",
+            "note": "Removed NEEDS_WORKTREE; start() and resume() now always materialize (when absent) and attach. Comment updated; _options prefix to satisfy noUnusedParameters."
+          },
+          {
+            "id": "B3",
+            "status": "completed",
+            "note": "codepatrol-plan SKILL.md step 5 rewritten to describe per-stage worktree attachment; the codepatrol-work ownership sentence still holds (a Work owns no branch and no worktree until the first stage start)."
+          },
+          {
+            "id": "B4",
+            "status": "completed",
+            "note": "docs/protocol.md (handoff example + stage-sensitive fields) and docs/architecture.md (Git Model + rule 3) updated; README.md Plan bullet and stage command description reflect the new rule."
+          },
+          {
+            "id": "B5",
+            "status": "completed",
+            "note": "Two new tests cover acceptance 1 and 2; the renamed test exercises acceptance 3; the obsolete 'handoff-only' test was replaced with the assertion that the worktree exists and the base received the projection."
+          },
+          {
+            "id": "B6",
+            "status": "completed",
+            "note": "npm run verify: typecheck clean; 260/260 tests pass; smoke passes; --help prints the expected surface."
+          },
+          {
+            "id": "B7",
+            "status": "completed",
+            "note": "Committed product changes on codepatrol/work/INIT-3.1-run-every-stage-of-a-work-in-its-own-worktree as df73d738f6d05aeb38061935f09d92d5b77cdd1f."
+          },
+          {
+            "id": "B8",
+            "status": "completed",
+            "note": "Worktree clean; candidate pinned; completing with decision continue."
+          }
+        ],
+        "artifacts": [
+          {
+            "path": "src/application/work-service.ts",
+            "kind": "source",
+            "blob": "b6bba885255036cc31885846cbaf96ea4b9dacd0",
+            "description": "WorkService start()/resume() now attach the Work's own worktree unconditionally; NEEDS_WORKTREE removed."
+          },
+          {
+            "path": "skills/codepatrol-plan/SKILL.md",
+            "kind": "skill",
+            "blob": "2911efba87fb77643658325d0a888ee65abd95ef",
+            "description": "Step 5 states every stage start attaches the Work's own worktree."
+          },
+          {
+            "path": "skills/codepatrol-plan/skill.json",
+            "kind": "skill-manifest",
+            "blob": "c2692dd09ff3fab44187fb4274302e1a40cffef4",
+            "description": "Digest refreshed to match the new SKILL.md bytes."
+          },
+          {
+            "path": "docs/protocol.md",
+            "kind": "documentation",
+            "blob": "b798b54f369bb14fd0a2a86768cfe8e14b2c78c9",
+            "description": "Handoff example shows worktreeDirectory as the Work's worktree path; stage-sensitive fields note reflects the new rule."
+          },
+          {
+            "path": "docs/architecture.md",
+            "kind": "documentation",
+            "blob": "d05b33aa8e4983a6433809552edacef3f4be69ed",
+            "description": "Git Model and rule 3 describe first-run materialization and per-stage worktree attachment."
+          },
+          {
+            "path": "README.md",
+            "kind": "documentation",
+            "blob": "5f286705e44ec022fb3581f8ceaa137acfceba74",
+            "description": "Plan bullet and stage command description reflect the new rule."
+          },
+          {
+            "path": "src/test/work-service.test.ts",
+            "kind": "test",
+            "blob": "5e4ce7de5c66c117148fa4317ad998141b0a3ce0",
+            "description": "Replaces the obsolete handoff-only test, renames the cut-time test, adds the two-works-isolation test."
+          }
+        ]
+      },
+      "traces": [
+        {
+          "id": "643160027749",
+          "type": "observation",
+          "message": "Build start attached the Work's own worktree at .codepatrol/runtime/worktrees/INIT-3.1-run-every-stage-of-a-work-in-its-own-worktree — confirming the new rule already works for the build stage; the same change has to extend to plan and review by dropping the NEEDS_WORKTREE distinction.",
+          "at": "2026-08-03T18:07:17.292Z"
+        },
+        {
+          "id": "981f476c7a3d",
+          "type": "decision",
+          "message": "Build changes: removed the NEEDS_WORKTREE constant in src/application/work-service.ts so start() and resume() always materialize the Work's branch (when absent) and attach the Work's worktree. Updated the comment near start() to spell out that the branch now materializes on the first stage run, that a backlog Work stays branchless across creation, and that --worktree is now a no-op kept for API compatibility. Renamed the unused options parameter to _options to satisfy noUnusedParameters.",
+          "at": "2026-08-03T18:46:49.058Z",
+          "data": {
+            "files": [
+              "src/application/work-service.ts"
+            ]
+          }
+        },
+        {
+          "id": "978a4fae72c8",
+          "type": "decision",
+          "message": "Test updates: replaced the obsolete 'a Plan that produces only a handoff leaves no branch behind' test with 'Plan attaches the Work's own worktree and materializes the branch' (asserts worktreeDirectory path, branch materialization, baseline and createdFromCommit set, base projection). Renamed 'Build cuts the branch from the base of the moment and records it then' to 'Plan cuts the branch from the base of the moment and records it then' and moved the cut-time advance base to happen before plan start (Plan now cuts, not Build). Added 'two Works attacked at the same time hold two distinct worktrees' that proves: distinct directories under .codepatrol/runtime/worktrees/<id>, isolation between worktrees (writes invisible to the peer), and that each Work's branch carries only its own product commits (the other Work's commits never land).",
+          "at": "2026-08-03T18:46:49.146Z",
+          "data": {
+            "testFiles": [
+              "src/test/work-service.test.ts"
+            ]
+          }
         }
       ]
     }
