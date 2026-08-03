@@ -24,7 +24,9 @@
     }
   },
   "repository": {
-    "baseRef": "refs/heads/main"
+    "baseRef": "refs/heads/main",
+    "createdFromCommit": "c291684e0a80caee89ff5231def3cec2b278524f",
+    "baselineCommit": "c291684e0a80caee89ff5231def3cec2b278524f"
   },
   "graph": {
     "blockedBy": [
@@ -36,10 +38,10 @@
     "number": 30
   },
   "workflow": {
-    "state": "ready",
+    "state": "active",
     "stage": "build",
     "attempt": 1,
-    "updatedAt": "2026-08-03T20:53:45.741Z"
+    "updatedAt": "2026-08-03T20:59:19.271Z"
   },
   "attempts": [
     {
@@ -205,6 +207,56 @@
         ],
         "artifacts": []
       }
+    },
+    {
+      "stage": "build",
+      "attempt": 1,
+      "runId": "5249ee68-5e87-4dc7-a898-5bcb69dfca02",
+      "status": "active",
+      "execution": {
+        "role": "builder",
+        "harness": "opencode",
+        "model": "minimax-coding-plan/MiniMax-M3"
+      },
+      "startedAt": "2026-08-03T20:59:19.271Z",
+      "todo": [
+        {
+          "id": "B1",
+          "title": "Inspect accepted plan and current source state"
+        },
+        {
+          "id": "B2",
+          "title": "Extend src/core/skill.ts with optional requires/recommends/conflicts (additive under schemaVersion 1)"
+        },
+        {
+          "id": "B3",
+          "title": "Create src/core/skill-resolution.ts with resolveComposition(stage, manifests, hostCapabilities)"
+        },
+        {
+          "id": "B4",
+          "title": "Add `skill resolve <stage>` action in src/cli/commands/skill.ts with HOST_CAPABILITIES = ['cli']"
+        },
+        {
+          "id": "B5",
+          "title": "Add recommends: ['codepatrol-work'] to plan/review/build/verify/ship skill manifests"
+        },
+        {
+          "id": "B6",
+          "title": "Add src/test/skill-resolution.test.ts; extend src/test/skill.test.ts for parser additions"
+        },
+        {
+          "id": "B7",
+          "title": "Run npm run verify (typecheck, tests, smoke, --help listing skill resolve)"
+        },
+        {
+          "id": "B8",
+          "title": "Commit product changes on the Change branch; verify worktree is clean"
+        },
+        {
+          "id": "B9",
+          "title": "Complete Build with continue"
+        }
+      ]
     }
   ],
   "completion": null
