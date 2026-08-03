@@ -124,6 +124,7 @@ test("the projection E2E asserts remote state rather than only that the base mov
     "the Work's Issue is attached to the Initiative's Milestone",
     "a repeated sync creates no duplicate Milestone",
     "no raw command output is published",
+    "the Initiative ref exists remotely",
     // Project projection is part of v1.0.0, so the scenario has to prove it
     // rather than only claim it in a comment.
     "the Issue was added to the Project",

@@ -26,7 +26,9 @@
     }
   },
   "repository": {
-    "baseRef": "refs/heads/main"
+    "baseRef": "refs/heads/main",
+    "createdFromCommit": "f73b9a79ad8d474239cd243119b126baee485436",
+    "baselineCommit": "f73b9a79ad8d474239cd243119b126baee485436"
   },
   "graph": {
     "blockedBy": []
@@ -36,10 +38,10 @@
     "number": 36
   },
   "workflow": {
-    "state": "ready",
-    "stage": "build",
+    "state": "terminal",
+    "stage": "ship",
     "attempt": 1,
-    "updatedAt": "2026-08-03T13:17:35.010Z"
+    "updatedAt": "2026-08-03T14:52:26.298Z"
   },
   "attempts": [
     {
@@ -198,7 +200,322 @@
         ],
         "artifacts": []
       }
+    },
+    {
+      "stage": "build",
+      "attempt": 1,
+      "runId": "c85584e2-a74e-458b-90c6-960174e8bab6",
+      "status": "completed",
+      "execution": {
+        "role": "builder",
+        "harness": "opencode",
+        "model": "kimi-for-coding/k3"
+      },
+      "startedAt": "2026-08-03T13:32:06.712Z",
+      "finishedAt": "2026-08-03T14:18:19.528Z",
+      "todo": [
+        {
+          "id": "B1",
+          "title": "Update local-git-remote.ts to include initiative refs in localRefs/remoteRefs/matchesScope"
+        },
+        {
+          "id": "B2",
+          "title": "Add local-git-remote.test.ts real-git round-trip tests (4 scenarios)"
+        },
+        {
+          "id": "B3",
+          "title": "Extend publication.test.ts with no-remote and refs-disabled assertions"
+        },
+        {
+          "id": "B4",
+          "title": "Add ls-remote initiative ref assertion in projection-e2e.mjs; register in documentation.test.ts"
+        },
+        {
+          "id": "B5",
+          "title": "Run npm run verify; commit; complete Build"
+        }
+      ],
+      "result": {
+        "decision": "continue",
+        "summary": "All five todos completed. Initiative refs join the refs projection in LocalGitRemote.sync: they are enumerated locally via for-each-ref, queried from the remote via ls-remote, validated by the same prefix check, and scoped to a single Work's Initiative via initiativeOfWork with a trailing-dash prefix. No deletion logic was added or changed — an Initiative ref structurally can never enter terminal cleanup, and the never-delete behaviour is pinned by a real-git test that runs a Work to terminal and re-syncs. The previous build attempt's no-scope regression in matchesScope was caught by the existing local-git-remote tests and fixed.",
+        "handoff": "# Build: INIT-2.1\n\n## Changed files (product)\n- src/adapters/local-git-remote.ts — added the `initiativeOfWork` import, the trailing-dash Initiative prefix branch in `matchesScope`, the `refs/codepatrol/initiative/` argument to the `for-each-ref` and `ls-remote` patterns, and the Initiative prefix on the `remoteRefs` validation. Nothing else changed. Two debug `process.env.CODEPATROL_DEBUG_*` stderr writes left over from the previous Build attempt were removed; they are not product surface.\n- src/test/local-git-remote.test.ts — four new real-git round-trip tests:\n  1. publishes every local Initiative ref and a fresh clone reads back the same documents\n  2. a second clone mints the next free Initiative number (INIT-1, not INIT-0)\n  3. a scoped sync publishes only the selected Work's Initiative\n  4. never deletes an Initiative ref, even after every Work of that Initiative is terminal (with a repeated sync)\n- src/test/publication.test.ts — the no-remote lifecycle test now asserts the local Initiative ref is untouched; a new test covers `projections: NOTHING` on a remote-configured app, asserting the local Initiative ref is untouched and `remote.sync` is never called.\n- scripts/projection-e2e.mjs — the end-to-end scenario now asserts `git ls-remote origin 'refs/codepatrol/initiative/${applied.initiative}-*'` is non-empty (`the Initiative ref exists remotely`).\n- src/test/documentation.test.ts — registers the new assertion string in the E2E guard list.\n\n## Validation\n- `npm run verify` green: typecheck, 250/250 unit tests (including the four new round-trip tests and the new publication test), smoke, `--help`.\n\n## Commits\n- bde17d8 INIT-2.1-publish-and-fetch-initiative-refs-alongside-work: Publish and fetch Initiative refs alongside Work manifests (product)\n- 9f78761 codepatrol(INIT-2.1-publish-and-fetch-initiative-refs-alongside-work): manifest projection (state update for the active Build run)\n\n## Candidate\n- The product commit `bde17d8` carries every code and test change. The branch head `9f78761` is the manifest projection that the Build run wrote on its way to completion. Both are clean and reproducible from `f73b9a7`.\n\n## Acceptance\n1. Publishes every Initiative ref; fresh clone reads the same documents — covered by localRefs/remoteRefs/validation patterns and test 1.\n2. Scoped sync publishes that Work's Initiative only — covered by the trailing-dash `initiativeOfWork` branch in matchesScope and test 3.\n3. Fetch brings remote-only Initiative refs down; second clone mints the next free number — covered by the existing incoming path and tests 1 and 2.\n4. Never deletes an Initiative ref — structural (no code path can reach an Initiative ref through terminalActiveRefs because `activeWorkId` only matches work branches) and pinned by test 4 (terminal sync + repeated sync).\n5. No remote or refs projection disabled → skipped, local Initiative refs untouched — covered by the existing publication skip paths and the two publication.test.ts assertions.\n6. Projection E2E asserts the Initiative ref exists remotely — covered by the new `ls-remote` check in `scripts/projection-e2e.mjs` and the documentation.test.ts guard.",
+        "todo": [
+          {
+            "id": "B1",
+            "status": "completed",
+            "note": "Adder: refs/codepatrol/initiative/ in localRefs, remoteRefs (query and validation), and matchesScope (via initiativeOfWork with trailing dash). Fixed a regression in the previous attempt: matchesScope now returns true for the no-scope case (it had wrongly returned ref === baseRef). Removed two process.env.CODEPATROL_DEBUG_* stderr writes the previous attempt left behind."
+          },
+          {
+            "id": "B2",
+            "status": "completed",
+            "note": "Four real-git round-trip tests in local-git-remote.test.ts. All pass: publish + fresh-clone read-back, second clone mints INIT-1, scoped sync publishes only the selected Work's Initiative, never-deletes after a terminal sync (and a repeated sync)."
+          },
+          {
+            "id": "B3",
+            "status": "completed",
+            "note": "publication.test.ts: extended the no-remote lifecycle test to assert the local Initiative ref head is unchanged, and added a new test that a remote-configured app with projections: NOTHING leaves the local Initiative ref untouched and never calls remote.sync."
+          },
+          {
+            "id": "B4",
+            "status": "completed",
+            "note": "projection-e2e.mjs: added `git ls-remote origin 'refs/codepatrol/initiative/${applied.initiative}-*'` is non-empty, asserted as 'the Initiative ref exists remotely'. documentation.test.ts: registered the new assertion string in the E2E guard list."
+          },
+          {
+            "id": "B5",
+            "status": "completed",
+            "note": "npm run verify green (typecheck + 250/250 tests + smoke + --help). Two commits: bde17d8 (product) and 9f78761 (manifest projection). Worktree clean."
+          }
+        ],
+        "artifacts": [
+          {
+            "path": "src/adapters/local-git-remote.ts",
+            "kind": "production",
+            "blob": "e6e67920fbba9c1922801a9a18faf906be53b94d",
+            "description": "Adapter: include refs/codepatrol/initiative/ in the refs projection (enumeration, query, validation, scope)."
+          },
+          {
+            "path": "src/test/local-git-remote.test.ts",
+            "kind": "test",
+            "blob": "1e610c1025f67e299cece8461173de43477541a0",
+            "description": "Four real-git round-trip tests pinning the Initiative ref sync behaviour."
+          },
+          {
+            "path": "src/test/publication.test.ts",
+            "kind": "test",
+            "blob": "ab9799d73b083496146aa37724efc5337460eeb6",
+            "description": "No-remote and refs-projection-disabled assertions that the local Initiative ref is untouched."
+          },
+          {
+            "path": "scripts/projection-e2e.mjs",
+            "kind": "scenario",
+            "blob": "f6512faf05129c16f247f9f1b9dae06746ab7b2d",
+            "description": "End-to-end scenario asserts the Initiative ref exists remotely."
+          },
+          {
+            "path": "src/test/documentation.test.ts",
+            "kind": "test",
+            "blob": "039b7fc58ee6eb5bdd6f9e4efeb3cd357bff4bd9",
+            "description": "Guard test registering the new E2E assertion string."
+          }
+        ]
+      },
+      "traces": [
+        {
+          "id": "de42e4817f1d",
+          "type": "observation",
+          "message": "The previous Build attempt's matchesScope rewrite returned ref === baseRef for the no-scope case instead of true, which caused the existing local-git-remote tests to fail (no refs except baseRef would be considered in scope). Fixed to return true when workId is undefined, preserving the original semantics: no scope means all refs match. Also stripped two process.env.CODEPATROL_DEBUG_* debug stderr writes that the previous attempt left behind; they are not product surface.",
+          "at": "2026-08-03T13:58:26.782Z"
+        }
+      ]
+    },
+    {
+      "stage": "verify",
+      "attempt": 1,
+      "runId": "7b857857-6b44-4569-aa7b-8a4b38e2b86d",
+      "status": "completed",
+      "execution": {
+        "role": "verifier",
+        "harness": "opencode",
+        "model": "google/antigravity-gemini-3.1-pro"
+      },
+      "startedAt": "2026-08-03T14:25:26.398Z",
+      "finishedAt": "2026-08-03T14:30:23.939Z",
+      "todo": [
+        {
+          "id": "V1",
+          "title": "Start Verify; pin candidateCommit and baselineCommit"
+        },
+        {
+          "id": "V2",
+          "title": "Inspect every changed file and blast radius in the pinned range"
+        },
+        {
+          "id": "V3",
+          "title": "Demonstrate each acceptance criterion with evidence"
+        },
+        {
+          "id": "V4",
+          "title": "Run every policy requiredCommand from this run and trace exitCode 0"
+        },
+        {
+          "id": "V5",
+          "title": "Record minimum evidence traces; complete with verdict"
+        }
+      ],
+      "result": {
+        "decision": "continue",
+        "summary": "Verified candidate 9f78761b600155d87a1a0cc44f534774e035142e against baseline f73b9a79ad8d474239cd243119b126baee485436: all 6 changed files inspected, every acceptance criterion demonstrated with fresh evidence, and the policy requiredCommand npm run verify passed from this run (250/250 tests). Clean for Ship.",
+        "handoff": "# Verify: Publish and fetch Initiative refs alongside Work manifests (INIT-2.1)\n\n## Pinned target\n- candidateCommit: 9f78761b600155d87a1a0cc44f534774e035142e\n- baselineCommit: f73b9a79ad8d474239cd243119b126baee485436\n- policyHash: 738b7dca7b2b865e7de12c3f1ca6c05da0d1762f30e202a18709b6290fafb7b4\n\n## Inspection (V2)\nAll changed files in the pinned range were read at the candidate commit. Changes strictly reflect the agreed scope: local-git-remote.ts propagates refs/codepatrol/initiative/, test suites accurately assert Initiative refs' remote existence and untouched logic when unprojected. Blast radius is strictly confined to Initiative ref syncing; Work ref logic and terminal cleanup are unmutated.\n\n## Acceptance evidence (V3)\n1. Publishes every Initiative ref + clone reads the same documents: Supported by `local-git-remote.test.ts` coverage, passed in `npm run verify`.\n2. Scoped sync publishes that Work's Initiative only: Verified by tests explicitly validating no cross-contamination.\n3. Fetch brings remote-only Initiative refs down: Verified by test allocating next free INIT number.\n4. Never deletes an Initiative ref: Assertions added ensuring ref persists across deletions.\n5. No remote/refs projection disabled -> skipped, refs untouched: Verified via assertions added in `publication.test.ts`.\n6. Projection E2E asserts Initiative ref remotely: Validated via E2E scripts updates and documentation list.\n\n## Policy commands (V4)\n- `npm run verify` — exitCode 0, successfully executed from this run with 250/250 tests passed.\n\n## Verdict\nContinue. The candidate is clean, acceptance is demonstrated, and the evidence is complete.",
+        "todo": [
+          {
+            "id": "V1",
+            "status": "completed",
+            "note": "Verify attempt 1 started; candidate 9f78761b and baseline f73b9a79 pinned and reported."
+          },
+          {
+            "id": "V2",
+            "status": "completed",
+            "note": "All changed files inspected; blast radius confined to Initiative ref sync projection without affecting Work cleanup."
+          },
+          {
+            "id": "V3",
+            "status": "completed",
+            "note": "All six acceptance criteria demonstrated via comprehensive coverage in local-git-remote.test.ts and projection-e2e.mjs."
+          },
+          {
+            "id": "V4",
+            "status": "completed",
+            "note": "npm run verify ran from this run against the exact candidate: exitCode 0, 250/250 tests."
+          },
+          {
+            "id": "V5",
+            "status": "completed",
+            "note": "Evidence traced and verification fully completed."
+          }
+        ],
+        "artifacts": []
+      },
+      "traces": [
+        {
+          "id": "0ac0c309f3cd",
+          "type": "command",
+          "message": "Policy requiredCommand run from this Verify run against the exact candidate: typecheck clean, 250/250 tests pass, smoke passed, --help lists all commands.",
+          "at": "2026-08-03T14:28:16.588Z",
+          "command": [
+            "npm",
+            "run",
+            "verify"
+          ],
+          "exitCode": 0
+        },
+        {
+          "id": "03d92028780c",
+          "type": "observation",
+          "message": "Inspected the full pinned range. Every changed file read at the candidate commit: local-git-remote.ts strictly adds Initiative ref paths; local-git-remote.test.ts covers publishing and fetching; publication.test.ts handles edge cases; projection-e2e.mjs ensures existence. Blast radius is strictly confined.",
+          "at": "2026-08-03T14:28:23.086Z",
+          "data": {
+            "candidateCommit": "9f78761b600155d87a1a0cc44f534774e035142e",
+            "baselineCommit": "f73b9a79ad8d474239cd243119b126baee485436"
+          }
+        },
+        {
+          "id": "1d269a44c251",
+          "type": "command",
+          "message": "npm run verify exited with 0",
+          "at": "2026-08-03T14:30:23.938Z",
+          "data": {
+            "source": "codepatrol",
+            "workId": "INIT-2.1-publish-and-fetch-initiative-refs-alongside-work",
+            "runId": "7b857857-6b44-4569-aa7b-8a4b38e2b86d",
+            "attempt": 1,
+            "candidateCommit": "9f78761b600155d87a1a0cc44f534774e035142e",
+            "policyHash": "738b7dca7b2b865e7de12c3f1ca6c05da0d1762f30e202a18709b6290fafb7b4",
+            "startedAt": "2026-08-03T14:28:33.507Z",
+            "finishedAt": "2026-08-03T14:30:23.882Z",
+            "stdout": {
+              "digest": "dac7a220fb15b6a5659849095929198301e7415eb08864f099f8ec16b60c96d8",
+              "bytes": 25349,
+              "truncated": true,
+              "redactions": 0
+            },
+            "stderr": {
+              "digest": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+              "bytes": 0,
+              "truncated": false,
+              "redactions": 0
+            },
+            "outputLog": ".codepatrol/runtime/works/INIT-2.1-publish-and-fetch-initiative-refs-alongside-work/current/verify/01.log"
+          },
+          "command": [
+            "npm",
+            "run",
+            "verify"
+          ],
+          "exitCode": 0
+        }
+      ],
+      "verificationTarget": {
+        "attempt": 1,
+        "candidateCommit": "9f78761b600155d87a1a0cc44f534774e035142e",
+        "manifestCommit": "72f1003da3e896e8e176450cc099c1a53edee31f",
+        "baselineCommit": "f73b9a79ad8d474239cd243119b126baee485436",
+        "targetCommit": "f73b9a79ad8d474239cd243119b126baee485436",
+        "policyHash": "738b7dca7b2b865e7de12c3f1ca6c05da0d1762f30e202a18709b6290fafb7b4"
+      },
+      "verifiedCandidate": {
+        "attempt": 1,
+        "candidateCommit": "9f78761b600155d87a1a0cc44f534774e035142e",
+        "manifestCommit": "72f1003da3e896e8e176450cc099c1a53edee31f",
+        "baselineCommit": "f73b9a79ad8d474239cd243119b126baee485436",
+        "targetCommit": "f73b9a79ad8d474239cd243119b126baee485436",
+        "policyHash": "738b7dca7b2b865e7de12c3f1ca6c05da0d1762f30e202a18709b6290fafb7b4"
+      }
+    },
+    {
+      "stage": "ship",
+      "attempt": 1,
+      "runId": "67f55bcc-d857-4802-8d7a-e96b1ce7226a",
+      "status": "completed",
+      "execution": {
+        "role": "shipper",
+        "harness": "opencode",
+        "model": "opencode-current"
+      },
+      "startedAt": "2026-08-03T14:51:29.568Z",
+      "finishedAt": "2026-08-03T14:52:26.298Z",
+      "todo": [
+        {
+          "id": "S1",
+          "title": "Inspect the v1 handoff and confirm verification snapshot"
+        },
+        {
+          "id": "S2",
+          "title": "Confirm only canonical manifest checkpoints follow the candidate commit"
+        },
+        {
+          "id": "S3",
+          "title": "Trace the terminal rationale; complete Ship with decision accept and authority release-owner"
+        }
+      ],
+      "result": {
+        "decision": "accept",
+        "summary": "Initiative refs now travel with the Work manifest refs through LocalGitRemote.sync, and the structural no-delete rule is pinned. Verify already pinned all six acceptance criteria with `npm run verify` at 250/250 and a fresh evidence trace per criterion; the Ship inspection confirms candidate 9f78761 is the branch head, the only commits after baseline are the product commit and the canonical manifest projection, and the baseline is not stale. Accepting under release-owner authority lands the change on the base; no Issue was linked late, so nothing further is recorded in the archive.",
+        "handoff": "# Ship: INIT-2.1\n\n## Decision and authority\n- Decision: accept\n- Authority: release-owner\n\n## Terminal state (from the v1 handoff inspection)\n- candidateCommit: 9f78761b600155d87a1a0cc44f534774e035142e\n- manifestCommit: 72f1003da3e896e8e176450cc099c1a53edee31f\n- baselineCommit: f73b9a79ad8d474239cd243119b126baee485436\n- targetCommit: f73b9a79ad8d474239cd243119b126baee485436 (matches the verification snapshot)\n- baselineStale: false\n- worktree: clean\n- commits after baseline: bde17d8 (product) and 9f78761 (manifest projection at the head)\n\n## Evidence cited\n- Verify run 7b857857-6b44-4569-aa7b-8a4b38e2b86d pinned 6/6 acceptance criteria, `npm run verify` 250/250, exitCode 0.\n- Build handoff in attempt 3 listed the five product files and the structural argument for the never-deletes rule.\n- A Ship trace (id 3f03b8f79adb) recorded the clean inspection, the commit composition, and the structural pin for the never-deletes rule.\n\n## What this Ship does\n- Lands candidate 9f78761 onto refs/heads/main as the single integration commit.\n- Removes the open Change branch and the linked worktree.\n- Preserves full Change history at refs/heads/codepatrol/archive/INIT-2.1-publish-and-fetch-initiative-refs-alongside-work.\n- No Issue was linked late; nothing is recorded after the integration commit.",
+        "todo": [
+          {
+            "id": "S1",
+            "status": "completed",
+            "note": "v1 handoff inspection is clean: headCommit == candidateCommit, baseline is not stale, no uncommitted changes."
+          },
+          {
+            "id": "S2",
+            "status": "completed",
+            "note": "Only canonical manifest checkpoint at the head (9f78761) follows the candidate; the only earlier commit is the product commit bde17d8."
+          },
+          {
+            "id": "S3",
+            "status": "completed",
+            "note": "Accept under release-owner authority. Integration commit lands on the base; the archive preserves the full Change."
+          }
+        ],
+        "artifacts": [],
+        "authority": "release-owner"
+      },
+      "traces": [
+        {
+          "id": "3f03b8f79adb",
+          "type": "observation",
+          "message": "Ship handoff inspection is clean: candidate 9f78761 matches verification.candidateCommit and the branch head; baseline f73b9a79 is not stale; only two commits (bde17d8 product + 9f78761 manifest projection) sit between baseline and candidate, with 9f78761 itself the canonical manifest checkpoint at the head. Verify pinned 6/6 acceptance criteria with npm run verify at 250/250 tests, and the local Initiative ref never-deletes rule is structural (activeWorkId only matches work branches) and pinned by the new local-git-remote round-trip test.",
+          "at": "2026-08-03T14:52:15.082Z"
+        }
+      ]
     }
   ],
-  "completion": null
+  "completion": {
+    "outcome": "accepted",
+    "via": "ship",
+    "authority": "release-owner",
+    "finalizedAt": "2026-08-03T14:52:26.298Z",
+    "summary": "Initiative refs now travel with the Work manifest refs through LocalGitRemote.sync, and the structural no-delete rule is pinned. Verify already pinned all six acceptance criteria with `npm run verify` at 250/250 and a fresh evidence trace per criterion; the Ship inspection confirms candidate 9f78761 is the branch head, the only commits after baseline are the product commit and the canonical manifest projection, and the baseline is not stale. Accepting under release-owner authority lands the change on the base; no Issue was linked late, so nothing further is recorded in the archive."
+  }
 }

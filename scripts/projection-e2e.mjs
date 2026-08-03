@@ -223,6 +223,8 @@ try {
   check(archive !== "", "the archive ref exists remotely");
   const openBranch = git("ls-remote", "origin", `refs/heads/codepatrol/work/${workId}`);
   check(openBranch === "", "the open Work branch no longer exists remotely");
+  const initiativeRef = git("ls-remote", "origin", `refs/codepatrol/initiative/${applied.initiative}-*`);
+  check(initiativeRef !== "", "the Initiative ref exists remotely");
 
   const archived = run("git", ["show", `origin/main:.codepatrol/works/${workId}/work.json`], { allowFailure: true });
   if (outcome === "accept") {
