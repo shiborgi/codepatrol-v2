@@ -34,23 +34,24 @@
     "number": 37
   },
   "workflow": {
-    "state": "active",
-    "stage": "plan",
+    "state": "ready",
+    "stage": "review",
     "attempt": 1,
-    "updatedAt": "2026-08-03T14:45:03.839Z"
+    "updatedAt": "2026-08-03T14:48:27.272Z"
   },
   "attempts": [
     {
       "stage": "plan",
       "attempt": 1,
       "runId": "a858b2d6-e20b-4c20-8322-509a14bd7dcc",
-      "status": "active",
+      "status": "completed",
       "execution": {
         "role": "planner",
         "harness": "opencode",
         "model": "kimi-for-coding/k3"
       },
       "startedAt": "2026-08-03T14:45:03.839Z",
+      "finishedAt": "2026-08-03T14:48:27.272Z",
       "todo": [
         {
           "id": "P1",
@@ -71,6 +72,75 @@
         {
           "id": "P5",
           "title": "Record traces; complete Plan with decision continue"
+        }
+      ],
+      "result": {
+        "decision": "continue",
+        "summary": "Issue titles carry the short Work code as \"INIT-x.y: <title>\": one desiredIssueTitle helper beside desiredIssueBody, fed by a workCodeOf in core/identifiers.ts, used at creation and at reconcile. Matching never reads titles, so retitling is duplicate-safe; the existing title-equality check gives convergence. Tests extend publication.test.ts; the E2E is unaffected.",
+        "handoff": "# Plan: Include the Work id in the GitHub Issue title (INIT-2.2)\n\n## Finding (P1)\nThe Issue title is managed in exactly two places:\n1. Creation — publication.ts:207: `this.github.create(..., { title: entry.work.title, ... })`.\n2. Reconcile — publication/reconcile.ts:60: `issue.title === entry.work.title ? {} : { title: entry.work.title }`.\n\nIssue matching (publication/mapping.ts) associates an Issue with a Work through three signals — the hidden body marker, the stored issue link, and requestedBy — and never reads the title. Retitling therefore cannot create a duplicate mapping; acceptance 4 is structurally safe and a test pins it. scripts/projection-e2e.mjs locates Issues by body and documentation.test.ts requires no title assertion, so the E2E scenario needs no change.\n\n## Product files Build touches\n1. src/core/identifiers.ts — add `WORK_CODE = /^INIT-\\d+\\.\\d+$/` and `workCodeOf(workId: string): string` (extracts `INIT-<n>.<p>` from a slugged Work id; INIT-2.4 will reuse both).\n2. src/application/publication/reconcile.ts — add and export `desiredIssueTitle(work: WorkIdentity): string` beside desiredIssueBody, returning `${workCodeOf(work.id)}: ${work.title}`; use it in reconcileIssueContent in place of `entry.work.title` (both the comparison and the update).\n3. src/application/publication.ts — the create call uses `desiredIssueTitle(entry.work)` instead of `entry.work.title`.\n4. src/test/publication.test.ts — new and extended tests.\n\nNothing else changes: matching, markers, milestones, the body section, and requestedBy handling are untouched. The body marker keeps the full slugged id.\n\n## Rules\n- Format: `INIT-2.2: Include the Work id in the GitHub Issue title` — the short INIT-x.y code, a colon, a space, then the Work title. Not the full slugged id (unreadable) and not a bracketed suffix (the id belongs at the front, where lists sort and scan).\n- Creation and reconcile share the one helper, so the title an Issue opens with and the title drift reconciles to can never diverge.\n- Convergence is the existing mechanism: reconcileIssueContent compares and only edits on difference, so once the title carries the code a repeated sync makes no edit.\n- A human-edited title is reconciled back to the managed form, exactly as today — the Issue is a projection, not a second place to author the Work.\n\n## Tests (src/test/publication.test.ts)\n1. Extend the issue-creation test: the created Issue's title is `INIT-0.1: <work title>` (acceptance 1).\n2. Reconcile a pre-existing linked Issue: an Issue whose title is the bare Work title (the pre-change form, e.g. via the requestedBy or link path) gains the prefixed title on the next sync (acceptance 2).\n3. Convergence: after a sync that set the prefixed title, a repeated sync reports the Issue unchanged and issues no edit (acceptance 3).\n4. Duplicate safety: after retitling, matching still maps the Issue to its Work — a scoped publication detects the link, no new Issue is created, and the mapping conflict guards stay silent (acceptance 4).\n5. workCodeOf is covered through these behavior-level assertions; no new core test file.\n\n## Acceptance coverage\n1. Opens with the id in the title — desiredIssueTitle at creation + test 1.\n2. Pre-change linked Issues reconciled — desiredIssueTitle at reconcile + test 2.\n3. No edit churn — existing compare-then-edit + test 3.\n4. Matching unaffected — mapping never reads titles (structural) + test 4.\n\n## Verification for Build\nnpm run verify (typecheck, unit tests, smoke, --help).\n\n## Non-goals\nNo change to the E2E scenario, the body marker (keeps the full id), milestone sections, or Issue matching. No dependency on INIT-2.4, though identifiers.ts gains the WORK_CODE regex it will reuse.",
+        "todo": [
+          {
+            "id": "P1",
+            "status": "completed",
+            "note": "Title managed at publication.ts:207 and reconcile.ts:60 only; matching keys on marker/link/requestedBy, never the title; E2E finds Issues by body."
+          },
+          {
+            "id": "P2",
+            "status": "completed",
+            "note": "Format \"INIT-x.y: <title>\" via desiredIssueTitle in reconcile.ts fed by workCodeOf + WORK_CODE in identifiers.ts; one helper for creation and reconcile; convergence via existing compare-then-edit."
+          },
+          {
+            "id": "P3",
+            "status": "completed",
+            "note": "Four behavior tests in publication.test.ts (create, retitle, converge, duplicate-safe); E2E unchanged."
+          },
+          {
+            "id": "P4",
+            "status": "completed",
+            "note": "Handoff covers all four acceptance criteria with exact files, format, and test plan."
+          },
+          {
+            "id": "P5",
+            "status": "completed",
+            "note": "Three traces recorded (observation + two decisions); completing with decision continue."
+          }
+        ],
+        "artifacts": []
+      },
+      "traces": [
+        {
+          "id": "0386f886c3d1",
+          "type": "observation",
+          "message": "The Issue title is managed in exactly two places: creation (publication.ts:207, title: entry.work.title) and reconcile (reconcile.ts:60, same comparison). Issue matching (mapping.ts) keys on the body marker, the stored issue link, and requestedBy — never the title — so retitling cannot create duplicates. scripts/projection-e2e.mjs locates issues by body, and documentation.test.ts requires no title assertion, so the E2E is unaffected.",
+          "at": "2026-08-03T14:48:27.033Z",
+          "data": {
+            "files": [
+              "src/application/publication.ts",
+              "src/application/publication/reconcile.ts",
+              "src/application/publication/mapping.ts",
+              "scripts/projection-e2e.mjs"
+            ]
+          }
+        },
+        {
+          "id": "f8250c3a31c0",
+          "type": "decision",
+          "message": "Title format is the short code plus colon: \"INIT-2.2: <title>\" — the INIT-x.y handle the Work description names, not the forty-character slug. Add WORK_CODE = /^INIT-\\d+\\.\\d+$/ and workCodeOf(workId) to src/core/identifiers.ts (INIT-2.4 will reuse them), and a desiredIssueTitle(work) helper beside desiredIssueBody in reconcile.ts. Creation and reconcile both call it, so new Issues open prefixed and already-linked Issues are retitled on the next sync; the existing title-equality check gives convergence for free.",
+          "at": "2026-08-03T14:48:27.105Z",
+          "data": {
+            "format": "INIT-x.y: <title>",
+            "helper": "desiredIssueTitle"
+          }
+        },
+        {
+          "id": "d0daa4f96f58",
+          "type": "decision",
+          "message": "Tests stay in src/test/publication.test.ts at the behavior level: created Issue carries the prefixed title, a linked Issue with the bare title is retitled on the next sync, a repeated sync makes no further edit, and a retitled Issue still maps to its Work with no duplicate opened. No E2E change: the scenario finds Issues by body marker and asserts nothing about titles.",
+          "at": "2026-08-03T14:48:27.180Z",
+          "data": {
+            "testFile": "src/test/publication.test.ts",
+            "e2e": "unchanged"
+          }
         }
       ]
     }
