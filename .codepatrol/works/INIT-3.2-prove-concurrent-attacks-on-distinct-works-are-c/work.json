@@ -32,7 +32,10 @@
       "INIT-3.1-run-every-stage-of-a-work-in-its-own-worktree"
     ]
   },
-  "issue": null,
+  "issue": {
+    "repository": "shiborgi/codepatrol",
+    "number": 41
+  },
   "workflow": {
     "state": "ready",
     "stage": "plan",
