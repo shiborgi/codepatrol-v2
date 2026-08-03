@@ -11,7 +11,7 @@ Use `codepatrol` from `PATH`, with `node bin/codepatrol.js` as the in-repository
 2. Inspect through `work show` and `change show`; require `Backlog` ready for Plan, Plan ready after a return, or an active Plan run. Never read `.codepatrol/**` directly.
 3. If the base moved, consider `change refresh` before starting the ready Plan attempt. Never refresh an active run.
 4. Create a non-empty todo and mirror it in the harness task facility. Write todo JSON to an absolute temporary path outside the repository and all worktrees.
-5. If ready, start Plan. The Change branch already exists. Plan start does not create a worktree by default; inspect product paths at the returned `inspectionRef`. Request `--worktree` or use `work checkout` only when a real checkout is needed.
+5. If ready, start Plan. Every stage start attaches the Work's own worktree at `.codepatrol/runtime/worktrees/<work-id>` and returns it as `worktreeDirectory`, so Plan runs against the Work's worktree rather than the repository's main checkout. Inspect product paths at the returned `inspectionRef`. `work checkout` is only needed when a fresh checkout is required outside a stage. Todo, trace, and result JSON must still be written to absolute paths outside the repository and all worktrees.
 6. If active, use `resume` with the existing run ID. Never call `start` again for an active attempt.
 7. Produce a decision-complete plan without editing production code. Planning notes and command files are evidence, not product artifacts. Declare only intentional, committed product files as artifacts.
 8. Record concise decisions, observations, actions, failures, and relevant command outcomes with `trace --input`.

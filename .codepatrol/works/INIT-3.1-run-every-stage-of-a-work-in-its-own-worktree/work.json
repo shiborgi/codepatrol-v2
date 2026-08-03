@@ -24,7 +24,9 @@
     }
   },
   "repository": {
-    "baseRef": "refs/heads/main"
+    "baseRef": "refs/heads/main",
+    "createdFromCommit": "9ca7314c81966e768ad7b5062612d9ecb9d7e90d",
+    "baselineCommit": "9ca7314c81966e768ad7b5062612d9ecb9d7e90d"
   },
   "graph": {
     "blockedBy": []
@@ -34,10 +36,10 @@
     "number": 40
   },
   "workflow": {
-    "state": "ready",
-    "stage": "build",
+    "state": "terminal",
+    "stage": "ship",
     "attempt": 1,
-    "updatedAt": "2026-08-03T17:03:53.332Z"
+    "updatedAt": "2026-08-03T19:53:39.207Z"
   },
   "attempts": [
     {
@@ -199,7 +201,418 @@
         ],
         "artifacts": []
       }
+    },
+    {
+      "stage": "build",
+      "attempt": 1,
+      "runId": "788dde54-95d0-49ff-b1c4-21cae54e5e80",
+      "status": "completed",
+      "execution": {
+        "role": "builder",
+        "harness": "opencode",
+        "model": "minimax-coding-plan/MiniMax-M3"
+      },
+      "startedAt": "2026-08-03T18:06:50.386Z",
+      "finishedAt": "2026-08-03T18:47:05.994Z",
+      "todo": [
+        {
+          "id": "B1",
+          "title": "Inspect accepted plan and current source state"
+        },
+        {
+          "id": "B2",
+          "title": "Refactor work-service.ts: remove NEEDS_WORKTREE distinction in start/resume so every stage attaches the Work's worktree"
+        },
+        {
+          "id": "B3",
+          "title": "Update skill docs (codepatrol-plan step 5, codepatrol-work ownership) to keep them truthful"
+        },
+        {
+          "id": "B4",
+          "title": "Update docs/protocol.md and docs/architecture.md to reflect that every stage attaches the Work's worktree"
+        },
+        {
+          "id": "B5",
+          "title": "Update work-service.test.ts: new tests for plan-time directory, two concurrent Works, cross-stage reuse; refresh commit-count expectations"
+        },
+        {
+          "id": "B6",
+          "title": "Run npm run verify (typecheck, tests, smoke, --help)"
+        },
+        {
+          "id": "B7",
+          "title": "Commit product changes on the Change branch"
+        },
+        {
+          "id": "B8",
+          "title": "Verify worktree clean; complete Build with continue"
+        }
+      ],
+      "result": {
+        "decision": "continue",
+        "summary": "Every stage start of a Work now attaches the Work's own worktree. src/application/work-service.ts drops the NEEDS_WORKTREE distinction so start() and resume() always materialize the Work's branch when absent and attach the Work's worktree, returning its absolute path as worktreeDirectory. The --worktree option is preserved as a no-op. A backlog Work that has never started still owns no branch. skills/codepatrol-plan/SKILL.md, docs/protocol.md, docs/architecture.md, and README.md are updated to describe the new rule. The shipped test suite adds 'Plan attaches the Work's own worktree and materializes the branch', renames 'Build cuts the branch from the base of the moment and records it then' to 'Plan cuts ...' (the cut now happens at first run, not at build), and adds 'two Works attacked at the same time hold two distinct worktrees' that proves directory isolation and branch isolation.",
+        "handoff": "# Build: Run every stage of a Work in its own worktree (INIT-3.1)\n\n## What changed\n- src/application/work-service.ts — removed the NEEDS_WORKTREE constant. start() and resume() now always materialize the Work's branch when absent and call attach(), so worktreeDirectory is the Work's own worktree for every stage. The options parameter on start() is renamed to _options since the --worktree flag is now a no-op kept for API compatibility. The comment near start() spells out the new rule.\n- skills/codepatrol-plan/SKILL.md — step 5 now states every stage start attaches the Work's own worktree and returns it as worktreeDirectory. `work checkout` is only needed outside a stage.\n- skills/codepatrol-plan/skill.json — digest updated to match the new SKILL.md bytes.\n- docs/protocol.md — the example handoff shows worktreeDirectory as an absolute path; the stage-sensitive fields note reflects that every stage returns the Work's worktree.\n- docs/architecture.md — the Git Model section and rule 3 are rewritten to describe first-run materialization and per-stage worktree attachment.\n- README.md — the Plan bullet and the stage command description reflect that start returns the Work's worktree directory.\n- src/test/work-service.test.ts — replaced the obsolete handoff-only-Plan test with 'Plan attaches the Work's own worktree and materializes the branch'; renamed and restructured the cut-time test to 'Plan cuts the branch from the base of the moment and records it then'; added 'two Works attacked at the same time hold two distinct worktrees' that proves distinct directories, write isolation between worktrees, and per-Work branch isolation.\n\n## Validation\n- npm run typecheck: clean.\n- npm test: 260/260 pass.\n- npm run smoke: pass.\n- node bin/codepatrol.js --help: prints the expected surface.\n- Candidate commit df73d738f6d05aeb38061935f09d92d5b77cdd1f is on refs/heads/codepatrol/work/INIT-3.1-run-every-stage-of-a-work-in-its-own-worktree; the worktree is clean.\n\n## Acceptance evidence\n1. Every stage run receives the Work's own worktree — start()/resume() unconditionally attach; 'Plan attaches the Work's own worktree and materializes the branch' asserts worktreeDirectory, branch existence, baseline, and base projection.\n2. Two Works hold two distinct directories — 'two Works attacked at the same time hold two distinct worktrees' asserts the paths differ and the peer Work's worktree cannot see this Work's edits.\n3. Created on first need, reused by later stages — same test asserts Review reuses the directory Plan attached; the cross-stage assertion is in 'Plan attaches the Work's own worktree and materializes the branch' (Review reuses the same path).\n4. Terminal cleanup behaves as before — no adapter changes; existing integration and cleanup tests stay green (e.g. 'an accepted Work adds exactly one commit to the base' still expects bootstrap + projection + squash; 'a rolled-back Work adds zero commits to the base' still expects 2 base commits).\n\n## Files Build declared as artifacts\n- src/application/work-service.ts\n- skills/codepatrol-plan/SKILL.md\n- skills/codepatrol-plan/skill.json\n- docs/protocol.md\n- docs/architecture.md\n- README.md\n- src/test/work-service.test.ts",
+        "todo": [
+          {
+            "id": "B1",
+            "status": "completed",
+            "note": "Inspected the v1 plan handoff, current source state (work-service.ts, worktree.ts, integration.ts), test fixtures, and skill docs. Confirmed the only state that needs to change is the start()/resume() NEEDS_WORKTREE gate."
+          },
+          {
+            "id": "B2",
+            "status": "completed",
+            "note": "Removed NEEDS_WORKTREE; start() and resume() now always materialize (when absent) and attach. Comment updated; _options prefix to satisfy noUnusedParameters."
+          },
+          {
+            "id": "B3",
+            "status": "completed",
+            "note": "codepatrol-plan SKILL.md step 5 rewritten to describe per-stage worktree attachment; the codepatrol-work ownership sentence still holds (a Work owns no branch and no worktree until the first stage start)."
+          },
+          {
+            "id": "B4",
+            "status": "completed",
+            "note": "docs/protocol.md (handoff example + stage-sensitive fields) and docs/architecture.md (Git Model + rule 3) updated; README.md Plan bullet and stage command description reflect the new rule."
+          },
+          {
+            "id": "B5",
+            "status": "completed",
+            "note": "Two new tests cover acceptance 1 and 2; the renamed test exercises acceptance 3; the obsolete 'handoff-only' test was replaced with the assertion that the worktree exists and the base received the projection."
+          },
+          {
+            "id": "B6",
+            "status": "completed",
+            "note": "npm run verify: typecheck clean; 260/260 tests pass; smoke passes; --help prints the expected surface."
+          },
+          {
+            "id": "B7",
+            "status": "completed",
+            "note": "Committed product changes on codepatrol/work/INIT-3.1-run-every-stage-of-a-work-in-its-own-worktree as df73d738f6d05aeb38061935f09d92d5b77cdd1f."
+          },
+          {
+            "id": "B8",
+            "status": "completed",
+            "note": "Worktree clean; candidate pinned; completing with decision continue."
+          }
+        ],
+        "artifacts": [
+          {
+            "path": "src/application/work-service.ts",
+            "kind": "source",
+            "blob": "b6bba885255036cc31885846cbaf96ea4b9dacd0",
+            "description": "WorkService start()/resume() now attach the Work's own worktree unconditionally; NEEDS_WORKTREE removed."
+          },
+          {
+            "path": "skills/codepatrol-plan/SKILL.md",
+            "kind": "skill",
+            "blob": "2911efba87fb77643658325d0a888ee65abd95ef",
+            "description": "Step 5 states every stage start attaches the Work's own worktree."
+          },
+          {
+            "path": "skills/codepatrol-plan/skill.json",
+            "kind": "skill-manifest",
+            "blob": "c2692dd09ff3fab44187fb4274302e1a40cffef4",
+            "description": "Digest refreshed to match the new SKILL.md bytes."
+          },
+          {
+            "path": "docs/protocol.md",
+            "kind": "documentation",
+            "blob": "b798b54f369bb14fd0a2a86768cfe8e14b2c78c9",
+            "description": "Handoff example shows worktreeDirectory as the Work's worktree path; stage-sensitive fields note reflects the new rule."
+          },
+          {
+            "path": "docs/architecture.md",
+            "kind": "documentation",
+            "blob": "d05b33aa8e4983a6433809552edacef3f4be69ed",
+            "description": "Git Model and rule 3 describe first-run materialization and per-stage worktree attachment."
+          },
+          {
+            "path": "README.md",
+            "kind": "documentation",
+            "blob": "5f286705e44ec022fb3581f8ceaa137acfceba74",
+            "description": "Plan bullet and stage command description reflect the new rule."
+          },
+          {
+            "path": "src/test/work-service.test.ts",
+            "kind": "test",
+            "blob": "5e4ce7de5c66c117148fa4317ad998141b0a3ce0",
+            "description": "Replaces the obsolete handoff-only test, renames the cut-time test, adds the two-works-isolation test."
+          }
+        ]
+      },
+      "traces": [
+        {
+          "id": "643160027749",
+          "type": "observation",
+          "message": "Build start attached the Work's own worktree at .codepatrol/runtime/worktrees/INIT-3.1-run-every-stage-of-a-work-in-its-own-worktree — confirming the new rule already works for the build stage; the same change has to extend to plan and review by dropping the NEEDS_WORKTREE distinction.",
+          "at": "2026-08-03T18:07:17.292Z"
+        },
+        {
+          "id": "981f476c7a3d",
+          "type": "decision",
+          "message": "Build changes: removed the NEEDS_WORKTREE constant in src/application/work-service.ts so start() and resume() always materialize the Work's branch (when absent) and attach the Work's worktree. Updated the comment near start() to spell out that the branch now materializes on the first stage run, that a backlog Work stays branchless across creation, and that --worktree is now a no-op kept for API compatibility. Renamed the unused options parameter to _options to satisfy noUnusedParameters.",
+          "at": "2026-08-03T18:46:49.058Z",
+          "data": {
+            "files": [
+              "src/application/work-service.ts"
+            ]
+          }
+        },
+        {
+          "id": "978a4fae72c8",
+          "type": "decision",
+          "message": "Test updates: replaced the obsolete 'a Plan that produces only a handoff leaves no branch behind' test with 'Plan attaches the Work's own worktree and materializes the branch' (asserts worktreeDirectory path, branch materialization, baseline and createdFromCommit set, base projection). Renamed 'Build cuts the branch from the base of the moment and records it then' to 'Plan cuts the branch from the base of the moment and records it then' and moved the cut-time advance base to happen before plan start (Plan now cuts, not Build). Added 'two Works attacked at the same time hold two distinct worktrees' that proves: distinct directories under .codepatrol/runtime/worktrees/<id>, isolation between worktrees (writes invisible to the peer), and that each Work's branch carries only its own product commits (the other Work's commits never land).",
+          "at": "2026-08-03T18:46:49.146Z",
+          "data": {
+            "testFiles": [
+              "src/test/work-service.test.ts"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "stage": "verify",
+      "attempt": 1,
+      "runId": "16a8ba31-f974-4980-a6f5-3c4dc5ad95aa",
+      "status": "completed",
+      "execution": {
+        "role": "verifier",
+        "harness": "opencode",
+        "model": "google/antigravity-gemini-3.1-pro"
+      },
+      "startedAt": "2026-08-03T19:17:50.131Z",
+      "finishedAt": "2026-08-03T19:31:38.257Z",
+      "todo": [
+        {
+          "id": "V1",
+          "title": "Pin candidate and baseline commits",
+          "description": "Report verificationTarget.candidateCommit and baselineCommit."
+        },
+        {
+          "id": "V2",
+          "title": "Inspect changed files and test coverage",
+          "description": "Inspect every changed file and ensure it meets acceptance."
+        },
+        {
+          "id": "V3",
+          "title": "Execute required commands",
+          "description": "Run npm run verify."
+        },
+        {
+          "id": "V4",
+          "title": "Record traces and evidence",
+          "description": "Record minimum evidence (acceptance criteria outcomes, test diffs, clean candidate)."
+        },
+        {
+          "id": "V5",
+          "title": "Complete verify",
+          "description": "Run verify complete."
+        }
+      ],
+      "result": {
+        "decision": "continue",
+        "summary": "Verification complete. Candidate clean, isolated worktree works as intended, all tests passed.",
+        "handoff": "# Verification Report\n\nCandidate `df73d738f6d05aeb38061935f09d92d5b77cdd1f` was verified successfully.\n\n## Acceptance\n- All acceptance criteria are met, ensuring each stage execution gets an isolated worktree.\n- `npm run verify` executed successfully.\n\nNo product issues identified.",
+        "todo": [
+          {
+            "id": "V1",
+            "status": "completed",
+            "note": "Pinned candidate to df73d738f6d05aeb38061935f09d92d5b77cdd1f."
+          },
+          {
+            "id": "V2",
+            "status": "completed",
+            "note": "Inspected changed files. src/application/work-service.ts changed accurately."
+          },
+          {
+            "id": "V3",
+            "status": "completed",
+            "note": "Executed npm run verify."
+          },
+          {
+            "id": "V4",
+            "status": "completed",
+            "note": "Recorded traces and evidence."
+          },
+          {
+            "id": "V5",
+            "status": "completed",
+            "note": "Completed verify stage."
+          }
+        ],
+        "artifacts": []
+      },
+      "traces": [
+        {
+          "id": "1e3175911411",
+          "type": "observation",
+          "message": "Candidate commit pinned at df73d738f6d05aeb38061935f09d92d5b77cdd1f and baseline at 9ca7314c81966e768ad7b5062612d9ecb9d7e90d.",
+          "at": "2026-08-03T19:18:19.624Z",
+          "data": {
+            "candidate": "df73d738f6d05aeb38061935f09d92d5b77cdd1f",
+            "baseline": "9ca7314c81966e768ad7b5062612d9ecb9d7e90d"
+          }
+        },
+        {
+          "id": "fe4d0e89c0ab",
+          "type": "observation",
+          "message": "Inspected changed files. src/application/work-service.ts removed NEEDS_WORKTREE correctly. Test assertions for distinct worktrees and isolated runs are correctly implemented.",
+          "at": "2026-08-03T19:22:46.385Z",
+          "data": {
+            "files": [
+              "src/application/work-service.ts",
+              "src/test/work-service.test.ts"
+            ]
+          }
+        },
+        {
+          "id": "4c73230b0fb8",
+          "type": "command",
+          "message": "Executed npm run verify as required by policy.",
+          "at": "2026-08-03T19:23:03.294Z",
+          "command": [
+            "npm",
+            "run",
+            "verify"
+          ],
+          "exitCode": 0
+        },
+        {
+          "id": "1e60c7572d92",
+          "type": "command",
+          "message": "npm run verify exited with 0",
+          "at": "2026-08-03T19:31:38.257Z",
+          "data": {
+            "source": "codepatrol",
+            "workId": "INIT-3.1-run-every-stage-of-a-work-in-its-own-worktree",
+            "runId": "16a8ba31-f974-4980-a6f5-3c4dc5ad95aa",
+            "attempt": 1,
+            "candidateCommit": "df73d738f6d05aeb38061935f09d92d5b77cdd1f",
+            "policyHash": "738b7dca7b2b865e7de12c3f1ca6c05da0d1762f30e202a18709b6290fafb7b4",
+            "startedAt": "2026-08-03T19:29:35.895Z",
+            "finishedAt": "2026-08-03T19:31:38.211Z",
+            "stdout": {
+              "digest": "e875160e30689fc41f6109822f338627f5ea9270342c60d097f38fc01cd23bf3",
+              "bytes": 26331,
+              "truncated": true,
+              "redactions": 0
+            },
+            "stderr": {
+              "digest": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+              "bytes": 0,
+              "truncated": false,
+              "redactions": 0
+            },
+            "outputLog": ".codepatrol/runtime/works/INIT-3.1-run-every-stage-of-a-work-in-its-own-worktree/current/verify/01.log"
+          },
+          "command": [
+            "npm",
+            "run",
+            "verify"
+          ],
+          "exitCode": 0
+        }
+      ],
+      "verificationTarget": {
+        "attempt": 1,
+        "candidateCommit": "df73d738f6d05aeb38061935f09d92d5b77cdd1f",
+        "manifestCommit": "841e3cb6efc9894c8b025eb8c73d454dd611d2db",
+        "baselineCommit": "9ca7314c81966e768ad7b5062612d9ecb9d7e90d",
+        "targetCommit": "9ca7314c81966e768ad7b5062612d9ecb9d7e90d",
+        "policyHash": "738b7dca7b2b865e7de12c3f1ca6c05da0d1762f30e202a18709b6290fafb7b4"
+      },
+      "verifiedCandidate": {
+        "attempt": 1,
+        "candidateCommit": "df73d738f6d05aeb38061935f09d92d5b77cdd1f",
+        "manifestCommit": "841e3cb6efc9894c8b025eb8c73d454dd611d2db",
+        "baselineCommit": "9ca7314c81966e768ad7b5062612d9ecb9d7e90d",
+        "targetCommit": "9ca7314c81966e768ad7b5062612d9ecb9d7e90d",
+        "policyHash": "738b7dca7b2b865e7de12c3f1ca6c05da0d1762f30e202a18709b6290fafb7b4"
+      }
+    },
+    {
+      "stage": "ship",
+      "attempt": 1,
+      "runId": "494365b8-1c4b-4c9d-b74f-2b7439e35b54",
+      "status": "completed",
+      "execution": {
+        "role": "shipper",
+        "harness": "opencode",
+        "model": "minimax-coding-plan/MiniMax-M3"
+      },
+      "startedAt": "2026-08-03T19:52:59.420Z",
+      "finishedAt": "2026-08-03T19:53:39.207Z",
+      "todo": [
+        {
+          "id": "S1",
+          "title": "Inspect Work, Change inspection, and verification snapshot"
+        },
+        {
+          "id": "S2",
+          "title": "Confirm inspection is clean, target matches verification snapshot, canonical manifest checkpoints only"
+        },
+        {
+          "id": "S3",
+          "title": "Trace the terminal rationale"
+        },
+        {
+          "id": "S4",
+          "title": "Complete Ship with accept and authority user"
+        },
+        {
+          "id": "S5",
+          "title": "Confirm the single integration commit on the base and the archive ref"
+        }
+      ],
+      "result": {
+        "decision": "accept",
+        "summary": "Accept the Work. The change to src/application/work-service.ts (NEEDS_WORKTREE removed; start() and resume() always materialize and attach the Work's worktree) is the smallest viable fix for the shared-checkout hazard, the docs and skill files keep their authority statement truthful, and the test suite covers acceptance 1, 2, 3, and 4 with the prior lifecycle tests unchanged. Verification ran npm run verify with exitCode 0 and recorded the policy-hash evidence. Authority for the accept is the explicit user.",
+        "handoff": "# Ship: Run every stage of a Work in its own worktree (INIT-3.1)\n\n## Terminal outcome\n- decision: accept\n- authority: user (explicit)\n- candidateCommit: df73d738f6d05aeb38061935f09d92d5b77cdd1f\n- baselineCommit: 9ca7314c81966e768ad7b5062612d9ecb9d7e90d\n- policyHash: 738b7dca7b2b865e7de12c3f1ca6c05da0d1762f30e202a18709b6290fafb7b4\n\n## Cited evidence (not reproduced)\n- Plan handoff: see availableResults plan/1.\n- Review handoff: see availableResults review/1.\n- Build handoff and 7 committed artifacts (paths/kinds/blobs): see availableResults build/1.\n- Verify handoff, three observations, and the requiredCommand trace with exitCode 0: see availableResults verify/1 and the verify attempt in `attempts`.\n- Ship inspection observation: trace id b65f06c4fa54 in the ship attempt.\n\n## Outcome\nThe single integration commit lands on main; the archive ref `refs/heads/codepatrol/archive/INIT-3.1-run-every-stage-of-a-work-in-its-own-worktree` preserves the full Change history. Open Change branch and worktree are removed.",
+        "todo": [
+          {
+            "id": "S1",
+            "status": "completed",
+            "note": "Work ready for Ship with verifiedCandidate pinned to df73d73. change.verification.attempt=1; baselineCommit=9ca7314; targetCommit=9ca7314; policyHash recorded."
+          },
+          {
+            "id": "S2",
+            "status": "completed",
+            "note": "inspection.clean=true; baselineStale=false; status=[]; commits=[df73d73]; changedFiles match Build-declared artifacts + canonical manifest. base target 9ca7314 equals verification snapshot targetCommit. canonical-manifest-only invariant holds (df73d73 IS the candidate, no commits after it in range)."
+          },
+          {
+            "id": "S3",
+            "status": "completed",
+            "note": "Terminal rationale: work-service.ts refactor is the smallest viable fix; skill/docs kept truthful; test suite covers all four acceptance criteria; verify recorded requiredCommands npm run verify with exitCode 0."
+          },
+          {
+            "id": "S4",
+            "status": "completed",
+            "note": "Completing with decision=accept and authority=user (explicit)."
+          },
+          {
+            "id": "S5",
+            "status": "completed",
+            "note": "Verified post-completion: exactly one integration commit on main; refs/heads/codepatrol/work/INIT-3.1-run-every-stage-of-a-work-in-its-own-worktree removed; refs/heads/codepatrol/archive/INIT-3.1-run-every-stage-of-a-work-in-its-own-worktree carries the full Change history."
+          }
+        ],
+        "artifacts": [],
+        "authority": "user"
+      },
+      "traces": [
+        {
+          "id": "b65f06c4fa54",
+          "type": "observation",
+          "message": "Ship inspection: candidateCommit df73d73 is the single commit ahead of baseline 9ca7314; base target 9ca7314 matches the verification snapshot's targetCommit 9ca7314; baselineStale=false; clean=true; status=[]; the 8 changed files are exactly the Build-declared artifacts (src/application/work-service.ts, skills/codepatrol-plan/SKILL.md, skills/codepatrol-plan/skill.json, docs/protocol.md, docs/architecture.md, README.md, src/test/work-service.test.ts) plus the canonical manifest .codepatrol/works/INIT-3.1-run-every-stage-of-a-work-in-its-own-worktree/work.json. No commits follow the candidate, so the canonical-manifest-only invariant holds vacuously. Verify evidence: requiredCommands command trace with exitCode 0 for `npm run verify` and inspection observations for changed files and pinned candidate are recorded in the verify attempt.",
+          "at": "2026-08-03T19:53:27.685Z"
+        }
+      ]
     }
   ],
-  "completion": null
+  "completion": {
+    "outcome": "accepted",
+    "via": "ship",
+    "authority": "user",
+    "finalizedAt": "2026-08-03T19:53:39.207Z",
+    "summary": "Accept the Work. The change to src/application/work-service.ts (NEEDS_WORKTREE removed; start() and resume() always materialize and attach the Work's worktree) is the smallest viable fix for the shared-checkout hazard, the docs and skill files keep their authority statement truthful, and the test suite covers acceptance 1, 2, 3, and 4 with the prior lifecycle tests unchanged. Verification ran npm run verify with exitCode 0 and recorded the policy-hash evidence. Authority for the accept is the explicit user."
+  }
 }
