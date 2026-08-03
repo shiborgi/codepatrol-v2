@@ -38,10 +38,10 @@
     "number": 30
   },
   "workflow": {
-    "state": "active",
-    "stage": "build",
+    "state": "ready",
+    "stage": "verify",
     "attempt": 1,
-    "updatedAt": "2026-08-03T20:59:19.271Z"
+    "updatedAt": "2026-08-03T21:15:22.716Z"
   },
   "attempts": [
     {
@@ -212,13 +212,14 @@
       "stage": "build",
       "attempt": 1,
       "runId": "5249ee68-5e87-4dc7-a898-5bcb69dfca02",
-      "status": "active",
+      "status": "completed",
       "execution": {
         "role": "builder",
         "harness": "opencode",
         "model": "minimax-coding-plan/MiniMax-M3"
       },
       "startedAt": "2026-08-03T20:59:19.271Z",
+      "finishedAt": "2026-08-03T21:15:22.716Z",
       "todo": [
         {
           "id": "B1",
@@ -255,6 +256,134 @@
         {
           "id": "B9",
           "title": "Complete Build with continue"
+        }
+      ],
+      "result": {
+        "decision": "continue",
+        "summary": "The plan was implemented as approved. src/core/skill.ts now accepts optional requires/recommends/conflicts arrays of skill-id tokens under schemaVersion 1 (additive). src/core/skill-resolution.ts exposes resolveComposition which selects the stage skill by the codepatrol-${stage} id convention, closes requires transitively, includes available recommends with a reason or reports missing ones as omitted with a reason, refuses SKILL_UNRESOLVABLE/SKILL_CONFLICT/SKILL_CAPABILITY_UNMET, and emits a deterministic stage-first-then-by-id order with a sha256 digest over the resolved set. The CLI gains `skill resolve <stage>` reusing listShippedSkills with HOST_CAPABILITIES = ['cli']. The five stage skills (plan, review, build, verify, ship) now declare recommends: ['codepatrol-work']; spec and work are unchanged. SKILL.md digests are unchanged so the shipped-manifests integrity test stays green. Validation: npm run typecheck clean; npm test 280/280 pass (12 new resolver tests + 5 new parser tests + 3 new CLI tests); npm run smoke passes; --help lists `skill resolve <stage>`. The CLI invoked manually returns the expected composition with reasons and rejects an unknown stage.",
+        "handoff": "# Build: Resolve a stage's skill composition deterministically (INIT-1.2)\n\n## What changed\n- src/core/skill.ts — SkillManifest gains optional `requires`, `recommends`, `conflicts`: arrays of unique skill-id tokens (`SKILL_ID`), each defaulting to absent. The parser enforces the additive extension under schemaVersion 1: a manifest without the new fields still parses; manifests with the new fields are validated (arrays of well-formed skill ids, unique per array). The serializer includes each field when present and omits it when undefined, so the byte representation of a manifest without the new fields is unchanged.\n- src/core/skill-resolution.ts (new) — the pure resolver. `resolveComposition(stage, manifests, hostCapabilities)` returns `{ stage, skills, digest, included, omitted }`. Stage selection by `codepatrol-${stage}` id convention. Closure over requires with smallest-id source as the recorded reason. Recommends walk in id order; an available skill joins with reason `recommended by <id>`, an unavailable one lands in `omitted` with reason `recommended by <id>, not available`. Order is stage skill first, then secondaries in ascending id. Digest is sha256 over the canonical JSON of `[{ id, version, digest }]`. Refusals: SKILL_UNRESOLVABLE (zero/several stage matches, missing required id, self-required id), SKILL_CONFLICT (declared conflict between two included skills), SKILL_CAPABILITY_UNMET (an included skill's capability absent from hostCapabilities). Module doc-comment states the precedence rule from the Work text: resolution is selection, not governance.\n- src/cli/commands/skill.ts — `skill resolve <stage>` action added to the existing CommandSpec. Validates the stage against STAGES, resolves over `listShippedSkills(shippedSkillsDirectory)` with `HOST_CAPABILITIES = ['cli']`, prints the composition JSON. The action mutates nothing and does not need a workspace. Usage text updated to include `skill resolve <stage>`.\n- skills/codepatrol-{plan,review,build,verify,ship}/skill.json — each gains `recommends: [\"codepatrol-work\"]`. The five stage skills now resolve to themselves plus codepatrol-work. skills/codepatrol-spec/skill.json and skills/codepatrol-work/skill.json are unchanged. SKILL.md files unchanged → recorded `digest` field is unchanged → `every shipped skill carries a manifest that parses and reproduces` test stays green.\n- src/test/skill.test.ts — extended with parser tests for absent requires/recommends/conflicts, well-formed arrays, non-skill-id token refusal, duplicate entry refusal, and non-array value refusal. New CLI tests: `skill resolve plan` prints the composition with reasons and is idempotent (calling it twice returns the same JSON), refuses an unknown stage, and refuses missing or extra positional arguments.\n- src/test/skill-resolution.test.ts (new) — 12 tests covering each acceptance criterion: exactly one stage skill / zero / several / transitive requires / missing required / self-required / recommended-included-with-reason / recommended-absent-omitted / declared conflict / unmet capability / same-inputs-determinism and digest-sensitivity / stage-first ordering.\n\n## Validation\n- npm run typecheck: clean.\n- npm test: 280/280 pass (12 new resolver tests + 5 new parser tests + 3 new CLI tests).\n- npm run smoke: pass.\n- node bin/codepatrol.js --help: lists `skill resolve <stage>`.\n- node bin/codepatrol.js skill resolve plan: returns the composition with stage skill first and codepatrol-work second.\n- node bin/codepatrol.js skill resolve nope: refuses with INVALID_ARGUMENT naming the unknown stage.\n- Candidate commit 51bb15ee36017fae072889493c13ae9f3a0300ad is on refs/heads/codepatrol/work/INIT-1.2-resolve-a-stage-s-skill-composition-deterministi; the worktree is clean.\n\n## Acceptance evidence\n1. Exactly one stage skill or named refusal — zero/several stage skill tests, single stage skill test.\n2. Requires/recommends/conflict/unmet capability behavior — transitive requires, missing required, recommended-included-with-reason, recommended-omitted, SKILL_CONFLICT, SKILL_CAPABILITY_UNMET.\n3. Deterministic order and digest, content-sensitive — same-inputs-twice test plus digest-sensitivity test (changing a resolved skill's digest changes the composition digest).\n4. CLI read with reasons, mutating nothing — `skill resolve plan` test asserts idempotence and the reasons array; an unknown stage test asserts the refusal; the CLI uses `listShippedSkills` with no workspace and no remote.\n\n## Files Build declared as artifacts\n- src/core/skill.ts\n- src/core/skill-resolution.ts (new)\n- src/cli/commands/skill.ts\n- skills/codepatrol-plan/skill.json\n- skills/codepatrol-review/skill.json\n- skills/codepatrol-build/skill.json\n- skills/codepatrol-verify/skill.json\n- skills/codepatrol-ship/skill.json\n- src/test/skill.test.ts\n- src/test/skill-resolution.test.ts (new)",
+        "todo": [
+          {
+            "id": "B1",
+            "status": "completed",
+            "note": "Inspected the v1 plan handoff, current source state (src/core/skill.ts strict v1 parser, src/cli/commands/skill.ts existing listShippedSkills, src/core/identifiers.ts SKILL_ID regex, src/core/types.ts STAGES, src/core/json.ts sha256), test fixtures, and skill manifests. Confirmed every reference resolves."
+          },
+          {
+            "id": "B2",
+            "status": "completed",
+            "note": "src/core/skill.ts extends SkillManifest with optional requires/recommends/conflicts; parser enforces unique skill-id tokens per array; serializer omits undefined fields; schemaVersion stays 1."
+          },
+          {
+            "id": "B3",
+            "status": "completed",
+            "note": "src/core/skill-resolution.ts created with resolveComposition(stage, manifests, hostCapabilities). Stage selection by id convention; closure over requires; recommend walk; conflict and capability refusals; deterministic stage-first-then-by-id order; sha256 digest over the resolved set."
+          },
+          {
+            "id": "B4",
+            "status": "completed",
+            "note": "src/cli/commands/skill.ts gains a `resolve` action with HOST_CAPABILITIES = ['cli']; validates the stage against STAGES; reuses listShippedSkills; mutates nothing."
+          },
+          {
+            "id": "B5",
+            "status": "completed",
+            "note": "skills/codepatrol-{plan,review,build,verify,ship}/skill.json each gain recommends: [\"codepatrol-work\"]. skills/codepatrol-spec/skill.json and skills/codepatrol-work/skill.json unchanged. SKILL.md files unchanged → digests preserved → shipped-manifests integrity test stays green."
+          },
+          {
+            "id": "B6",
+            "status": "completed",
+            "note": "src/test/skill-resolution.test.ts (new): 12 tests covering all four acceptance criteria. src/test/skill.test.ts extended with parser addition tests (5 new) and CLI tests (3 new)."
+          },
+          {
+            "id": "B7",
+            "status": "completed",
+            "note": "npm run typecheck clean; npm test 280/280 pass; npm run smoke passes; --help lists `skill resolve <stage>`; manual CLI invocation confirms behavior."
+          },
+          {
+            "id": "B8",
+            "status": "completed",
+            "note": "Committed on codepatrol/work/INIT-1.2-resolve-a-stage-s-skill-composition-deterministi as 51bb15ee36017fae072889493c13ae9f3a0300ad; worktree is clean."
+          },
+          {
+            "id": "B9",
+            "status": "completed",
+            "note": "Completing with decision continue."
+          }
+        ],
+        "artifacts": [
+          {
+            "path": "src/core/skill.ts",
+            "kind": "source",
+            "blob": "e3c32290708e34c507db29126707c1fbe7d61c97",
+            "description": "SkillManifest extension with optional requires/recommends/conflicts under schemaVersion 1."
+          },
+          {
+            "path": "src/core/skill-resolution.ts",
+            "kind": "source",
+            "blob": "5c73140a4e6ddb4279f44e4e16b70fff932502a5",
+            "description": "New pure resolver exporting resolveComposition."
+          },
+          {
+            "path": "src/cli/commands/skill.ts",
+            "kind": "cli",
+            "blob": "2b5787dc6d0071c165b00190953aa4f6aa470bc8",
+            "description": "Skill command gains the `resolve` action with HOST_CAPABILITIES = ['cli']."
+          },
+          {
+            "path": "skills/codepatrol-plan/skill.json",
+            "kind": "skill-manifest",
+            "blob": "8e44b0da06dcc8c5f17177600ef5ae85e588bb67",
+            "description": "Stage skill manifest gains recommends: [\"codepatrol-work\"]."
+          },
+          {
+            "path": "skills/codepatrol-review/skill.json",
+            "kind": "skill-manifest",
+            "blob": "2667b33539c5fb8d5ee7f02d555ca002e4ff0b89",
+            "description": "Stage skill manifest gains recommends: [\"codepatrol-work\"]."
+          },
+          {
+            "path": "skills/codepatrol-build/skill.json",
+            "kind": "skill-manifest",
+            "blob": "98e150c288d42f63eb9db160540d9179d6c065fd",
+            "description": "Stage skill manifest gains recommends: [\"codepatrol-work\"]."
+          },
+          {
+            "path": "skills/codepatrol-verify/skill.json",
+            "kind": "skill-manifest",
+            "blob": "a5388a8f9843e8b93c6c8b296c77a536cdd0db28",
+            "description": "Stage skill manifest gains recommends: [\"codepatrol-work\"]."
+          },
+          {
+            "path": "skills/codepatrol-ship/skill.json",
+            "kind": "skill-manifest",
+            "blob": "51206fc03e106624f7ef06b2e15b19ab504d5b5e",
+            "description": "Stage skill manifest gains recommends: [\"codepatrol-work\"]."
+          },
+          {
+            "path": "src/test/skill.test.ts",
+            "kind": "test",
+            "blob": "cbde046981835dcd7a4441b0f012f289cd45fb30",
+            "description": "Extended parser and CLI tests for the new fields and resolve action."
+          },
+          {
+            "path": "src/test/skill-resolution.test.ts",
+            "kind": "test",
+            "blob": "84d8cc9ee28215b42449595076b81fbf373d680a",
+            "description": "New resolver tests covering all four acceptance criteria."
+          }
+        ]
+      },
+      "traces": [
+        {
+          "id": "abe56f6e3ba1",
+          "type": "observation",
+          "message": "Build start attached the Work's own worktree at .codepatrol/runtime/worktrees/INIT-1.2-…; the INIT-3.1 change (every stage attaches) applies here as expected, and the worktree carries the latest main including INIT-3.1's accepted squash. The plan targets the exact files I expect: src/core/skill.ts (additive under schemaVersion 1), src/core/skill-resolution.ts (new), src/cli/commands/skill.ts (new resolve action), five stage skill manifests (recommends: codepatrol-work), and the two test files.",
+          "at": "2026-08-03T20:59:42.088Z"
+        },
+        {
+          "id": "1dbdc4d7f883",
+          "type": "observation",
+          "message": "Build changes landed as commit 51bb15ee on codepatrol/work/INIT-1.2-resolve-a-stage-s-skill-composition-deterministi. The change extends SkillManifest additively under schemaVersion 1 with optional requires/recommends/conflicts arrays of skill-id tokens (SKILL_ID), introduces a pure src/core/skill-resolution.ts with resolveComposition that selects the stage skill by the codepatrol-${stage} id convention, closes over requires, includes available recommends with a reason or omits missing ones with a reason, refuses conflicts and unmet capabilities, and emits a deterministic stage-first-then-by-id order with a sha256 digest over the resolved set. The CLI gains `skill resolve <stage>` reusing listShippedSkills; HOST_CAPABILITIES = ['cli'] is the named constant. The five stage skills (plan/review/build/verify/ship) gain recommends: ['codepatrol-work']; spec and work stay unchanged. SKILL.md digests are unchanged so the shipped-manifests integrity test stays green.",
+          "at": "2026-08-03T21:14:55.250Z"
         }
       ]
     }
