@@ -33,23 +33,24 @@
     "number": 39
   },
   "workflow": {
-    "state": "active",
-    "stage": "plan",
+    "state": "ready",
+    "stage": "review",
     "attempt": 1,
-    "updatedAt": "2026-08-03T16:12:56.507Z"
+    "updatedAt": "2026-08-03T16:15:45.270Z"
   },
   "attempts": [
     {
       "stage": "plan",
       "attempt": 1,
       "runId": "b4bcf6f7-9447-4799-b0c8-1ecb47b9381d",
-      "status": "active",
+      "status": "completed",
       "execution": {
         "role": "planner",
         "harness": "opencode",
         "model": "kimi-for-coding/k3"
       },
       "startedAt": "2026-08-03T16:12:56.507Z",
+      "finishedAt": "2026-08-03T16:15:45.270Z",
       "todo": [
         {
           "id": "P1",
@@ -70,6 +71,77 @@
         {
           "id": "P5",
           "title": "Record traces; complete Plan with decision continue"
+        }
+      ],
+      "result": {
+        "decision": "continue",
+        "summary": "The short INIT-x.y code resolves at one point — GitManifestStore.resolve — using the same enumeration list() already performs. WorkService's eight entry methods and PublicationService resolve caller-supplied ids to canonical form at entry, so every downstream consumer (refs, branches, scope filters) keeps seeing full slugged ids. Validation at the sync CLI flag accepts both forms; stored-state parsers are untouched.",
+        "handoff": "# Plan: Accept the short INIT-x.y code wherever a Work id is passed (INIT-2.4)\n\n## Finding (P1)\nCaller-supplied Work ids enter through exactly two services:\n- WorkService: show (186), inspect (217), refresh (222), checkout (227), start (283), resume (350), trace (386), complete (474) — backing work show/checkout, change show/refresh, and every stage command.\n- PublicationService: automatic/syncExclusive with input.workId — backing sync --work and the post-stage publication in cli/command.ts publish().\n\nValidation is scattered (manifest-store.ts:102, publication.ts:133, sync.ts:14, worktree.ts:99/137), but every path funnels through GitManifestStore, and GitManifestStore.list() (manifest-store.ts:132) already enumerates every known Work id from manifest refs, archive refs, and the base. Stored-state parsers (work-manifest.ts, initiative-document.ts) validate canonical ids of persisted data and stay exactly as they are.\n\n## Product files Build touches\n1. src/core/identifiers.ts — add `WORK_CODE = /^INIT-\\d+\\.\\d+$/` beside WORK_ID.\n2. src/adapters/manifest-store.ts — add `resolve(idOrCode: string): Promise<string>`: a full WORK_ID returns as-is (existence stays read's job); a WORK_CODE enumerates ids the way list() does, matches those starting with `<code>-`, returns the single match (unique by construction), and throws INVALID_WORK_ID naming the input when none matches; anything else throws INVALID_WORK_ID as today.\n3. src/application/work-service.ts — each of the eight entry methods resolves `workId = await this.store.resolve(workId)` first; the rest of each method is unchanged and sees the canonical id.\n4. src/application/publication.ts — automatic and syncExclusive resolve input.workId through the store instead of rejecting non-WORK_ID input (the resolution replaces the WORK_ID test at line 133); the scope passed to remote.sync therefore always carries the canonical id, so matchesScope keeps working.\n5. src/cli/commands/sync.ts — the --work flag validation accepts WORK_ID or WORK_CODE.\n6. Tests: src/test/work-service.test.ts, src/test/publication.test.ts, src/test/cli-registry.test.ts.\n\nDeliberately untouched: worktree.ts and the manifest parsers (they only ever see canonical ids after resolution), and the resolve path adds no git call for full ids (the common case).\n\n## Tests (P3)\n1. work-service.test.ts — plan start with the short code: works.start(\"plan\", \"INIT-0.1\", ...) starts the run exactly as the full id (acceptance 1); show resolves the short code to the same Work view (acceptance 2 at the service that backs every command); an unknown code (\"INIT-0.9\") rejects with INVALID_WORK_ID naming the input (acceptance 3).\n2. publication.test.ts — a scoped publication with the short code publishes only that Work, proving scope filtering still receives the canonical id (acceptance 2).\n3. cli-registry.test.ts — sync.run accepts a short code for --work and still rejects garbage with INVALID_WORK_ID (acceptances 2–3).\n4. The full existing suite is the regression proof that slugged ids keep working unchanged (acceptance 3).\n\n## Acceptance coverage\n1. plan start INIT-x.y starts the run like the full id — resolution at WorkService.start + test 1.\n2. Short code works in every work-id command — all commands funnel through WorkService/PublicationService + tests 1–3.\n3. Unknown code fails with INVALID_WORK_ID; full ids unchanged — resolver error + test 1's unknown case + existing suite.\n\n## Verification for Build\nnpm run verify (typecheck, unit tests, smoke, --help).\n\n## Non-goals\nNo ambiguity handling (the number pair is unique by construction). No change to what gets stored, printed, or projected: canonical slugged ids remain the only persisted form; resolution is an input convenience only. No short forms for Initiative ids.",
+        "todo": [
+          {
+            "id": "P1",
+            "status": "completed",
+            "note": "Entry points: WorkService's 8 methods + PublicationService automatic/syncExclusive; everything funnels through GitManifestStore; list() already enumerates all ids."
+          },
+          {
+            "id": "P2",
+            "status": "completed",
+            "note": "Single resolver GitManifestStore.resolve with WORK_CODE in identifiers.ts; services resolve at entry; downstream always canonical; sync CLI accepts both forms."
+          },
+          {
+            "id": "P3",
+            "status": "completed",
+            "note": "work-service (plan start + show + unknown), publication (scoped sync by code), cli-registry (flag validation); existing suite proves full ids unchanged."
+          },
+          {
+            "id": "P4",
+            "status": "completed",
+            "note": "Handoff covers all three acceptance criteria with exact files, methods, and tests."
+          },
+          {
+            "id": "P5",
+            "status": "completed",
+            "note": "Three traces recorded (observation + two decisions); completing with decision continue."
+          }
+        ],
+        "artifacts": []
+      },
+      "traces": [
+        {
+          "id": "2398cf5f5a0a",
+          "type": "observation",
+          "message": "Caller-supplied Work ids enter through WorkService's eight methods (show, inspect, refresh, checkout, start, resume, trace, complete) and PublicationService (automatic/reconcile/syncExclusive with input.workId, used for sync --work and post-stage publication). Validation is scattered: manifest-store read (line 102), publication.ts:133, sync.ts:14, worktree.ts — but every path funnels through GitManifestStore, whose list() already enumerates all known ids from manifest/archive refs and the base. Stored-state parsers (work-manifest.ts, initiative-document.ts) keep requiring full ids and are untouched.",
+          "at": "2026-08-03T16:15:45.032Z",
+          "data": {
+            "entryPoints": [
+              "WorkService.show/inspect/refresh/checkout/start/resume/trace/complete",
+              "PublicationService.automatic/syncExclusive",
+              "cli sync --work"
+            ]
+          }
+        },
+        {
+          "id": "46460f02a328",
+          "type": "decision",
+          "message": "One resolution point: GitManifestStore.resolve(idOrCode). A full WORK_ID returns as-is; a WORK_CODE (/^INIT-\\d+\\.\\d+$/, added to identifiers.ts) resolves against the same enumeration list() uses, matching ids that start with \"<code>-\"; exactly one is possible by construction, zero throws INVALID_WORK_ID naming what was passed. WorkService resolves at the top of each of its eight methods and PublicationService at automatic/syncExclusive, so everything downstream — refs, branches, scope filters — always sees the canonical slugged id. The sync CLI flag validation accepts both forms.",
+          "at": "2026-08-03T16:15:45.105Z",
+          "data": {
+            "resolver": "GitManifestStore.resolve",
+            "regex": "WORK_CODE in src/core/identifiers.ts"
+          }
+        },
+        {
+          "id": "ee3098f8fd05",
+          "type": "decision",
+          "message": "Tests: work-service.test.ts gains short-code coverage — show resolves, plan start with a short code starts the run (acceptance 1), and an unknown code fails INVALID_WORK_ID (acceptance 3); publication.test.ts gains a scoped sync by short code that publishes only that Work; cli-registry.test.ts asserts sync --work accepts a short code and still rejects garbage. Existing full-id tests are the regression proof that full ids keep working (acceptance 3).",
+          "at": "2026-08-03T16:15:45.179Z",
+          "data": {
+            "testFiles": [
+              "src/test/work-service.test.ts",
+              "src/test/publication.test.ts",
+              "src/test/cli-registry.test.ts"
+            ]
+          }
         }
       ]
     }
