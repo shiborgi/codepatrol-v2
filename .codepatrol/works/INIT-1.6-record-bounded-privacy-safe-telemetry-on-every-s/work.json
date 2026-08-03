@@ -32,7 +32,10 @@
       "INIT-1.4-record-the-effective-skill-composition-on-every"
     ]
   },
-  "issue": null,
+  "issue": {
+    "repository": "shiborgi/codepatrol",
+    "number": 34
+  },
   "workflow": {
     "state": "ready",
     "stage": "plan",
