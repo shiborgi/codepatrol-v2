@@ -36,10 +36,10 @@
     "number": 37
   },
   "workflow": {
-    "state": "ready",
+    "state": "active",
     "stage": "ship",
     "attempt": 1,
-    "updatedAt": "2026-08-03T15:27:43.180Z"
+    "updatedAt": "2026-08-03T16:00:00.207Z"
   },
   "attempts": [
     {
@@ -434,6 +434,32 @@
         "targetCommit": "93cba36e895ff00a703f29b0a6842ef320ace5d9",
         "policyHash": "738b7dca7b2b865e7de12c3f1ca6c05da0d1762f30e202a18709b6290fafb7b4"
       }
+    },
+    {
+      "stage": "ship",
+      "attempt": 1,
+      "runId": "bde5dfe4-019d-480c-8499-9a8fdeb1ade9",
+      "status": "active",
+      "execution": {
+        "role": "shipper",
+        "harness": "opencode",
+        "model": "opencode-current"
+      },
+      "startedAt": "2026-08-03T16:00:00.207Z",
+      "todo": [
+        {
+          "id": "S1",
+          "title": "Inspect the v1 handoff and confirm verification snapshot"
+        },
+        {
+          "id": "S2",
+          "title": "Confirm only canonical manifest checkpoints follow the candidate commit"
+        },
+        {
+          "id": "S3",
+          "title": "Trace the terminal rationale; complete Ship with decision accept and authority release-owner"
+        }
+      ]
     }
   ],
   "completion": null
