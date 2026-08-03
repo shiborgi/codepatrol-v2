@@ -1,0 +1,11 @@
+{
+  "schemaVersion": 1,
+  "type": "codepatrol-initiative",
+  "id": "INIT-0",
+  "title": "Initiative and Work Graph",
+  "slug": "initiative-and-work-graph",
+  "intent": "Separate a Work from a branch: the Work becomes its own ref, a branch exists only while there is code, and the Pull Request projection goes away.",
+  "motivation": "The manifest could only live on a branch, so a backlog Work owned one it had no use for and deleting that branch deleted the Work from every listing. Alongside it sat a Pull Request projection no lifecycle transition read.",
+  "ordering": "Delivered outside the backlog in 09ccf3c (v1.0.0), because every Work here rewrote the mechanism that would have tracked it. Recorded now with no Works: it never had tracked ones, and inventing them would be fabrication.",
+  "createdAt": "2026-08-03T11:15:05.846Z"
+}
