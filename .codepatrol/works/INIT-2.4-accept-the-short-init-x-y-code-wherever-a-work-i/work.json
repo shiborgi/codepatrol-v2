@@ -23,7 +23,9 @@
     }
   },
   "repository": {
-    "baseRef": "refs/heads/main"
+    "baseRef": "refs/heads/main",
+    "createdFromCommit": "e6a6e7194efc6e94e8994d02abe68fc10f8140cc",
+    "baselineCommit": "e6a6e7194efc6e94e8994d02abe68fc10f8140cc"
   },
   "graph": {
     "blockedBy": []
@@ -33,10 +35,10 @@
     "number": 39
   },
   "workflow": {
-    "state": "ready",
+    "state": "active",
     "stage": "build",
     "attempt": 1,
-    "updatedAt": "2026-08-03T16:21:15.385Z"
+    "updatedAt": "2026-08-03T16:34:06.082Z"
   },
   "attempts": [
     {
@@ -197,6 +199,48 @@
         ],
         "artifacts": []
       }
+    },
+    {
+      "stage": "build",
+      "attempt": 1,
+      "runId": "f17cf548-ea38-4bab-bd90-e68a35ad9963",
+      "status": "active",
+      "execution": {
+        "role": "builder",
+        "harness": "opencode",
+        "model": "opencode-current"
+      },
+      "startedAt": "2026-08-03T16:34:06.082Z",
+      "todo": [
+        {
+          "id": "B1",
+          "title": "Confirm WORK_CODE / workCodeOf in src/core/identifiers.ts (added by INIT-2.2)"
+        },
+        {
+          "id": "B2",
+          "title": "Add resolve(idOrCode) to GitManifestStore in src/adapters/manifest-store.ts"
+        },
+        {
+          "id": "B3",
+          "title": "Resolve at entry of every WorkService method in src/application/work-service.ts"
+        },
+        {
+          "id": "B4",
+          "title": "Resolve input.workId in PublicationService.automatic and syncExclusive"
+        },
+        {
+          "id": "B5",
+          "title": "Accept WORK_CODE in sync --work flag validation in src/cli/commands/sync.ts"
+        },
+        {
+          "id": "B6",
+          "title": "Add tests in work-service.test.ts, publication.test.ts, cli-registry.test.ts"
+        },
+        {
+          "id": "B7",
+          "title": "Run npm run verify; commit; complete Build"
+        }
+      ]
     }
   ],
   "completion": null
