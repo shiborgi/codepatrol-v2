@@ -25,7 +25,9 @@
     }
   },
   "repository": {
-    "baseRef": "refs/heads/main"
+    "baseRef": "refs/heads/main",
+    "createdFromCommit": "880186a38a1c112bd036709241b1dfed4b3223ba",
+    "baselineCommit": "880186a38a1c112bd036709241b1dfed4b3223ba"
   },
   "graph": {
     "blockedBy": [
@@ -37,11 +39,46 @@
     "number": 32
   },
   "workflow": {
-    "state": "ready",
+    "state": "active",
     "stage": "plan",
     "attempt": 1,
-    "updatedAt": "2026-08-03T11:16:22.452Z"
+    "updatedAt": "2026-08-03T22:47:11.140Z"
   },
-  "attempts": [],
+  "attempts": [
+    {
+      "stage": "plan",
+      "attempt": 1,
+      "runId": "5f309f69-0683-4696-923a-db7e91e95195",
+      "status": "active",
+      "execution": {
+        "role": "planner",
+        "harness": "opencode",
+        "model": "kimi-for-coding/k3"
+      },
+      "startedAt": "2026-08-03T22:47:11.140Z",
+      "todo": [
+        {
+          "id": "P1",
+          "title": "Inspect attempt/ExecutionIdentity manifest schema, stage start flow, and HandoffV1 (INIT-1.2 on main)"
+        },
+        {
+          "id": "P2",
+          "title": "Design the declared-composition input, validation, and additive attempt field"
+        },
+        {
+          "id": "P3",
+          "title": "Decide test coverage incl. schemaVersion-1 parsing stability and lifecycle regression"
+        },
+        {
+          "id": "P4",
+          "title": "Write decision-complete plan covering all five acceptance criteria"
+        },
+        {
+          "id": "P5",
+          "title": "Record traces; complete Plan with decision continue"
+        }
+      ]
+    }
+  ],
   "completion": null
 }
