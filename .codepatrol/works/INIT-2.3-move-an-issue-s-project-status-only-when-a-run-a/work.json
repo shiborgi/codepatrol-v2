@@ -34,11 +34,46 @@
     "number": 38
   },
   "workflow": {
-    "state": "ready",
+    "state": "active",
     "stage": "plan",
     "attempt": 1,
-    "updatedAt": "2026-08-03T13:34:42.904Z"
+    "updatedAt": "2026-08-03T16:06:58.822Z"
   },
-  "attempts": [],
+  "attempts": [
+    {
+      "stage": "plan",
+      "attempt": 1,
+      "runId": "1517bed7-4ea7-4a72-8217-a87dedcb18b8",
+      "status": "active",
+      "execution": {
+        "role": "planner",
+        "harness": "opencode",
+        "model": "kimi-for-coding/k3"
+      },
+      "startedAt": "2026-08-03T16:06:58.822Z",
+      "todo": [
+        {
+          "id": "P1",
+          "title": "Inspect snapshotOf, PROJECT_STATUS_BY_STAGE, and board reconcile paths"
+        },
+        {
+          "id": "P2",
+          "title": "Decide the status derivation rule (Backlog/live/last-attacked/Done) and where it lives"
+        },
+        {
+          "id": "P3",
+          "title": "Decide test coverage incl. convergence and E2E impact"
+        },
+        {
+          "id": "P4",
+          "title": "Write decision-complete plan covering all four acceptance criteria"
+        },
+        {
+          "id": "P5",
+          "title": "Record traces; complete Plan with decision continue"
+        }
+      ]
+    }
+  ],
   "completion": null
 }
