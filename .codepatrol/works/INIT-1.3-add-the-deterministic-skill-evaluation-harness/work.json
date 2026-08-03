@@ -25,7 +25,9 @@
     }
   },
   "repository": {
-    "baseRef": "refs/heads/main"
+    "baseRef": "refs/heads/main",
+    "createdFromCommit": "9d85a6dd092dad82b527d87b8211d172f7115eef",
+    "baselineCommit": "9d85a6dd092dad82b527d87b8211d172f7115eef"
   },
   "graph": {
     "blockedBy": [
@@ -37,10 +39,10 @@
     "number": 31
   },
   "workflow": {
-    "state": "ready",
+    "state": "active",
     "stage": "build",
     "attempt": 1,
-    "updatedAt": "2026-08-03T22:30:34.276Z"
+    "updatedAt": "2026-08-03T22:45:13.378Z"
   },
   "attempts": [
     {
@@ -278,6 +280,52 @@
             "ciShape": "npm test glob is automatic; no workflow change needed for the new test file",
             "offlineByConstruction": "GIT_CONFIG_GLOBAL=/dev/null, GIT_CONFIG_SYSTEM=/dev/null, GIT_TERMINAL_PROMPT=0 are the existing primitives the runner must reuse to be offline by construction; no network sandbox"
           }
+        }
+      ]
+    },
+    {
+      "stage": "build",
+      "attempt": 1,
+      "runId": "d6596bfb-735e-4ac6-9c1a-8cafae3aca99",
+      "status": "active",
+      "execution": {
+        "role": "builder",
+        "harness": "opencode",
+        "model": "minimax-coding-plan/MiniMax-M3"
+      },
+      "startedAt": "2026-08-03T22:45:13.378Z",
+      "todo": [
+        {
+          "id": "B1",
+          "title": "Inspect accepted plan and current source state"
+        },
+        {
+          "id": "B2",
+          "title": "Design suite and scenario schema (src/core/eval.ts) with strict parser"
+        },
+        {
+          "id": "B3",
+          "title": "Implement fixture isolation: throwaway repository per scenario, network disabled"
+        },
+        {
+          "id": "B4",
+          "title": "Implement runner with result types: passed, failed, error, skipped, unresolved"
+        },
+        {
+          "id": "B5",
+          "title": "Add at least one stage skill's protocol suite (codepatrol-plan) plus a deliberately broken expectation test"
+        },
+        {
+          "id": "B6",
+          "title": "Run npm run verify (typecheck, tests, smoke, --help)"
+        },
+        {
+          "id": "B7",
+          "title": "Commit product changes; verify clean worktree"
+        },
+        {
+          "id": "B8",
+          "title": "Complete Build with continue"
         }
       ]
     }

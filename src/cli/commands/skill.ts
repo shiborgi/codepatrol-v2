@@ -7,6 +7,7 @@ import { CodepatrolError } from "../../core/errors.js";
 import { resolveComposition } from "../../core/skill-resolution.js";
 import { parseSkillManifest, skillContentDigest, type SkillManifest } from "../../core/skill.js";
 import { STAGES } from "../../core/types.js";
+import { runShippedSuite } from "../skill-evaluation.js";
 
 // The CLI is the only layer allowed to read the filesystem; core stays pure.
 const shippedSkillsDirectory = path.resolve(fileURLToPath(import.meta.url), "../../../../skills");
@@ -56,12 +57,17 @@ export async function listShippedSkills(directory: string): Promise<SkillManifes
  * the stage skill, its required dependencies, and the available
  * recommendations, with a reason per inclusion and per omission. The command
  * mutates nothing and does not need a workspace.
+ *
+ * `test <skill-id>` runs the deterministic evaluation harness against the
+ * named skill. Every command assertion executes in a throwaway fixture, so
+ * the caller's repository is never read or written. The command exits
+ * nonzero through `setExitCode` when any scenario is failed or errored.
  */
 export const skillCommand: CommandSpec = {
   name: "skill",
-  summary: "List the shipped skills with their identity, or resolve a stage's composition. Changes nothing.",
-  usage: ["skill list", "skill resolve <stage>"],
-  async run(_context, rawArgs) {
+  summary: "List the shipped skills with their identity, resolve a stage's composition, or evaluate a skill's protocol suite. Changes nothing.",
+  usage: ["skill list", "skill resolve <stage>", "skill test <skill-id>"],
+  async run(context, rawArgs) {
     const action = rawArgs[0];
     const args = parseArgs(rawArgs.slice(1), []);
     if (action === "list") {
@@ -86,6 +92,18 @@ export const skillCommand: CommandSpec = {
       const manifests = await listShippedSkills(shippedSkillsDirectory);
       return resolveComposition(stage as (typeof STAGES)[number], manifests, [...HOST_CAPABILITIES]);
     }
-    throw new CodepatrolError("INVALID_ARGUMENT", "skill action must be list or resolve.", 2);
+    if (action === "test") {
+      const [skillId] = args.positionals;
+      if (skillId === undefined || args.positionals.length !== 1) {
+        throw new CodepatrolError("INVALID_ARGUMENT", "skill test requires exactly one skill id argument.", 2);
+      }
+      const manifests = await listShippedSkills(shippedSkillsDirectory);
+      const outcome = await runShippedSuite(skillId, manifests);
+      if (outcome.summary.failed > 0 || outcome.summary.errored > 0) {
+        context.setExitCode?.(1);
+      }
+      return outcome;
+    }
+    throw new CodepatrolError("INVALID_ARGUMENT", "skill action must be list, resolve, or test.", 2);
   },
 };
