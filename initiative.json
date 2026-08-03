@@ -1,0 +1,11 @@
+{
+  "schemaVersion": 1,
+  "type": "codepatrol-initiative",
+  "id": "INIT-1",
+  "title": "Skill Foundation",
+  "slug": "skill-foundation",
+  "intent": "Turn a skill from a Markdown file the harness happens to load into an identified, resolved, recorded, tested, and measured part of a stage run.",
+  "motivation": "Nothing identifies a skill, decides which apply together, records which a run used, proves they behave as claimed, or measures what they cost. That is tolerable with seven skills and one author, and stops being tolerable the moment reusable secondary skills exist. Composition, evaluation, and telemetry are split apart because each integrates and rolls back on its own.",
+  "ordering": "Identity first, because nothing resolves without it; then resolution, which every later Work records, tests, or measures. Recording a composition and evaluating one are independent, as are behavioral coverage and measurement. Aggregation last: it needs something recorded to aggregate.",
+  "createdAt": "2026-08-03T11:16:22.452Z"
+}
