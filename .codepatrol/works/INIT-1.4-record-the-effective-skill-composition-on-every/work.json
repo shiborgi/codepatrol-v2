@@ -39,23 +39,24 @@
     "number": 32
   },
   "workflow": {
-    "state": "active",
-    "stage": "plan",
+    "state": "ready",
+    "stage": "review",
     "attempt": 1,
-    "updatedAt": "2026-08-03T22:47:11.140Z"
+    "updatedAt": "2026-08-03T22:49:35.125Z"
   },
   "attempts": [
     {
       "stage": "plan",
       "attempt": 1,
       "runId": "5f309f69-0683-4696-923a-db7e91e95195",
-      "status": "active",
+      "status": "completed",
       "execution": {
         "role": "planner",
         "harness": "opencode",
         "model": "kimi-for-coding/k3"
       },
       "startedAt": "2026-08-03T22:47:11.140Z",
+      "finishedAt": "2026-08-03T22:49:35.125Z",
       "todo": [
         {
           "id": "P1",
@@ -76,6 +77,67 @@
         {
           "id": "P5",
           "title": "Record traces; complete Plan with decision continue"
+        }
+      ],
+      "result": {
+        "decision": "continue",
+        "summary": "Stage start gains an optional --skills declaration: main.ts injects the shipped manifests and host capabilities into WorkService, start() resolves the stage's composition and refuses a mismatching declaration with SKILL_COMPOSITION_MISMATCH before recording anything, and the attempt carries the resolved identities, versions, digests, and resolution digest as an optional additive field under schemaVersion 1. HandoffV1 exposes the composition; the five stage skills learn to declare what `skill resolve <stage>` prints.",
+        "handoff": "# Plan: Record the effective skill composition on every stage attempt (INIT-1.4)\n\n## Finding (P1)\nAttempts record execution as ExecutionIdentity {role, harness, model} with a strict parser (work-manifest.ts:63-76, :500-535); HandoffV1 is built in work-service.ts:63-77/244-281; stage flags are parsed in cli/commands/stage.ts. INIT-1.2 shipped resolveComposition and `skill resolve <stage>`, and listShippedSkills is already exported from cli/commands/skill.ts — so main.ts can load manifests once and inject them as data, keeping the application layer filesystem-free.\n\n## Product files Build touches\n1. src/cli/commands/stage.ts — `start` accepts `--skills <id,id,...>` (comma-separated SKILL_ID tokens, strict parsing in cli/inputs.ts or args.ts style).\n2. src/cli/main.ts — listShippedSkills + HOST_CAPABILITIES loaded once and injected into the WorkService constructor (optional parameter, defaulting to absent).\n3. src/cli/commands/skill.ts — export HOST_CAPABILITIES.\n4. src/application/work-service.ts — start() takes optional declared skill ids; resolves the stage's composition from the injected manifests; refuses with SKILL_COMPOSITION_MISMATCH (naming declared vs resolved) before any attempt is recorded when the declared id set differs from the resolution, and with INVALID_INPUT when a declaration arrives but the host injected no manifests. The start transition stores the resolved record on the attempt. HandoffV1 gains the active attempt's composition (run.skills or a sibling field — Build picks the shape that reads best; the criterion is exposure).\n5. src/core/work-manifest.ts — ManifestAttempt gains `skills?: { skills: SkillCompositionEntry[]; digest: string }`; serializer emits it only when present; the strict parser accepts it optionally, validates entries (SKILL_ID, version, digest formats) and recomputes the resolution digest from the entries — a mismatch is STATE_CORRUPT. schemaVersion stays 1 and a manifest without the field parses (acceptance 3).\n6. src/core/errors.ts / wherever codes live — SKILL_COMPOSITION_MISMATCH, if codes need declaration.\n7. skills/codepatrol-{plan,review,build,verify,ship}/SKILL.md — one instruction: declare the composition you run under with `--skills`, exactly as `codepatrol skill resolve <stage>` prints it. Refresh each skill.json digest (sha256 of the edited SKILL.md). harness-adapters.test.ts must stay green.\n8. Tests: src/test/work-service.test.ts, src/test/work-manifest (parse coverage wherever attempt parsing is pinned), src/test/cli-registry.test.ts.\n\n## Rules (P2)\n- Optional and additive: no declaration, no field — every lifecycle path behaves exactly as before (acceptance 5).\n- What is stored is the resolved composition, never the raw declaration: a declaration that does not resolve never reaches the manifest (acceptance 1).\n- Immutability is structural: attempts are append-only; completion edits no earlier attempt; a terminal Work's manifest carries each attempt's composition (acceptance 2).\n- The honest boundary stays prose in the field's doc comment: the Core cannot know what the harness loaded; it refuses what does not resolve and preserves what was declared.\n\n## Tests (P3)\n1. Start with a declaration matching `skill resolve <stage>` records identities, versions, digests, and the resolution digest on the attempt (acceptance 1).\n2. A mismatching declaration (extra, missing, or unknown skill id) refuses the start with SKILL_COMPOSITION_MISMATCH and records no attempt (acceptance 1).\n3. A later attempt on the same Work leaves the earlier attempt's skills untouched; a terminal Work's manifest still carries them (acceptance 2).\n4. A manifest written without the field parses under schemaVersion 1; a manifest with a corrupted composition digest refuses (acceptance 3).\n5. The start handoff exposes the composition the executor is running under (acceptance 4).\n6. The existing suite — transitions, returns, verification binding, terminal outcomes — passes unchanged (acceptance 5).\n\n## Acceptance coverage\n1. Record + refusal — work-service start + tests 1–2.\n2. Immutability + terminal presence — append-only attempts + test 3.\n3. schemaVersion 1 parsing stability — optional parser field + test 4.\n4. HandoffV1 exposure — work-service handoff + test 5.\n5. Lifecycle unchanged — full existing suite.\n\n## Verification for Build\nnpm run verify (typecheck, full unit suite, smoke, --help).\n\n## Non-goals\nNo mandatory declaration (additive only). No evaluation of skill behavior (INIT-1.3's harness). No telemetry (INIT-1.6). No derivation of metrics (INIT-1.7).",
+        "todo": [
+          {
+            "id": "P1",
+            "status": "completed",
+            "note": "Attempt schema, strict parser, HandoffV1, and flag parsing mapped; manifests injectable as data from main.ts."
+          },
+          {
+            "id": "P2",
+            "status": "completed",
+            "note": "Optional --skills flag; service-side resolution with SKILL_COMPOSITION_MISMATCH; additive attempt.skills with parse-time digest recheck under schemaVersion 1; HandoffV1 exposure; stage skills declare via skill resolve."
+          },
+          {
+            "id": "P3",
+            "status": "completed",
+            "note": "Six tests cover record, refusal, immutability, parsing stability, handoff exposure, and lifecycle regression."
+          },
+          {
+            "id": "P4",
+            "status": "completed",
+            "note": "Handoff covers all five acceptance criteria with exact files and rules."
+          },
+          {
+            "id": "P5",
+            "status": "completed",
+            "note": "Two traces recorded (observation + decision); completing with decision continue."
+          }
+        ],
+        "artifacts": []
+      },
+      "traces": [
+        {
+          "id": "f743454d999f",
+          "type": "observation",
+          "message": "An attempt records execution as ExecutionIdentity {role, harness, model} (work-manifest.ts:63-76, parser at :500-535 with strict key lists); HandoffV1 lives in work-service.ts:63-77; stage start flags are parsed in cli/commands/stage.ts and validated in cli/inputs.ts. INIT-1.2's resolveComposition and `skill resolve <stage>` are on main, and listShippedSkills is exported from cli/commands/skill.ts — the manifests and HOST_CAPABILITIES can be loaded once in main.ts and injected into WorkService as data, keeping the application layer filesystem-free.",
+          "at": "2026-08-03T22:49:34.965Z",
+          "data": {
+            "files": [
+              "src/core/work-manifest.ts",
+              "src/application/work-service.ts",
+              "src/cli/commands/stage.ts",
+              "src/cli/main.ts"
+            ]
+          }
+        },
+        {
+          "id": "7623d08982e6",
+          "type": "decision",
+          "message": "Declaration shape: an optional `--skills <id,id,...>` flag on stage start naming the skills the harness loaded. main.ts loads the shipped manifests once and injects them with HOST_CAPABILITIES into WorkService, so start() resolves the stage's composition itself and refuses a declaration whose id set differs from the resolution with SKILL_COMPOSITION_MISMATCH before any attempt is recorded; a declaration when the host has no manifests refuses INVALID_INPUT. The attempt gains an optional additive `skills` field — the resolved entries (id, version, kind, digest) and the resolution digest — parsed strictly under schemaVersion 1 with the digest recomputed at parse, serialized only when present, so manifests without it still parse. Immutability is structural: attempts are append-only and completion never rewrites the field. HandoffV1 exposes the active attempt's composition. The five stage skills gain one instruction — declare exactly what `skill resolve <stage>` prints — with their skill.json digests refreshed.",
+          "at": "2026-08-03T22:49:35.037Z",
+          "data": {
+            "flag": "--skills <id,id,...>",
+            "field": "attempt.skills",
+            "error": "SKILL_COMPOSITION_MISMATCH",
+            "schemaVersion": 1
+          }
         }
       ]
     }
