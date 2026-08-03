@@ -36,10 +36,10 @@
     "number": 29
   },
   "workflow": {
-    "state": "active",
-    "stage": "verify",
+    "state": "ready",
+    "stage": "ship",
     "attempt": 1,
-    "updatedAt": "2026-08-03T12:56:48.920Z"
+    "updatedAt": "2026-08-03T13:14:10.352Z"
   },
   "attempts": [
     {
@@ -379,13 +379,14 @@
       "stage": "verify",
       "attempt": 1,
       "runId": "4a1acf9f-438e-46d5-9020-ee339abc3407",
-      "status": "active",
+      "status": "completed",
       "execution": {
         "role": "verifier",
         "harness": "opencode",
         "model": "kimi-for-coding/k3"
       },
       "startedAt": "2026-08-03T12:56:48.920Z",
+      "finishedAt": "2026-08-03T13:14:10.352Z",
       "todo": [
         {
           "id": "V1",
@@ -408,7 +409,125 @@
           "title": "Record minimum evidence traces; complete with verdict"
         }
       ],
+      "result": {
+        "decision": "continue",
+        "summary": "Verified candidate 66d2707b05fa677d612cedf75b3427ff10ae50c0 against baseline e22384d821ff509f3d3e86cb9ccb3bea1047cc30: all 14 changed files inspected, every acceptance criterion demonstrated with fresh evidence, and the policy requiredCommand npm run verify passed from this run (245/245 tests). Clean for Ship.",
+        "handoff": "# Verify: Define the skill manifest schema and skill identity (INIT-1.1)\n\n## Pinned target\n- candidateCommit: 66d2707b05fa677d612cedf75b3427ff10ae50c0 (equals the Change branch tip)\n- baselineCommit: e22384d821ff509f3d3e86cb9ccb3bea1047cc30\n- policyHash: 738b7dca7b2b865e7de12c3f1ca6c05da0d1762f30e202a18709b6290fafb7b4\n\n## Method\nThe candidate was checked out detached into a temporary worktree outside the repository (.codepatrol never read or modified), dependencies installed with npm ci, and every check executed there. The candidate was not edited, formatted, or rebased.\n\n## Inspection (V2)\nAll 14 changed files in the pinned range read at the candidate commit: src/core/skill.ts (strict parser mirroring parseInitiative, filesystem-free), src/core/identifiers.ts (SKILL_ID beside the other regexes), src/cli/commands/skill.ts (package-relative skills directory, digest mismatch = STATE_CORRUPT), src/cli/command.ts and src/cli/registry.ts (two-line registration), all seven skills/<id>/skill.json (version 1.0.0, capabilities [\"cli\"], kind matching the STAGES split), src/test/skill.test.ts (strict parsing, reproducibility, neutrality, idempotency). Blast radius is confined to the new skill command and its registration; no existing behavior changes.\n\n## Acceptance evidence (V3)\n1. Strict parse, misspelled/unknown fields refused: covered by src/test/skill.test.ts (refuses unknown field, misspelled \"capability\", bad schemaVersion/type/id/version/kind/digest, duplicate capabilities), passing within the full suite.\n2. Every skill carries a parsing manifest whose digest reproduces from SKILL.md alone: independently recomputed shasum -a 256 for all seven SKILL.md files at the candidate — 7/7 match the recorded digests.\n3. CLI read lists id, version, kind, capabilities, digest and changes nothing: node bin/codepatrol.js skill list run twice, byte-identical output, seven skills sorted by id, checkout unchanged afterwards.\n4. Harness neutrality: grep over all seven skill.json found no harness name; src/test/harness-adapters.test.ts passes standalone (9/9) and within the suite.\n\n## Policy commands (V4)\n- [\"npm\",\"run\",\"verify\"] — exitCode 0, traced from this run: typecheck clean, 245/245 tests pass (including harness-adapters.test.ts and the new skill.test.ts), smoke passed, --help lists skill list.\n\n## Residual risk\nNone identified. The skills directory resolves package-relative by design: an installation whose shipped skills were edited reports STATE_CORRUPT instead of listing, which is the intended honesty. Resolution, dependency evaluation, and run persistence are explicitly out of scope (INIT-1.2, INIT-1.4).\n\n## Verdict\nContinue. The candidate is clean, acceptance is demonstrated, and the evidence is complete.",
+        "todo": [
+          {
+            "id": "V1",
+            "status": "completed",
+            "note": "Verify attempt 1 started; candidate 66d2707b and baseline e22384d8 pinned and reported."
+          },
+          {
+            "id": "V2",
+            "status": "completed",
+            "note": "All 14 changed files in e22384d8..66d2707 inspected at the candidate commit; blast radius confined to the new skill command and its registration."
+          },
+          {
+            "id": "V3",
+            "status": "completed",
+            "note": "All four acceptance criteria demonstrated: strict-parse tests, 7/7 digests independently reproduced, idempotent skill list output, harness neutrality with harness-adapters 9/9."
+          },
+          {
+            "id": "V4",
+            "status": "completed",
+            "note": "npm run verify (the only policy requiredCommand) ran from this run against the exact candidate: exitCode 0, 245/245 tests."
+          },
+          {
+            "id": "V5",
+            "status": "completed",
+            "note": "Evidence traced (one command trace, two observations); completing with decision continue."
+          }
+        ],
+        "artifacts": []
+      },
+      "traces": [
+        {
+          "id": "4f719642558c",
+          "type": "command",
+          "message": "Policy requiredCommand run from this Verify run against a detached checkout of the exact candidate 66d2707b05fa677d612cedf75b3427ff10ae50c0: typecheck clean, 245/245 tests pass, smoke passed, --help lists skill list.",
+          "at": "2026-08-03T13:12:21.755Z",
+          "command": [
+            "npm",
+            "run",
+            "verify"
+          ],
+          "exitCode": 0
+        },
+        {
+          "id": "84309d8d53e1",
+          "type": "observation",
+          "message": "Inspected the full pinned range e22384d8..66d2707 (branch tip equals the candidate; 14 files, 381 insertions, 4 deletions). Every changed file read at the candidate commit: src/core/skill.ts mirrors parseInitiative and is filesystem-free; SKILL_ID sits beside the other regexes in identifiers.ts; src/cli/commands/skill.ts resolves the skills directory package-relative and treats an unreproduced digest as STATE_CORRUPT; command.ts/registry.ts changes are the two-line registration; all seven skills/<id>/skill.json carry version 1.0.0, capabilities [\"cli\"], and the STAGES kind split; src/test/skill.test.ts covers strict parsing, reproducibility, neutrality, and idempotent listing. Blast radius confined to the new command and its registration.",
+          "at": "2026-08-03T13:12:21.849Z",
+          "data": {
+            "candidateCommit": "66d2707b05fa677d612cedf75b3427ff10ae50c0",
+            "baselineCommit": "e22384d821ff509f3d3e86cb9ccb3bea1047cc30",
+            "changedFiles": 14
+          }
+        },
+        {
+          "id": "889bf3f2dedc",
+          "type": "observation",
+          "message": "Acceptance evidence from this run. (1) Strict parsing: skill.test.ts refuses unknown, misspelled, and invalid fields, duplicate capabilities; passes within 245/245. (2) All seven manifests parse and each digest independently reproduced via shasum -a 256 of SKILL.md (7x OK). (3) node bin/codepatrol.js skill list run twice produced byte-identical output listing id, version, kind, capabilities, digest for all seven skills; the checkout is unchanged afterwards. (4) No manifest mentions a harness (grep over skills/*/skill.json found nothing) and harness-adapters.test.js passes standalone, 9/9. Residual risk: none identified; the read is package-relative by design, so an installation with edited skills reports STATE_CORRUPT rather than listing — the intended behavior.",
+          "at": "2026-08-03T13:12:21.942Z",
+          "data": {
+            "acceptance": [
+              "1:pass",
+              "2:pass",
+              "3:pass",
+              "4:pass"
+            ],
+            "digestsReproduced": 7,
+            "harnessAdaptersTests": "9/9",
+            "residualRisk": "none identified"
+          }
+        },
+        {
+          "id": "707c95f425e4",
+          "type": "command",
+          "message": "npm run verify exited with 0",
+          "at": "2026-08-03T13:14:10.352Z",
+          "data": {
+            "source": "codepatrol",
+            "workId": "INIT-1.1-define-the-skill-manifest-schema-and-skill-ident",
+            "runId": "4a1acf9f-438e-46d5-9020-ee339abc3407",
+            "attempt": 1,
+            "candidateCommit": "66d2707b05fa677d612cedf75b3427ff10ae50c0",
+            "policyHash": "738b7dca7b2b865e7de12c3f1ca6c05da0d1762f30e202a18709b6290fafb7b4",
+            "startedAt": "2026-08-03T13:12:22.090Z",
+            "finishedAt": "2026-08-03T13:14:10.296Z",
+            "stdout": {
+              "digest": "9b0525db92aadcfaafe84ecf29b2d2ed24ee6575ff5bc8fb21277a0e27d10149",
+              "bytes": 24808,
+              "truncated": true,
+              "redactions": 0
+            },
+            "stderr": {
+              "digest": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+              "bytes": 0,
+              "truncated": false,
+              "redactions": 0
+            },
+            "outputLog": ".codepatrol/runtime/works/INIT-1.1-define-the-skill-manifest-schema-and-skill-ident/current/verify/01.log"
+          },
+          "command": [
+            "npm",
+            "run",
+            "verify"
+          ],
+          "exitCode": 0
+        }
+      ],
       "verificationTarget": {
+        "attempt": 1,
+        "candidateCommit": "66d2707b05fa677d612cedf75b3427ff10ae50c0",
+        "manifestCommit": "f2d6142e3a76b1af4b4a29a70105ac8c0d16e9ed",
+        "baselineCommit": "e22384d821ff509f3d3e86cb9ccb3bea1047cc30",
+        "targetCommit": "e22384d821ff509f3d3e86cb9ccb3bea1047cc30",
+        "policyHash": "738b7dca7b2b865e7de12c3f1ca6c05da0d1762f30e202a18709b6290fafb7b4"
+      },
+      "verifiedCandidate": {
         "attempt": 1,
         "candidateCommit": "66d2707b05fa677d612cedf75b3427ff10ae50c0",
         "manifestCommit": "f2d6142e3a76b1af4b4a29a70105ac8c0d16e9ed",
