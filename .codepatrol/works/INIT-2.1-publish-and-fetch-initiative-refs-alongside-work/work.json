@@ -38,10 +38,10 @@
     "number": 36
   },
   "workflow": {
-    "state": "active",
+    "state": "terminal",
     "stage": "ship",
     "attempt": 1,
-    "updatedAt": "2026-08-03T14:51:29.568Z"
+    "updatedAt": "2026-08-03T14:52:26.298Z"
   },
   "attempts": [
     {
@@ -455,13 +455,14 @@
       "stage": "ship",
       "attempt": 1,
       "runId": "67f55bcc-d857-4802-8d7a-e96b1ce7226a",
-      "status": "active",
+      "status": "completed",
       "execution": {
         "role": "shipper",
         "harness": "opencode",
         "model": "opencode-current"
       },
       "startedAt": "2026-08-03T14:51:29.568Z",
+      "finishedAt": "2026-08-03T14:52:26.298Z",
       "todo": [
         {
           "id": "S1",
@@ -475,8 +476,46 @@
           "id": "S3",
           "title": "Trace the terminal rationale; complete Ship with decision accept and authority release-owner"
         }
+      ],
+      "result": {
+        "decision": "accept",
+        "summary": "Initiative refs now travel with the Work manifest refs through LocalGitRemote.sync, and the structural no-delete rule is pinned. Verify already pinned all six acceptance criteria with `npm run verify` at 250/250 and a fresh evidence trace per criterion; the Ship inspection confirms candidate 9f78761 is the branch head, the only commits after baseline are the product commit and the canonical manifest projection, and the baseline is not stale. Accepting under release-owner authority lands the change on the base; no Issue was linked late, so nothing further is recorded in the archive.",
+        "handoff": "# Ship: INIT-2.1\n\n## Decision and authority\n- Decision: accept\n- Authority: release-owner\n\n## Terminal state (from the v1 handoff inspection)\n- candidateCommit: 9f78761b600155d87a1a0cc44f534774e035142e\n- manifestCommit: 72f1003da3e896e8e176450cc099c1a53edee31f\n- baselineCommit: f73b9a79ad8d474239cd243119b126baee485436\n- targetCommit: f73b9a79ad8d474239cd243119b126baee485436 (matches the verification snapshot)\n- baselineStale: false\n- worktree: clean\n- commits after baseline: bde17d8 (product) and 9f78761 (manifest projection at the head)\n\n## Evidence cited\n- Verify run 7b857857-6b44-4569-aa7b-8a4b38e2b86d pinned 6/6 acceptance criteria, `npm run verify` 250/250, exitCode 0.\n- Build handoff in attempt 3 listed the five product files and the structural argument for the never-deletes rule.\n- A Ship trace (id 3f03b8f79adb) recorded the clean inspection, the commit composition, and the structural pin for the never-deletes rule.\n\n## What this Ship does\n- Lands candidate 9f78761 onto refs/heads/main as the single integration commit.\n- Removes the open Change branch and the linked worktree.\n- Preserves full Change history at refs/heads/codepatrol/archive/INIT-2.1-publish-and-fetch-initiative-refs-alongside-work.\n- No Issue was linked late; nothing is recorded after the integration commit.",
+        "todo": [
+          {
+            "id": "S1",
+            "status": "completed",
+            "note": "v1 handoff inspection is clean: headCommit == candidateCommit, baseline is not stale, no uncommitted changes."
+          },
+          {
+            "id": "S2",
+            "status": "completed",
+            "note": "Only canonical manifest checkpoint at the head (9f78761) follows the candidate; the only earlier commit is the product commit bde17d8."
+          },
+          {
+            "id": "S3",
+            "status": "completed",
+            "note": "Accept under release-owner authority. Integration commit lands on the base; the archive preserves the full Change."
+          }
+        ],
+        "artifacts": [],
+        "authority": "release-owner"
+      },
+      "traces": [
+        {
+          "id": "3f03b8f79adb",
+          "type": "observation",
+          "message": "Ship handoff inspection is clean: candidate 9f78761 matches verification.candidateCommit and the branch head; baseline f73b9a79 is not stale; only two commits (bde17d8 product + 9f78761 manifest projection) sit between baseline and candidate, with 9f78761 itself the canonical manifest checkpoint at the head. Verify pinned 6/6 acceptance criteria with npm run verify at 250/250 tests, and the local Initiative ref never-deletes rule is structural (activeWorkId only matches work branches) and pinned by the new local-git-remote round-trip test.",
+          "at": "2026-08-03T14:52:15.082Z"
+        }
       ]
     }
   ],
-  "completion": null
+  "completion": {
+    "outcome": "accepted",
+    "via": "ship",
+    "authority": "release-owner",
+    "finalizedAt": "2026-08-03T14:52:26.298Z",
+    "summary": "Initiative refs now travel with the Work manifest refs through LocalGitRemote.sync, and the structural no-delete rule is pinned. Verify already pinned all six acceptance criteria with `npm run verify` at 250/250 and a fresh evidence trace per criterion; the Ship inspection confirms candidate 9f78761 is the branch head, the only commits after baseline are the product commit and the canonical manifest projection, and the baseline is not stale. Accepting under release-owner authority lands the change on the base; no Issue was linked late, so nothing further is recorded in the archive."
+  }
 }
