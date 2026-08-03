@@ -2,6 +2,7 @@ import type { CommandSpec } from "./command.js";
 import { changeCommand } from "./commands/change.js";
 import { specCommand } from "./commands/spec.js";
 import { initiativeCommand } from "./commands/initiative.js";
+import { skillCommand } from "./commands/skill.js";
 import { stageCommand } from "./commands/stage.js";
 import { syncCommand } from "./commands/sync.js";
 import { workCommand } from "./commands/work.js";
@@ -18,6 +19,7 @@ export const COMMANDS: readonly CommandSpec[] = [
   specCommand,
   workCommand,
   initiativeCommand,
+  skillCommand,
   changeCommand,
   syncCommand,
   ...STAGES.map(stageCommand),

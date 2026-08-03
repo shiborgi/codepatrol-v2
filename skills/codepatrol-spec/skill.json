@@ -1,0 +1,11 @@
+{
+  "schemaVersion": 1,
+  "type": "codepatrol-skill",
+  "id": "codepatrol-spec",
+  "version": "1.0.0",
+  "kind": "secondary",
+  "capabilities": [
+    "cli"
+  ],
+  "digest": "e7244a72605028933343439dfb9ee4b754a26fe9db710eeabafa2c052d3dde78"
+}
