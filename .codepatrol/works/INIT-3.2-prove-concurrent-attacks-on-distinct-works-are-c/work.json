@@ -39,10 +39,10 @@
     "number": 41
   },
   "workflow": {
-    "state": "ready",
+    "state": "active",
     "stage": "verify",
     "attempt": 1,
-    "updatedAt": "2026-08-03T22:07:21.095Z"
+    "updatedAt": "2026-08-03T22:10:17.304Z"
   },
   "attempts": [
     {
@@ -306,6 +306,53 @@
           "at": "2026-08-03T22:07:02.781Z"
         }
       ]
+    },
+    {
+      "stage": "verify",
+      "attempt": 1,
+      "runId": "0cde0613-8f7a-444c-b13d-d255251645e5",
+      "status": "active",
+      "execution": {
+        "role": "verifier",
+        "harness": "opencode",
+        "model": "minimax-coding-plan/MiniMax-M3"
+      },
+      "startedAt": "2026-08-03T22:10:17.304Z",
+      "todo": [
+        {
+          "id": "V1",
+          "title": "Pin candidate and baseline commits",
+          "description": "Report verificationTarget.candidateCommit and baselineCommit from the verify start handoff."
+        },
+        {
+          "id": "V2",
+          "title": "Inspect changed files and test coverage",
+          "description": "Inspect src/test/concurrency.test.ts against the five acceptance criteria: exactly-once transitions, file isolation, bounded time, sync overlap serialized, CI without remote."
+        },
+        {
+          "id": "V3",
+          "title": "Execute required commands",
+          "description": "Run npm run verify and any other commands .codepatrol/policy.json declares."
+        },
+        {
+          "id": "V4",
+          "title": "Record traces and evidence",
+          "description": "Record minimum evidence (acceptance criteria outcomes, test diff, clean candidate)."
+        },
+        {
+          "id": "V5",
+          "title": "Complete verify",
+          "description": "Run verify complete with decision continue."
+        }
+      ],
+      "verificationTarget": {
+        "attempt": 1,
+        "candidateCommit": "b067a970c8b5d3489ae4911c03dda0c61df1bac2",
+        "manifestCommit": "e783b4d05d859e241b120ae8119f5ecc23e815f2",
+        "baselineCommit": "4d7a669e59383f8320be5fb23e6eff658cda1d15",
+        "targetCommit": "4d7a669e59383f8320be5fb23e6eff658cda1d15",
+        "policyHash": "738b7dca7b2b865e7de12c3f1ca6c05da0d1762f30e202a18709b6290fafb7b4"
+      }
     }
   ],
   "completion": null
