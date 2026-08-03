@@ -34,23 +34,24 @@
     "number": 38
   },
   "workflow": {
-    "state": "active",
-    "stage": "plan",
+    "state": "ready",
+    "stage": "review",
     "attempt": 1,
-    "updatedAt": "2026-08-03T16:06:58.822Z"
+    "updatedAt": "2026-08-03T16:11:03.437Z"
   },
   "attempts": [
     {
       "stage": "plan",
       "attempt": 1,
       "runId": "1517bed7-4ea7-4a72-8217-a87dedcb18b8",
-      "status": "active",
+      "status": "completed",
       "execution": {
         "role": "planner",
         "harness": "opencode",
         "model": "kimi-for-coding/k3"
       },
       "startedAt": "2026-08-03T16:06:58.822Z",
+      "finishedAt": "2026-08-03T16:11:03.437Z",
       "todo": [
         {
           "id": "P1",
@@ -71,6 +72,75 @@
         {
           "id": "P5",
           "title": "Record traces; complete Plan with decision continue"
+        }
+      ],
+      "result": {
+        "decision": "continue",
+        "summary": "Board status derives from the latest attempt's stage instead of workflow.stage — a one-line change in snapshotOf. Done when terminal, Backlog when never attacked, otherwise the stage last attacked, which covers live runs, waiting-between-stages, and returns. Two readiness expectations in publication.test.ts flip from \"Review\" to \"Plan\"; a live-run test is added; the E2E survives unchanged.",
+        "handoff": "# Plan: Move an Issue's Project status only when a run attacks the Work (INIT-2.3)\n\n## Finding (P1)\nsnapshotOf (src/application/publication.ts:44-53) derives Project Status as `PROJECT_STATUS_BY_STAGE[manifest.workflow.stage]` whenever any attempt exists. workflow.stage is the stage the Work is *ready for*, so completing Plan moves the board to Review while the Work only waits — the board reports readiness, not activity. Two existing tests pin that wrong behavior and must flip: publication.test.ts:368 (expects \"Review\" after plan completes) and publication.test.ts:436 (same in the recovery scenario). The projection E2E asserts Plan/Verify/Done only immediately after the corresponding stage was attacked (projection-e2e.mjs:179, 193, 211), so it passes unchanged under the new rule.\n\n## Product files Build touches\n1. src/application/publication.ts — the only production change, one line inside snapshotOf: derive the status from the latest attempt's stage instead of workflow.stage.\n2. src/test/publication.test.ts — update two expectations, add two tests.\n\n## The rule (P2)\n```\ncompletion !== null        -> \"Done\"\nno attempts                -> \"Backlog\"\notherwise                  -> PROJECT_STATUS_BY_STAGE[latestAttempt.stage]\n```\nThe latest attempt's stage is exactly \"the stage last attacked\":\n- A live run (attempt active) shows its stage — acceptance 1.\n- A completed run leaves its stage up while the Work waits for the next one — acceptance 2.\n- A returned attempt still shows the stage that was attacked (e.g. review returns to plan: the board keeps Review until a new run starts), because the status moved when that attack began and nothing newer happened. Tests pin this edge.\n- Never attacked stays Backlog — acceptance 3, existing assertion at publication.test.ts:87.\n- Terminal shows Done and the derivation is stable across syncs with no new run, so the board value never moves — acceptance 4.\n\nNo new core helper: the derivation stays in snapshotOf where it already lived — the smallest change that carries the semantics.\n\n## Tests (P3)\n1. Update publication.test.ts:368 — after plan completes, the board shows \"Plan\" (waiting keeps the last-attacked stage), not \"Review\".\n2. Update publication.test.ts:436 — the recovery scenario expects \"Plan\" for the same reason.\n3. New: live run — app.works.start(\"review\", workId, ...) without completing, then reconcile; the board shows \"Review\" while the run is open (acceptance 1).\n4. New: stability — after a Work is terminal, a repeated reconcile reports the same status and the board value does not move (acceptance 4).\n5. Existing: Backlog for a never-attacked Work (line 87) and Done at terminal (lines 374, 396) stay green.\n\n## Acceptance coverage\n1. Starting a run moves the status — latest-attempt derivation + test 3.\n2. Waiting between stages keeps the last-attacked stage — same derivation + tests 1–2.\n3. Never attacked projects Backlog — unchanged branch + existing test.\n4. Terminal stays Done, no status movement without a new run — unchanged Done branch + test 4.\n\n## Verification for Build\nnpm run verify (typecheck, unit tests, smoke, --help).\n\n## Non-goals\nNo change to the E2E scenario, the gh-projects adapter (its idempotent item-edit is fine — the observable status does not move), Issue creation timing, milestones, or outcome mapping.",
+        "todo": [
+          {
+            "id": "P1",
+            "status": "completed",
+            "note": "snapshotOf uses workflow.stage (readiness); tests :368 and :436 pin it and must flip; E2E asserts only post-attack statuses and survives."
+          },
+          {
+            "id": "P2",
+            "status": "completed",
+            "note": "One-line change in snapshotOf: PROJECT_STATUS_BY_STAGE[latest.stage]. Covers live, waiting, returned, Backlog, Done with no new helper."
+          },
+          {
+            "id": "P3",
+            "status": "completed",
+            "note": "Flip two expectations, add live-run and stability tests; existing Backlog/Done assertions stay; E2E unchanged."
+          },
+          {
+            "id": "P4",
+            "status": "completed",
+            "note": "Handoff covers all four acceptance criteria with the exact change, edge semantics, and test plan."
+          },
+          {
+            "id": "P5",
+            "status": "completed",
+            "note": "Three traces recorded (observation + two decisions); completing with decision continue."
+          }
+        ],
+        "artifacts": []
+      },
+      "traces": [
+        {
+          "id": "0ad5e79cf9d4",
+          "type": "observation",
+          "message": "snapshotOf (publication.ts:44-53) derives Project Status from manifest.workflow.stage — the stage the Work is ready for — so completing Plan moves the board to Review while the Work only waits. Two existing tests pin that readiness behavior and must flip: publication.test.ts:368 expects \"Review\" after plan completes, line 436 likewise. The projection E2E only asserts statuses immediately after a stage was attacked (Plan line 179, Verify line 193, Done line 211), so it survives the rule unchanged.",
+          "at": "2026-08-03T16:11:03.189Z",
+          "data": {
+            "files": [
+              "src/application/publication.ts",
+              "src/core/types.ts",
+              "src/test/publication.test.ts",
+              "scripts/projection-e2e.mjs"
+            ]
+          }
+        },
+        {
+          "id": "2eb74568bb99",
+          "type": "decision",
+          "message": "The rule is a one-line change inside snapshotOf: derive from the latest attempt's stage instead of workflow.stage. Done when terminal, Backlog when there is no attempt, otherwise the stage of the last attempt — which is exactly \"the stage last attacked\": an active run shows its stage, a completed run leaves its stage up while the Work waits, and a returned attempt still shows the stage that was attacked. No new core helper: the derivation stays where it already lived, and tests pin the semantics including the return edge.",
+          "at": "2026-08-03T16:11:03.271Z",
+          "data": {
+            "change": "PROJECT_STATUS_BY_STAGE[manifest.workflow.stage] -> PROJECT_STATUS_BY_STAGE[latest.stage]",
+            "location": "snapshotOf, publication.ts"
+          }
+        },
+        {
+          "id": "4a979b952a27",
+          "type": "decision",
+          "message": "Tests: update the two readiness expectations (publication.test.ts:368 and :436) from \"Review\" to \"Plan\" — that flip is the behavior change; add a live-run test using app.works.start without complete so the board shows the attacked stage while the run is open; keep the existing Backlog and Done assertions and add a re-sync-with-no-new-run assertion that the board value does not move. No E2E change.",
+          "at": "2026-08-03T16:11:03.348Z",
+          "data": {
+            "testFile": "src/test/publication.test.ts",
+            "e2e": "unchanged"
+          }
         }
       ]
     }
