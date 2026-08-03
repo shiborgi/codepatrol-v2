@@ -25,7 +25,9 @@
     }
   },
   "repository": {
-    "baseRef": "refs/heads/main"
+    "baseRef": "refs/heads/main",
+    "createdFromCommit": "4d7a669e59383f8320be5fb23e6eff658cda1d15",
+    "baselineCommit": "4d7a669e59383f8320be5fb23e6eff658cda1d15"
   },
   "graph": {
     "blockedBy": [
@@ -37,10 +39,10 @@
     "number": 41
   },
   "workflow": {
-    "state": "ready",
-    "stage": "build",
+    "state": "terminal",
+    "stage": "ship",
     "attempt": 1,
-    "updatedAt": "2026-08-03T20:59:44.385Z"
+    "updatedAt": "2026-08-03T22:29:17.941Z"
   },
   "attempts": [
     {
@@ -203,7 +205,434 @@
           "at": "2026-08-03T20:59:35.527Z"
         }
       ]
+    },
+    {
+      "stage": "build",
+      "attempt": 1,
+      "runId": "dc1fd085-8bd2-4bc5-ba10-c2a410ca0d79",
+      "status": "completed",
+      "execution": {
+        "role": "builder",
+        "harness": "opencode",
+        "model": "minimax-coding-plan/MiniMax-M3"
+      },
+      "startedAt": "2026-08-03T21:53:19.638Z",
+      "finishedAt": "2026-08-03T22:07:21.095Z",
+      "todo": [
+        {
+          "id": "B1",
+          "title": "Inspect accepted plan and current source state"
+        },
+        {
+          "id": "B2",
+          "title": "Investigate lock primitives (work and repository locks) and work-graph serialization"
+        },
+        {
+          "id": "B3",
+          "title": "Add the concurrency test suite (src/test/concurrency.test.ts): several Works with overlapping stage runs and a sync in flight"
+        },
+        {
+          "id": "B4",
+          "title": "If tests expose gaps, fix the lock structure; otherwise the tests are the change"
+        },
+        {
+          "id": "B5",
+          "title": "Run npm run verify (typecheck, tests, smoke, --help)"
+        },
+        {
+          "id": "B6",
+          "title": "Commit product changes; verify clean worktree"
+        },
+        {
+          "id": "B7",
+          "title": "Complete Build with continue"
+        }
+      ],
+      "result": {
+        "decision": "continue",
+        "summary": "The concurrency suite is in place. The four tests run two independent service bundles over one test repo, drive plan/review/build for three Works concurrently, assert every manifest records each lifecycle transition exactly once, prove that no Work's worktree sees another's edits, run a sync against a bare remote during the storm, and converge on a repeat sync. The suite passes within its 60s timeout; npm run typecheck is clean; npm test reports 284/284 pass; npm run smoke passes. No adapter or lock edits were needed: the existing work/<id> and repository ref locks already serialize the operations the suite exercises. The CI shape (no remote, no GitHub) is the default.",
+        "handoff": "# Build: Prove concurrent attacks on distinct Works are corruption-free (INIT-3.2)\n\n## What changed\n- src/test/concurrency.test.ts (new) — the suite below.\n- No adapter changes. The plan committed to fixing lock gaps only if the suite exposed them, and the suite passed against the existing lock primitives.\n\n## The suite\n- `overlapping stage runs across three Works and a sync converge without corruption` — three Works (Alpha, Bravo, Charlie) created through one SpecService.apply, two service bundles drive each Work's plan/review/build under `Promise.all`. Asserts every manifest records plan/review/build exactly once with `completed` status and a `continue` decision; checks each Work's product file is in its own branch only; runs `LocalGitRemote.sync` against a bare remote mid-storm and asserts every manifest ref is published; a second sync reports every ref unchanged.\n- `the concurrency storm completes inside its bounded time` — runs the same three-Works plan/review storm under a 60s test timeout. The lock's own 30s GIT_LOCKED refusal backs the bound: a deadlock surfaces as a refusal, not a hang.\n- `a Work's product file is invisible from the peer Work's worktree and the main checkout` — walks plan/review first, then starts builds for alpha and bravo (the `build/<id>` lock is held during the build), writes each Work's file in its own worktree, and asserts the peer Work's worktree and the main checkout do not see the file.\n- `the concurrency suite runs in CI without a remote` — the same three-Works plan/review storm with no bare remote, no GitHub fake, no network. The npm test glob picks the file up automatically; the suite is the CI shape.\n\n## Why no lock edits\nThe plan enumerated the four acceptance criteria (exactly-once transitions, no cross-Work file visibility, bounded time without deadlock, sync overlap serialized and correct, CI without a remote) and named the lock primitives that already cover them: `work/<id>` (per-Work state), `repository` (shared Git state: base projection, worktree registry), `sync` (publication). The plan reserved adapter edits for the case where the suite exposes a gap, and the suite passed without one. Each Work's `start`/`complete` runs under `work/<id>`; build/verify/ship additionally hold `repository` for the base projection; the per-Work worktree checkout is local to the `work/<id>` critical section. Two bundles racing on the same repo therefore serialize on the same refs two processes would.\n\n## Validation\n- npm run typecheck: clean.\n- npm test: 284/284 pass (4 new concurrency tests on top of 280 existing).\n- npm run smoke: pass.\n- node bin/codepatrol.js --help: prints the expected surface.\n- Candidate commit b067a970c8b5d3489ae4911c03dda0c61df1bac2 is on refs/heads/codepatrol/work/INIT-3.2-prove-concurrent-attacks-on-distinct-works-are-c; the worktree is clean.\n\n## Acceptance evidence\n1. Exactly-once transitions — the storm test inspects each manifest and asserts `[plan, review, build]` with every attempt `completed` and `continue`.\n2. File isolation — the isolation test reads each Work's product file from its own worktree (positive) and from the peer Work's worktree and the main checkout (negative).\n3. Bounded time — the storm runs under `test({ timeout: 60_000 })`. The 30s GIT_LOCKED refusal inside `withGitRefLock` ensures any deadlock surfaces as a refusal.\n4. Sync overlap and convergence — the storm test calls `LocalGitRemote.sync` against a bare remote mid-storm and asserts every manifest ref is in the result; the next sync reports `action: 'unchanged'` for every ref.\n5. CI without a remote — the last test runs against a plain repo with no `git remote` configured.\n\n## Files Build declared as artifacts\n- src/test/concurrency.test.ts (new)",
+        "todo": [
+          {
+            "id": "B1",
+            "status": "completed",
+            "note": "Inspected the v1 plan handoff and the lock primitives (git-lock.ts ordered sync → work/<id> → repository with a 30s GIT_LOCKED refusal, AsyncLocalStorage re-entry). Two service bundles over one repo exercise the same CAS paths two processes would."
+          },
+          {
+            "id": "B2",
+            "status": "completed",
+            "note": "Confirmed work/<id> serializes manifest updates in manifest-store.ts and WorkService.start/complete; the repository lock is added for build/verify/ship; sync wraps publication; the per-Work worktree is local to the work/<id> critical section."
+          },
+          {
+            "id": "B3",
+            "status": "completed",
+            "note": "src/test/concurrency.test.ts added: storm with sync overlap, bounded-time storm, file isolation during active builds, CI shape without a remote."
+          },
+          {
+            "id": "B4",
+            "status": "completed",
+            "note": "No lock gaps exposed. The plan reserved adapter edits for that case; the existing primitives covered every assertion."
+          },
+          {
+            "id": "B5",
+            "status": "completed",
+            "note": "npm run typecheck clean; npm test 284/284 pass; npm run smoke passes; --help prints the expected surface."
+          },
+          {
+            "id": "B6",
+            "status": "completed",
+            "note": "Committed on codepatrol/work/INIT-3.2-prove-concurrent-attacks-on-distinct-works-are-c as b067a970c8b5d3489ae4911c03dda0c61df1bac2; worktree is clean."
+          },
+          {
+            "id": "B7",
+            "status": "completed",
+            "note": "Completing with decision continue."
+          }
+        ],
+        "artifacts": [
+          {
+            "path": "src/test/concurrency.test.ts",
+            "kind": "test",
+            "blob": "36a114edb0217a4c4c4618bd59a6abd337aee91e",
+            "description": "Concurrency suite: two service bundles over one repo drive plan/review/build for three Works concurrently with file isolation and a sync overlap; bounded by the test timeout plus the lock's GIT_LOCKED refusal."
+          }
+        ]
+      },
+      "traces": [
+        {
+          "id": "a6c95bfaeca2",
+          "type": "observation",
+          "message": "Build changes landed as commit b067a97 on codepatrol/work/INIT-3.2-prove-concurrent-attacks-on-distinct-works-are-c. The change is purely the new src/test/concurrency.test.ts suite: two independent service bundles over one test repo run plan/review/build for three Works concurrently, with file-isolation assertions inside the worktrees and a sync against a bare remote during the storm. The lock primitives already covered the cases the plan enumerated (work/<id> serializes per-Work state, repository serializes shared Git state, sync wraps remote publication); no adapter edits were needed. The suite passes: 4 new tests (storm with sync overlap, bounded-time plan/review storm, file isolation during active builds, CI shape without a remote) on top of 280 existing tests.",
+          "at": "2026-08-03T22:07:02.781Z"
+        }
+      ]
+    },
+    {
+      "stage": "verify",
+      "attempt": 1,
+      "runId": "0cde0613-8f7a-444c-b13d-d255251645e5",
+      "status": "completed",
+      "execution": {
+        "role": "verifier",
+        "harness": "opencode",
+        "model": "minimax-coding-plan/MiniMax-M3"
+      },
+      "startedAt": "2026-08-03T22:10:17.304Z",
+      "finishedAt": "2026-08-03T22:25:23.574Z",
+      "todo": [
+        {
+          "id": "V1",
+          "title": "Pin candidate and baseline commits",
+          "description": "Report verificationTarget.candidateCommit and baselineCommit from the verify start handoff."
+        },
+        {
+          "id": "V2",
+          "title": "Inspect changed files and test coverage",
+          "description": "Inspect src/test/concurrency.test.ts against the five acceptance criteria: exactly-once transitions, file isolation, bounded time, sync overlap serialized, CI without remote."
+        },
+        {
+          "id": "V3",
+          "title": "Execute required commands",
+          "description": "Run npm run verify and any other commands .codepatrol/policy.json declares."
+        },
+        {
+          "id": "V4",
+          "title": "Record traces and evidence",
+          "description": "Record minimum evidence (acceptance criteria outcomes, test diff, clean candidate)."
+        },
+        {
+          "id": "V5",
+          "title": "Complete verify",
+          "description": "Run verify complete with decision continue."
+        }
+      ],
+      "result": {
+        "decision": "continue",
+        "summary": "Verification complete. Candidate clean, four concurrency tests cover all five acceptance criteria, npm run verify passes with exitCode 0.",
+        "handoff": "# Verification Report: INIT-3.2-prove-concurrent-attacks-on-distinct-works-are-c\n\n## Terminal outcome\n- decision: continue\n- candidateCommit: b067a970c8b5d3489ae4911c03dda0c61df1bac2\n- manifestCommit: e783b4d05d859e241b120ae8119f5ecc23e815f2\n- baselineCommit: 4d7a669e59383f8320be5fb23e6eff658cda1d15\n- targetCommit: 4d7a669e59383f8320be5fb23e6eff658cda1d15\n- policyHash: 738b7dca7b2b865e7de12c3f1ca6c05da0d1762f30e202a18709b6290fafb7b4\n\n## Acceptance evidence\n1. **Exactly-once transitions under overlap** — `overlapping stage runs across three Works and a sync converge without corruption` runs plan/review/build concurrently for three Works under Promise.all across two service bundles and asserts every manifest records stages == [plan, review, build], every attempt status == completed, every result decision == continue. Test passed in 8548ms.\n2. **No cross-Work file visibility** — the same test reads each Work's product file from its own branch and asserts it is absent from the peer branch (`showFile(workBranchRef(alpha), \"bravo-product.txt\") === undefined` and the symmetric). The active-builds test additionally writes files inside each Work's worktree while the peer build is still active and asserts the peer worktree and the main checkout never see the file. Both tests passed (storm 8548ms, isolation 6243ms).\n3. **Bounded completion, no deadlock** — `the concurrency storm completes inside its bounded time` runs the three-Works plan/review storm under test({ timeout: 60_000 }). Finished in 2530ms. The lock's own 30s GIT_LOCKED refusal inside withGitRefLock is the architectural backstop: any deadlock surfaces as a refusal, not a hang.\n4. **Overlapping sync serialized and correct** — the storm test calls LocalGitRemote.sync against a bare remote mid-storm and asserts every manifest ref is in the result; the next sync reports action='unchanged' for every ref. Both ran inside the 8548ms test.\n5. **CI without a remote** — `the concurrency suite runs in CI without a remote` runs the same three-Works storm against a plain repo with no git remote, no GitHub fake, no network. Passed in 2550ms. The npm test glob picks the file up automatically; the suite is the CI shape.\n\n## Command trace\n- `npm run verify` from the Work's worktree (HEAD = candidate b067a970c): exitCode 0. Pipeline = typecheck + test (build + node --test dist/test/*.test.js) + smoke + node bin/codepatrol.js --help. 284/284 tests pass, 0 fail. Smoke passed. Help printed the expected surface.\n\n## Changed files\n- src/test/concurrency.test.ts (new, blob 36a114edb0217a4c4c4618bd59a6abd337aee91e, 274 lines).\n- .codepatrol/works/INIT-3.2-prove-concurrent-attacks-on-distinct-works-are-c/work.json (canonical manifest bookkeeping).\n\n## Residual risk\nThe suite proves the existing locks serialize the operations it exercises, in a single Node process with two service bundles. The plan named process-level driving as a non-goal and assigned it to smoke; the ref CAS path the in-process shape exercises is the same one two processes would hit.\n\n## No returns required\nCandidate is clean, acceptance is demonstrated, evidence is complete. Verify continues to Ship.",
+        "todo": [
+          {
+            "id": "V1",
+            "status": "completed",
+            "note": "Pinned candidate b067a970c8b5d3489ae4911c03dda0c61df1bac2 and baseline 4d7a669e59383f8320be5fb23e6eff658cda1d15 from the verify start handoff."
+          },
+          {
+            "id": "V2",
+            "status": "completed",
+            "note": "Inspected src/test/concurrency.test.ts. Four tests map to the five acceptance criteria; blob 36a114ed matches the Build artifact."
+          },
+          {
+            "id": "V3",
+            "status": "completed",
+            "note": "Executed npm run verify with exitCode 0; 284/284 tests pass; smoke and help surface confirmed."
+          },
+          {
+            "id": "V4",
+            "status": "completed",
+            "note": "Recorded acceptance evidence: every acceptance criterion tied to a passing test name and a duration; candidate clean."
+          },
+          {
+            "id": "V5",
+            "status": "completed",
+            "note": "Completing with decision continue."
+          }
+        ],
+        "artifacts": []
+      },
+      "traces": [
+        {
+          "id": "655033f79325",
+          "type": "observation",
+          "message": "Pinned candidate and baseline from the verify start handoff. candidateCommit=b067a970c8b5d3489ae4911c03dda0c61df1bac2, baselineCommit=4d7a669e59383f8320be5fb23e6eff658cda1d15, targetCommit=4d7a669e59383f8320be5fb23e6eff658cda1d15, policyHash=738b7dca7b2b865e7de12c3f1ca6c05da0d1762f30e202a18709b6290fafb7b4. inspectionRef=refs/heads/codepatrol/work/INIT-3.2-prove-concurrent-attacks-on-distinct-works-are-c. The verification range is exactly baseline..candidate, not inspection.headCommit or a moving branch tip. Worktree is .codepatrol/runtime/worktrees/INIT-3.2-prove-concurrent-attacks-on-distinct-works-are-c.",
+          "at": "2026-08-03T22:10:55.469Z",
+          "data": {
+            "candidateCommit": "b067a970c8b5d3489ae4911c03dda0c61df1bac2",
+            "manifestCommit": "e783b4d05d859e241b120ae8119f5ecc23e815f2",
+            "baselineCommit": "4d7a669e59383f8320be5fb23e6eff658cda1d15",
+            "targetCommit": "4d7a669e59383f8320be5fb23e6eff658cda1d15",
+            "policyHash": "738b7dca7b2b865e7de12c3f1ca6c05da0d1762f30e202a18709b6290fafb7b4",
+            "inspectionRef": "refs/heads/codepatrol/work/INIT-3.2-prove-concurrent-attacks-on-distinct-works-are-c"
+          }
+        },
+        {
+          "id": "bcbf5db7268d",
+          "type": "observation",
+          "message": "Inspected the candidate range 4d7a669e..b067a970c. The diff is two files: the canonical manifest .codepatrol/works/INIT-3.2-.../work.json (Build-attributable bookkeeping) and a single new src/test/concurrency.test.ts (274 lines, blob 36a114ed, matching the Build artifact declaration). No production source files are touched — by plan, only if the suite exposed a lock gap would git-lock.ts/manifest-store.ts/worktree.ts be edited, and the suite passed against the existing primitives. The test suite has four tests mapped to the five acceptance criteria: (1) overlapping stage runs across three Works and a sync converge without corruption — drives plan/review/build concurrently for three Works under Promise.all across two service bundles, asserts exactly-once transitions per manifest (plan/review/build each appear once, all completed with continue decision), asserts each Work's product file is on its own branch only (not on the peer branch), runs LocalGitRemote.sync against a bare remote mid-storm and asserts every manifest ref publishes, then runs a second sync and asserts action=unchanged for every ref; (2) bounded-time storm under test({ timeout: 60_000 }) covering acceptance 3 with the lock's own 30s GIT_LOCKED refusal as a backup bound; (3) active-builds isolation test — both builds hold work/<id> while file writes happen in each Worktree, asserts the peer Worktree and the main checkout never see the other's file, and the manifest records build exactly once per Work; (4) CI shape — same three-Works storm with no bare remote, no GitHub fake, no network. The file imports resolve against the package (git-port, local-git-remote, manifest-store, worktree, work-service, spec-service, initiative-document, work-manifest, support/app, support/repo) — every reference resolves. dist/test/concurrency.test.js exists and is compiled from the same source. Worktree HEAD matches candidate b067a970c8b5d3489ae4911c03dda0c61df1bac2.",
+          "at": "2026-08-03T22:11:21.879Z",
+          "data": {
+            "range": "4d7a669e59383f8320be5fb23e6eff658cda1d15..b067a970c8b5d3489ae4911c03dda0c61df1bac2",
+            "changedFiles": [
+              ".codepatrol/works/INIT-3.2-prove-concurrent-attacks-on-distinct-works-are-c/work.json",
+              "src/test/concurrency.test.ts"
+            ],
+            "concurrencyTestBlob": "36a114edb0217a4c4c4618bd59a6abd337aee91e",
+            "tests": [
+              "overlapping stage runs across three Works and a sync converge without corruption",
+              "the concurrency storm completes inside its bounded time",
+              "a Work's product file is invisible from the peer Work's worktree and the main checkout",
+              "the concurrency suite runs in CI without a remote"
+            ],
+            "acceptanceMapping": {
+              "exactly-once transitions": "test 1 (manifest stages == [plan, review, build], all completed, continue)",
+              "no cross-Work file visibility": "tests 1 (workBranchRef cross-reads) + 3 (active-builds isolation)",
+              "bounded time, no deadlock": "test 2 with timeout 60_000 plus lock's 30s GIT_LOCKED refusal",
+              "overlapping sync serialized": "test 1 (LocalGitRemote.sync mid-storm publishes every manifest ref, second sync unchanged)",
+              "CI without a remote": "test 4 (no bare remote, no GitHub, no network)"
+            }
+          }
+        },
+        {
+          "id": "60f10947dab3",
+          "type": "command",
+          "message": "Executed npm run verify from the Work's worktree at .codepatrol/runtime/worktrees/INIT-3.2-prove-concurrent-attacks-on-distinct-works-are-c (HEAD = candidate b067a970c8b5d3489ae4911c03dda0c61df1bac2). The pipeline ran typecheck, test (build then node --test dist/test/*.test.js), smoke, and `node bin/codepatrol.js --help`. Test results: 284 tests, 284 pass, 0 fail. The four new concurrency tests all passed within their budget: storm with sync overlap (8548ms), bounded-time plan/review storm (2530ms), active-builds isolation (6243ms), CI shape without a remote (2550ms). Smoke passed; help printed the expected command surface. The concurrency suite is therefore exercised in CI exactly as the plan promised.",
+          "at": "2026-08-03T22:20:44.672Z",
+          "data": {
+            "source": "codepatrol",
+            "workId": "INIT-3.2-prove-concurrent-attacks-on-distinct-works-are-c",
+            "runId": "0cde0613-8f7a-444c-b13d-d255251645e5",
+            "attempt": 1,
+            "candidateCommit": "b067a970c8b5d3489ae4911c03dda0c61df1bac2",
+            "policyHash": "738b7dca7b2b865e7de12c3f1ca6c05da0d1762f30e202a18709b6290fafb7b4",
+            "startedAt": "2026-08-03T22:11:30Z",
+            "finishedAt": "2026-08-03T22:14:30Z",
+            "stdout": {
+              "digest": "2f0c7be8614c81d99a939a3e152bb27e716eba54ecc11c6b7b9a7aedad46f605",
+              "bytes": 28289,
+              "truncated": false,
+              "redactions": 0
+            },
+            "stderr": {
+              "digest": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+              "bytes": 0,
+              "truncated": false,
+              "redactions": 0
+            },
+            "summary": {
+              "typecheck": "clean",
+              "tests": 284,
+              "passed": 284,
+              "failed": 0,
+              "smoke": "passed",
+              "help": "expected surface printed"
+            },
+            "concurrencyTestDurations": {
+              "storm_with_sync_overlap_ms": 8548,
+              "bounded_time_storm_ms": 2530,
+              "active_builds_isolation_ms": 6243,
+              "ci_shape_no_remote_ms": 2550
+            }
+          },
+          "command": [
+            "npm",
+            "run",
+            "verify"
+          ],
+          "exitCode": 0
+        },
+        {
+          "id": "155944547936",
+          "type": "observation",
+          "message": "Verification evidence summary for INIT-3.2-prove-concurrent-attacks-on-distinct-works-are-c. Candidate b067a970c8b5d3489ae4911c03dda0c61df1bac2 is clean (clean=true, status=[], baselineStale=false), the verification range is exactly baseline..candidate (4d7a669e..b067a970c), and the candidate commit carries the new src/test/concurrency.test.ts blob 36a114ed — identical to the Build-declared artifact. Acceptance evidence: (1) exactly-once transitions — the storm test in concurrency.test.ts reads each manifest and asserts stages==[plan, review, build], every attempt status==completed, every result.decision==continue; the assertion ran green (npm test reports 284/284 pass). (2) No cross-Work file visibility — tests 1 and 3 assert file non-visibility across peer branches and worktrees and the main checkout; ran green. (3) Bounded completion without deadlock — test 2 ran under test({ timeout: 60_000 }) and finished in 2530ms; the lock's own 30s GIT_LOCKED refusal inside withGitRefLock is the architectural backstop. (4) Sync overlap serialized and correct — test 1 calls LocalGitRemote.sync mid-storm and asserts every manifest ref is in the result, then a second sync reports action=unchanged for every ref; ran green. (5) CI without a remote — test 4 runs the same three-Works storm against a plain repo with no git remote configured, no GitHub fake, no network, and the npm test glob picks the file up automatically. Residual risk: the suite runs in a single Node process with two service bundles over one on-disk repo; it exercises the same CAS paths two processes would because each bundle holds its own AsyncLocalStorage and contends on real refs via update-ref, but it does not drive process-level contention. The plan named this as a non-goal and assigned process-level driving to smoke.",
+          "at": "2026-08-03T22:20:59.967Z",
+          "data": {
+            "workId": "INIT-3.2-prove-concurrent-attacks-on-distinct-works-are-c",
+            "candidateCommit": "b067a970c8b5d3489ae4911c03dda0c61df1bac2",
+            "baselineCommit": "4d7a669e59383f8320be5fb23e6eff658cda1d15",
+            "targetCommit": "4d7a669e59383f8320be5fb23e6eff658cda1d15",
+            "policyHash": "738b7dca7b2b865e7de12c3f1ca6c05da0d1762f30e202a18709b6290fafb7b4",
+            "acceptance": {
+              "exactly_once_transitions": "demonstrated by test 1; storm test asserts stages==[plan, review, build] with completed/continue",
+              "file_isolation": "demonstrated by tests 1 and 3; cross-worktree and cross-branch file visibility both negative",
+              "bounded_time": "demonstrated by test 2 (60s timeout, finished in 2530ms) backed by the lock's 30s GIT_LOCKED refusal",
+              "sync_overlap_serialized": "demonstrated by test 1; LocalGitRemote.sync mid-storm publishes every manifest ref and a second sync reports unchanged",
+              "ci_without_remote": "demonstrated by test 4; plain repo with no git remote, no GitHub, no network"
+            },
+            "evidence": {
+              "trace_V1": "candidateCommit and baselineCommit pinned from verify start handoff",
+              "trace_V2": "src/test/concurrency.test.ts inspected; 4 tests mapped to 5 acceptance criteria; blob 36a114ed matches Build artifact",
+              "trace_V3": "npm run verify exitCode 0; 284/284 tests pass; smoke and help surface confirmed",
+              "buildArtifacts": "src/test/concurrency.test.ts blob 36a114edb0217a4c4c4618bd59a6abd337aee91e",
+              "diff": "git diff 4d7a669e..b067a970c --stat: 2 files, 321 insertions, 3 deletions (canonical manifest + concurrency.test.ts)"
+            },
+            "residualRisk": "Concurrency proof is in-process with two service bundles over one repo. It exercises the same CAS paths two processes would (per plan), but process-level driving is delegated to smoke and not in scope here."
+          }
+        },
+        {
+          "id": "936b72970fd4",
+          "type": "command",
+          "message": "npm run verify exited with 0",
+          "at": "2026-08-03T22:25:23.573Z",
+          "data": {
+            "source": "codepatrol",
+            "workId": "INIT-3.2-prove-concurrent-attacks-on-distinct-works-are-c",
+            "runId": "0cde0613-8f7a-444c-b13d-d255251645e5",
+            "attempt": 1,
+            "candidateCommit": "b067a970c8b5d3489ae4911c03dda0c61df1bac2",
+            "policyHash": "738b7dca7b2b865e7de12c3f1ca6c05da0d1762f30e202a18709b6290fafb7b4",
+            "startedAt": "2026-08-03T22:23:19.559Z",
+            "finishedAt": "2026-08-03T22:25:23.534Z",
+            "stdout": {
+              "digest": "23391bc66f1fc38d1ca6055821f58a8863baf53f3718cbd3f138a2b52bce9eef",
+              "bytes": 28265,
+              "truncated": true,
+              "redactions": 0
+            },
+            "stderr": {
+              "digest": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+              "bytes": 0,
+              "truncated": false,
+              "redactions": 0
+            },
+            "outputLog": ".codepatrol/runtime/works/INIT-3.2-prove-concurrent-attacks-on-distinct-works-are-c/current/verify/01.log"
+          },
+          "command": [
+            "npm",
+            "run",
+            "verify"
+          ],
+          "exitCode": 0
+        }
+      ],
+      "verificationTarget": {
+        "attempt": 1,
+        "candidateCommit": "b067a970c8b5d3489ae4911c03dda0c61df1bac2",
+        "manifestCommit": "e783b4d05d859e241b120ae8119f5ecc23e815f2",
+        "baselineCommit": "4d7a669e59383f8320be5fb23e6eff658cda1d15",
+        "targetCommit": "4d7a669e59383f8320be5fb23e6eff658cda1d15",
+        "policyHash": "738b7dca7b2b865e7de12c3f1ca6c05da0d1762f30e202a18709b6290fafb7b4"
+      },
+      "verifiedCandidate": {
+        "attempt": 1,
+        "candidateCommit": "b067a970c8b5d3489ae4911c03dda0c61df1bac2",
+        "manifestCommit": "e783b4d05d859e241b120ae8119f5ecc23e815f2",
+        "baselineCommit": "4d7a669e59383f8320be5fb23e6eff658cda1d15",
+        "targetCommit": "4d7a669e59383f8320be5fb23e6eff658cda1d15",
+        "policyHash": "738b7dca7b2b865e7de12c3f1ca6c05da0d1762f30e202a18709b6290fafb7b4"
+      }
+    },
+    {
+      "stage": "ship",
+      "attempt": 1,
+      "runId": "3a4a86ca-f0b4-4787-a8fe-5e80877de568",
+      "status": "completed",
+      "execution": {
+        "role": "shipper",
+        "harness": "opencode",
+        "model": "minimax-coding-plan/MiniMax-M3"
+      },
+      "startedAt": "2026-08-03T22:28:33.819Z",
+      "finishedAt": "2026-08-03T22:29:17.941Z",
+      "todo": [
+        {
+          "id": "S1",
+          "title": "Inspect Work, Change inspection, and verification snapshot"
+        },
+        {
+          "id": "S2",
+          "title": "Confirm inspection is clean, target matches verification snapshot, canonical manifest checkpoints only"
+        },
+        {
+          "id": "S3",
+          "title": "Trace the terminal rationale"
+        },
+        {
+          "id": "S4",
+          "title": "Complete Ship with accept and authority user"
+        },
+        {
+          "id": "S5",
+          "title": "Confirm the single integration commit on the base and the archive ref"
+        }
+      ],
+      "result": {
+        "decision": "accept",
+        "summary": "Accept the Work. The new concurrency suite exercises the existing lock primitives under overlapping stage runs and a sync, with no adapter changes needed. The plan's caveat — only fix lock gaps if the suite exposes them — was honored: the four tests passed against the work/<id>, repository, and sync locks already in place. Verify recorded the requiredCommands `npm run verify` trace with exitCode 0. Authority for the accept is the explicit user.",
+        "handoff": "# Ship: Prove concurrent attacks on distinct Works are corruption-free (INIT-3.2)\n\n## Terminal outcome\n- decision: accept\n- authority: user (explicit)\n- candidateCommit: b067a970c8b5d3489ae4911c03dda0c61df1bac2\n- baselineCommit: 4d7a669e59383f8320be5fb23e6eff658cda1d15\n- policyHash: 738b7dca7b2b865e7de12c3f1ca6c05da0d1762f30e202a18709b6290fafb7b4\n\n## Cited evidence (not reproduced)\n- Plan handoff: see availableResults plan/1.\n- Review handoff and verdict continue: see availableResults review/1.\n- Build handoff and 1 committed artifact (path/kind/blob): see availableResults build/1.\n- Verify handoff, observations, and the requiredCommand trace with exitCode 0: see availableResults verify/1 and the verify attempt in `attempts`.\n- Ship inspection observation: trace id fbd2c87f9a04 in the ship attempt.\n\n## Outcome\nThe single integration commit lands on main; the archive ref `refs/heads/codepatrol/archive/INIT-3.2-prove-concurrent-attacks-on-distinct-works-are-c` preserves the full Change history. Open Change branch and worktree are removed.",
+        "todo": [
+          {
+            "id": "S1",
+            "status": "completed",
+            "note": "Work ready for Ship with verifiedCandidate pinned to b067a97. change.verification.attempt=1; baselineCommit=4d7a669; targetCommit=4d7a669; policyHash recorded."
+          },
+          {
+            "id": "S2",
+            "status": "completed",
+            "note": "inspection.clean=true; baselineStale=false; status=[]; commits=[b067a97]; changedFiles match Build-declared artifact + canonical manifest. base target 4d7a669 equals verification snapshot targetCommit. canonical-manifest-only invariant holds (b067a97 IS the candidate, no commits after it in range)."
+          },
+          {
+            "id": "S3",
+            "status": "completed",
+            "note": "Terminal rationale: the suite proves the existing lock primitives serialize overlapping stage runs and a sync, so the Work's promise of corruption-free concurrency is satisfied by the tests on top of an unchanged lock stack. Verify recorded requiredCommands npm run verify with exitCode 0."
+          },
+          {
+            "id": "S4",
+            "status": "completed",
+            "note": "Completing with decision=accept and authority=user (explicit)."
+          },
+          {
+            "id": "S5",
+            "status": "completed",
+            "note": "Verified post-completion: exactly one integration commit on main; refs/heads/codepatrol/work/INIT-3.2-prove-concurrent-attacks-on-distinct-works-are-c removed; refs/heads/codepatrol/archive/INIT-3.2-prove-concurrent-attacks-on-distinct-works-are-c carries the full Change history."
+          }
+        ],
+        "artifacts": [],
+        "authority": "user"
+      },
+      "traces": [
+        {
+          "id": "fbd2c87f9a04",
+          "type": "observation",
+          "message": "Ship inspection: candidateCommit b067a97 is the single commit ahead of baseline 4d7a669; base target 4d7a669 matches the verification snapshot's targetCommit 4d7a669; baselineStale=false; clean=true; status=[]; the 2 changed files are exactly the Build-declared artifact (src/test/concurrency.test.ts) plus the canonical manifest .codepatrol/works/INIT-3.2-prove-concurrent-attacks-on-distinct-works-are-c/work.json. No commits follow the candidate, so the canonical-manifest-only invariant holds vacuously. Verify evidence: requiredCommands command trace with exitCode 0 for `npm run verify` and inspection observations for changed files and pinned candidate are recorded in the verify attempt.",
+          "at": "2026-08-03T22:29:07.373Z"
+        }
+      ]
     }
   ],
-  "completion": null
+  "completion": {
+    "outcome": "accepted",
+    "via": "ship",
+    "authority": "user",
+    "finalizedAt": "2026-08-03T22:29:17.941Z",
+    "summary": "Accept the Work. The new concurrency suite exercises the existing lock primitives under overlapping stage runs and a sync, with no adapter changes needed. The plan's caveat — only fix lock gaps if the suite exposes them — was honored: the four tests passed against the work/<id>, repository, and sync locks already in place. Verify recorded the requiredCommands `npm run verify` trace with exitCode 0. Authority for the accept is the explicit user."
+  }
 }
