@@ -36,10 +36,10 @@
     "number": 40
   },
   "workflow": {
-    "state": "ready",
+    "state": "active",
     "stage": "verify",
     "attempt": 1,
-    "updatedAt": "2026-08-03T18:47:05.994Z"
+    "updatedAt": "2026-08-03T19:17:50.131Z"
   },
   "attempts": [
     {
@@ -369,6 +369,53 @@
           }
         }
       ]
+    },
+    {
+      "stage": "verify",
+      "attempt": 1,
+      "runId": "16a8ba31-f974-4980-a6f5-3c4dc5ad95aa",
+      "status": "active",
+      "execution": {
+        "role": "verifier",
+        "harness": "opencode",
+        "model": "google/antigravity-gemini-3.1-pro"
+      },
+      "startedAt": "2026-08-03T19:17:50.131Z",
+      "todo": [
+        {
+          "id": "V1",
+          "title": "Pin candidate and baseline commits",
+          "description": "Report verificationTarget.candidateCommit and baselineCommit."
+        },
+        {
+          "id": "V2",
+          "title": "Inspect changed files and test coverage",
+          "description": "Inspect every changed file and ensure it meets acceptance."
+        },
+        {
+          "id": "V3",
+          "title": "Execute required commands",
+          "description": "Run npm run verify."
+        },
+        {
+          "id": "V4",
+          "title": "Record traces and evidence",
+          "description": "Record minimum evidence (acceptance criteria outcomes, test diffs, clean candidate)."
+        },
+        {
+          "id": "V5",
+          "title": "Complete verify",
+          "description": "Run verify complete."
+        }
+      ],
+      "verificationTarget": {
+        "attempt": 1,
+        "candidateCommit": "df73d738f6d05aeb38061935f09d92d5b77cdd1f",
+        "manifestCommit": "841e3cb6efc9894c8b025eb8c73d454dd611d2db",
+        "baselineCommit": "9ca7314c81966e768ad7b5062612d9ecb9d7e90d",
+        "targetCommit": "9ca7314c81966e768ad7b5062612d9ecb9d7e90d",
+        "policyHash": "738b7dca7b2b865e7de12c3f1ca6c05da0d1762f30e202a18709b6290fafb7b4"
+      }
     }
   ],
   "completion": null
