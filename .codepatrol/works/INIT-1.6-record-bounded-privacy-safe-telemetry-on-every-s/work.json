@@ -39,23 +39,24 @@
     "number": 34
   },
   "workflow": {
-    "state": "active",
-    "stage": "plan",
+    "state": "ready",
+    "stage": "review",
     "attempt": 1,
-    "updatedAt": "2026-08-04T03:04:07.832Z"
+    "updatedAt": "2026-08-04T03:14:03.712Z"
   },
   "attempts": [
     {
       "stage": "plan",
       "attempt": 1,
       "runId": "6a70824d-bf8a-4fe9-98ba-d2a3e5cc2b95",
-      "status": "active",
+      "status": "completed",
       "execution": {
         "role": "planner",
         "harness": "opencode",
         "model": "kimi-for-coding/k3"
       },
       "startedAt": "2026-08-04T03:04:07.832Z",
+      "finishedAt": "2026-08-04T03:14:03.712Z",
       "todo": [
         {
           "id": "P1",
@@ -81,6 +82,90 @@
           "id": "P5",
           "title": "Record traces and complete Plan with continue",
           "description": "Trace key observations and complete the Plan attempt."
+        }
+      ],
+      "result": {
+        "decision": "continue",
+        "summary": "Plan for bounded, privacy-safe attempt telemetry: an optional additive telemetry field on ManifestAttempt {skills, context, tools, model}, collected once at complete by an injected best-effort collector, harness-reported sections delivered through an optional --telemetry file on complete, 'unavailable' recorded for absent model usage, a structural privacy test net, and schemaVersion 1 parsing stability. No derivable data (duration, command counts) is stored.",
+        "handoff": "# Plan: Record bounded, privacy-safe telemetry on every stage attempt (INIT-1.6)\n\n## Design\n\n**Stored shape** — `ManifestAttempt` gains `telemetry?: AttemptTelemetry`, defined in a new `src/core/telemetry.ts`:\n\n```ts\nexport const TELEMETRY_UNAVAILABLE = \"unavailable\";\nexport interface AttemptTelemetry {\n  skills: { count: number; bytes: number };\n  context: { sections: number; bytes: number };\n  tools: typeof TELEMETRY_UNAVAILABLE | { count: number; failures: number; inputBytes: number; outputBytes: number };\n  model: typeof TELEMETRY_UNAVAILABLE | { inputTokens: number; outputTokens: number };\n}\n```\n\nEvery leaf is a non-negative safe integer or the literal `\"unavailable\"`. No free strings, no nested free-form objects — that is the privacy boundary, stated in the module doc comment: counts, sizes, digests, and identifiers only; a prompt, response, reasoning trace, raw output, environment value, or credential can never fit this shape.\n\n**Not stored (derivable, per the Work description):** stage duration (startedAt/finishedAt already on every attempt) and command counts with failures (ManifestTrace type command + exitCode). INIT-1.7 derives them on read; duplicating them here would create two sources of truth.\n\n**Collection point** — once, at complete. The lifecycle `finish` transition (src/core/lifecycle.ts:8-16) gains `telemetry?: AttemptTelemetry`, and the finished attempt assembly (lifecycle.ts:101-108) carries it. Start is untouched, so the parser never sees a partial shape.\n\n**Collector** — a `TelemetryCollector` port in a new `src/application/telemetry.ts`, injected as the 7th optional WorkService constructor parameter (after `workspace`, same pattern as `clock`). The default collector computes: context sections/bytes from the runtime `input.json` handoff (top-level key count, byte length — readable inside the complete update callback before runtimeRoot is removed at work-service.ts:586); skill count/bytes via `resolveComposition(stage, manifests, hostCapabilities)` plus byte sizes of each resolved SKILL.md; tools/model from the harness report or `\"unavailable\"`. Collection in `completeLocked` is wrapped best-effort: a throwing collector drops the field and the transition, the result, and Ship proceed unchanged (acceptance 4).\n\n**Harness channel** — `<stage> complete` gains an optional `--telemetry <file>` flag (stage.ts allowedFlags line 25, usage lines 15-19), parsed by a new strict `parseTelemetryReport` in src/cli/inputs.ts: `{ tools?: { count, failures, inputBytes, outputBytes }, model?: { inputTokens, outputTokens } }`, unknown fields refused, non-negative safe integers only. Absent flag means tools and model record `\"unavailable\"` — never zero, never an error (acceptance 2). The report reaches `WorkService.complete` as a new optional trailing options argument; `ResultInput` and the result.json contract are untouched.\n\n**Persistence** — src/core/work-manifest.ts: `ManifestAttempt.telemetry?` (line 63-76 interface), fixed-order serializer emits it only when present (238-272), parser keys() gate at line 500 gains `\"telemetry\"` and validates via `parseAttemptTelemetry` from core/telemetry.ts, which throws STATE_CORRUPT on any unknown field, non-integer leaf, or string other than `\"unavailable\"`. schemaVersion stays 1; a manifest without the field parses (acceptance 1).\n\n**Wiring** — src/cli/main.ts line 49 passes the default collector with the shipped skills directory and host capabilities; src/cli/commands/skill.ts line 22 exports `HOST_CAPABILITIES` for that wiring (one-line export; INIT-1.4 may land the same export first — whoever builds second keeps the single export).\n\n## Acceptance → file/test map\n\n| # | Acceptance | Files | Tests (src/test/telemetry.test.ts, new) |\n|---|---|---|---|\n| 1 | Completed attempt carries bounded telemetry; manifest without the field parses under schemaVersion 1 | work-manifest.ts, lifecycle.ts, work-service.ts, application/telemetry.ts | T1 complete with collector records all four sections; T2 existing-manifest fixture without telemetry round-trips |\n| 2 | Absent model usage recorded as explicitly unavailable | application/telemetry.ts, inputs.ts | T3 complete without --telemetry stores model: \"unavailable\" (and tools: \"unavailable\") |\n| 3 | Privacy test net; fails when a content-carrying field is added | core/telemetry.ts | T4 leaf-walker asserts every telemetry leaf is a number or \"unavailable\"; T5 parser refuses unknown/forbidden fields (prompt, response, reasoning, output, env, credential, excerpt); T6 serializer/parser symmetry fails if a string-carrying field is added to the type |\n| 4 | Injected telemetry failure leaves transition, result, and Ship unaffected | work-service.ts, support/app.ts (optional telemetry injection) | T7 throwing collector: complete succeeds, result recorded, ship accept succeeds, attempt has no telemetry |\n| 5 | Telemetry survives into a terminal Work's manifest | (no extra code; attempts are preserved) | T8 runThrough to ship accept; terminal manifest's attempts carry telemetry |\n\nPlus src/test/cli-registry.test.ts: --telemetry accepted on complete, rejected elsewhere, malformed file refused.\n\n## File set (blast radius)\n- src/core/telemetry.ts (new): AttemptTelemetry, TelemetryReport, TELEMETRY_UNAVAILABLE, parseAttemptTelemetry, doc-comment privacy boundary\n- src/core/work-manifest.ts (modified): optional field, serializer, parser\n- src/core/lifecycle.ts (modified): finish transition carries telemetry\n- src/application/telemetry.ts (new): TelemetryCollector port + default collector\n- src/application/work-service.ts (modified): constructor injection, best-effort collection in completeLocked, optional complete options argument\n- src/cli/inputs.ts (modified): parseTelemetryReport\n- src/cli/commands/stage.ts (modified): --telemetry flag on complete + usage\n- src/cli/commands/skill.ts (modified): export HOST_CAPABILITIES\n- src/cli/main.ts (modified): wire default collector\n- src/test/telemetry.test.ts (new), src/test/support/app.ts (modified), src/test/cli-registry.test.ts (modified)\n\n## Verification command\n`npm run verify` (typecheck + tests + smoke + --help), per .codepatrol/policy.json.\n\n## Non-goals\n- No derived-metric reporting or aggregation (INIT-1.7)\n- No storing duration or command counts (derivable from startedAt/finishedAt and traces)\n- No raw output, prompt, response, reasoning, environment, or credential storage — structurally impossible under the leaf rule\n- No schemaVersion bump; telemetry is never mandatory (no collector injected → no field)\n- No HandoffV1 changes, no skill-composition recording on the attempt (INIT-1.4), no docs/protocol.md changes\n\n## Dependency note\nBuild is gated on INIT-1.4 (blockedBy). If INIT-1.4 lands first, `HOST_CAPABILITIES` may already be exported and `ManifestAttempt.skills` may exist; Build refreshes onto the new base and keeps one export. The telemetry field is independent of the skills field — telemetry computes from resolveComposition directly and does not read attempt.skills.",
+        "todo": [
+          {
+            "id": "P1",
+            "status": "completed",
+            "note": "Inspected manifest schema, lifecycle, work-service, CLI, skill resolution, and test support on baseline 35cace3. No telemetry exists; additive insertion points identified (parser keys() gate line 500, serializer 238-272, finish transition, constructor injection pattern)."
+          },
+          {
+            "id": "P2",
+            "status": "completed",
+            "note": "Designed optional telemetry {skills, context, tools, model} with integer/'unavailable' leaves only; single collection at complete via injected best-effort collector; --telemetry file channel; duration and command counts deliberately not stored (derivable)."
+          },
+          {
+            "id": "P3",
+            "status": "completed",
+            "note": "Validated every reference against the worktree: all files, line anchors, and symbols exist; grep confirms no telemetry/Telemetry name collisions in src, bin, or docs; npm run verify present in package.json."
+          },
+          {
+            "id": "P4",
+            "status": "completed",
+            "note": "Handoff maps all five acceptance criteria to named files and eight named tests, fixes the file set, verification command, and non-goals, and records the INIT-1.4 ordering note."
+          },
+          {
+            "id": "P5",
+            "status": "completed",
+            "note": "Recorded observation and decision traces; completing with continue."
+          }
+        ],
+        "artifacts": []
+      },
+      "traces": [
+        {
+          "id": "f71d70a70e77",
+          "type": "observation",
+          "message": "P1 inspection. Baseline 35cace3 does not include INIT-1.4's skills field (blockedBy gates Build only). Current state: ManifestAttempt (src/core/work-manifest.ts:63-76) carries stage/attempt/runId/status/execution/startedAt/todo/finishedAt/result/traces/verificationTarget/verifiedCandidate; the parser keys() gate at line 500 and the fixed-order serializer at 238-272 are the additive insertion points, same pattern verificationTarget used. Lifecycle finish transition (src/core/lifecycle.ts:8-16, 101-108) assembles the finished attempt — the single place a telemetry field lands. WorkService.completeLocked (src/application/work-service.ts:489-601) reads buffered traces from runtimeRoot before the update callback and removes runtimeRoot after, so input.json is still readable inside the update — one collection point at complete covers context size. resolveComposition and listShippedSkills already exist (src/core/skill-resolution.ts:89, src/cli/commands/skill.ts:30), so skill count and resolved SKILL.md bytes are computable today. HOST_CAPABILITIES exists at skill.ts:22 but is not exported. No telemetry anywhere: grep for telemetry/Telemetry across src returns nothing. Derivable data that must not be duplicated: duration (startedAt/finishedAt on every attempt) and command counts with failures (ManifestTrace type command + exitCode).",
+          "at": "2026-08-04T03:11:50.018Z",
+          "data": {
+            "baselineCommit": "35cace34058848672ab935042d4c7538d0c5eeae",
+            "keyFiles": {
+              "src/core/work-manifest.ts": "attempt interface 63-76; serializer 238-272; parser keys() 500; snapshotOf pattern 509-524",
+              "src/core/lifecycle.ts": "finish transition 8-16; finished attempt assembly 101-108",
+              "src/application/work-service.ts": "complete 480-487; completeLocked 489-601; constructor 155-164 (optional clock/workspace params are the injection pattern)",
+              "src/cli/commands/stage.ts": "complete allowedFlags 23-27; usage 15-19",
+              "src/cli/inputs.ts": "object/fields/nonEmptyText strict parser helpers 15-31; parseResult 91-127",
+              "src/cli/commands/skill.ts": "listShippedSkills 30 (exported); HOST_CAPABILITIES 22 (not exported); shippedSkillsDirectory 13",
+              "src/core/skill-resolution.ts": "resolveComposition 89",
+              "src/cli/main.ts": "WorkService construction at line 49",
+              "src/test/support/app.ts": "createTestApp constructs WorkService at line 67; runStage/runThrough helpers"
+            },
+            "derivableNotStored": [
+              "stage duration (startedAt/finishedAt)",
+              "command counts with failures (command traces + exitCode)"
+            ],
+            "verifyCommand": "npm run verify"
+          }
+        },
+        {
+          "id": "b7b0182d47fa",
+          "type": "decision",
+          "message": "P2 design decisions. (1) Shape: ManifestAttempt gains optional telemetry { skills: {count, bytes}, context: {sections, bytes}, tools: 'unavailable' | {count, failures, inputBytes, outputBytes}, model: 'unavailable' | {inputTokens, outputTokens} }. Leaves are non-negative safe integers or the literal 'unavailable' — no free strings, ever. (2) Single collection point at complete: the finish transition gains telemetry; start is untouched; no partial-shape states for the parser. (3) Derivable data is not stored: duration stays derivable from startedAt/finishedAt, command counts/failures from command traces — INIT-1.7 derives them on read. (4) Harness channel: optional --telemetry <file> on <stage> complete, strictly parsed (unknown fields refused, integers only); absent file means tools and model record 'unavailable' — never zero, never an error. (5) Collector is an injected port on WorkService (7th optional constructor param, after workspace); the default collector in src/application/telemetry.ts computes context sections/bytes from the runtime input.json and skill count/bytes via resolveComposition plus SKILL.md byte sizes. Collection is wrapped best-effort: a throwing collector drops the field and the transition, result, and Ship proceed unchanged. (6) Privacy net is structural: a strict parseAttemptTelemetry with a keys() gate, plus a test that walks every telemetry leaf and fails on any string other than 'unavailable', so adding a content-carrying field breaks the suite. (7) schemaVersion stays 1; serializer emits telemetry only when present; a manifest without the field parses.",
+          "at": "2026-08-04T03:12:33.016Z",
+          "data": {
+            "storedShape": {
+              "skills": "{ count: number; bytes: number } — resolved composition size and total SKILL.md bytes",
+              "context": "{ sections: number; bytes: number } — handoff top-level sections and input.json bytes",
+              "tools": "'unavailable' | { count; failures; inputBytes; outputBytes } — harness-reported",
+              "model": "'unavailable' | { inputTokens; outputTokens } — harness-reported"
+            },
+            "notStored": [
+              "duration",
+              "command counts/failures",
+              "any prompt/response/reasoning/output text",
+              "environment values",
+              "credentials"
+            ],
+            "harnessChannel": "<stage> complete --telemetry <file>, strict parse, optional",
+            "failureIsolation": "collector throw => telemetry omitted, lifecycle unaffected",
+            "schemaVersion": 1
+          }
         }
       ]
     }
