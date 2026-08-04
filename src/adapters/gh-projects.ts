@@ -1,6 +1,6 @@
 import type { GitHubIssue, GitHubProject, GitHubProjects, GitHubRepository } from "../application/ports.js";
 import { CodepatrolError } from "../core/errors.js";
-import { PROJECT_OUTCOMES, PROJECT_STATUSES, type ProjectOutcome, type ProjectStatus } from "../core/types.js";
+import { NEXT_STEPS, PROJECT_OUTCOMES, PROJECT_STATUSES, type NextStep, type ProjectOutcome, type ProjectStatus } from "../core/types.js";
 import { executeGh, parseGhJson } from "./gh-command.js";
 
 interface RawProject {
@@ -33,6 +33,7 @@ interface ParsedProject {
 
 const STATUS_FIELD = "Status";
 const OUTCOME_FIELD = "Outcome";
+const NEXT_FIELD = "Next";
 
 const STATUS_COLORS: Readonly<Record<ProjectStatus, string>> = {
   Backlog: "GRAY",
@@ -50,6 +51,15 @@ const OUTCOME_COLORS: Readonly<Record<ProjectOutcome, string>> = {
   "Rolled back": "RED",
   Superseded: "YELLOW",
   Cancelled: "GRAY",
+};
+
+const NEXT_COLORS: Readonly<Record<NextStep, string>> = {
+  plan: "BLUE",
+  review: "YELLOW",
+  build: "ORANGE",
+  verify: "PURPLE",
+  ship: "GREEN",
+  done: "GRAY",
 };
 
 function updateOptionsMutation(entries: ReadonlyArray<readonly [string, string]>): string {
@@ -167,6 +177,7 @@ export class GhGitHubProjects implements GitHubProjects {
 
     const status = await this.ensureField(project, owner, STATUS_FIELD, PROJECT_STATUSES, STATUS_COLORS);
     const outcome = await this.ensureField(project, owner, OUTCOME_FIELD, PROJECT_OUTCOMES, OUTCOME_COLORS);
+    const next = await this.ensureField(project, owner, NEXT_FIELD, NEXT_STEPS, NEXT_COLORS);
     return {
       id: project.id,
       number: project.number,
@@ -176,13 +187,17 @@ export class GhGitHubProjects implements GitHubProjects {
       statusOptions: status.options as Readonly<Record<ProjectStatus, string>>,
       outcomeFieldId: outcome.fieldId,
       outcomeOptions: outcome.options as Readonly<Record<ProjectOutcome, string>>,
+      nextFieldId: next.fieldId,
+      nextOptions: next.options as Readonly<Record<NextStep, string>>,
     };
   }
 
-  async reconcile(project: GitHubProject, issue: GitHubIssue, status: ProjectStatus, outcome: ProjectOutcome): Promise<void> {
+  async reconcile(project: GitHubProject, issue: GitHubIssue, status: ProjectStatus, outcome: ProjectOutcome, next: NextStep): Promise<void> {
+    const owner = project.owner;
+    const number = project.number;
     let items = this.itemCache.get(project.id);
     if (items === undefined) {
-      const listed = parseItems(parseGhJson(await this.run(["project", "item-list", String(project.number), "--owner", project.owner, "--limit", "10000", "--format", "json"]), "gh project item-list"));
+      const listed = parseItems(parseGhJson(await this.run(["project", "item-list", String(number), "--owner", owner, "--limit", "10000", "--format", "json"]), "gh project item-list"));
       items = new Map<string, string>();
       for (const item of listed) {
         if (typeof item.id === "string" && typeof item.content?.url === "string") items.set(item.content.url, item.id);
@@ -191,12 +206,25 @@ export class GhGitHubProjects implements GitHubProjects {
     }
     let itemId = items.get(issue.url);
     if (itemId === undefined) {
-      const added = object(parseGhJson(await this.run(["project", "item-add", String(project.number), "--owner", project.owner, "--url", issue.url, "--format", "json"]), "gh project item-add"), "gh project item-add");
+      const added = object(parseGhJson(await this.run(["project", "item-add", String(number), "--owner", owner, "--url", issue.url, "--format", "json"]), "gh project item-add"), "gh project item-add");
       if (typeof added.id !== "string" || added.id === "") throw new CodepatrolError("GH_ERROR", "GitHub returned an invalid Project item.");
       itemId = added.id;
       items.set(issue.url, itemId);
     }
-    await this.run(["project", "item-edit", "--id", itemId, "--project-id", project.id, "--field-id", project.statusFieldId, "--single-select-option-id", project.statusOptions[status]]);
-    await this.run(["project", "item-edit", "--id", itemId, "--project-id", project.id, "--field-id", project.outcomeFieldId, "--single-select-option-id", project.outcomeOptions[outcome]]);
+
+    const raw = parseGhJson(await this.run(["project", "item-view", String(number), "--owner", owner, "--id", itemId, "--format", "json"]), "gh project item-view");
+    const itemView = object(raw, "gh project item-view");
+
+    for (const [fieldId, options, desired] of [
+      [project.statusFieldId, project.statusOptions, status] as const,
+      [project.outcomeFieldId, project.outcomeOptions, outcome] as const,
+      [project.nextFieldId, project.nextOptions, next] as const,
+    ]) {
+      const currentValue = ((itemView as Record<string, unknown>)[fieldId] as string | null | undefined) ?? "";
+      const desiredOptionId = (options as Readonly<Record<string, string>>)[desired as string]!;
+      if (currentValue !== desiredOptionId) {
+        await this.run(["project", "item-edit", "--id", itemId, "--project-id", project.id, "--field-id", fieldId, "--single-select-option-id", desiredOptionId]);
+      }
+    }
   }
 }

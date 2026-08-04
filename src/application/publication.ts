@@ -1,7 +1,7 @@
 import type { GitManifestStore } from "../adapters/manifest-store.js";
 import type { GitHubIssue, GitHubProject, GitHubIssues, GitHubLabels, GitHubMilestones, GitHubProjects, GitHubRepository, GitRemote, GitSyncResult } from "./ports.js";
 import { CodepatrolError } from "../core/errors.js";
-import { PROJECT_OUTCOME_BY_WORK_OUTCOME, PROJECT_STATUS_BY_STAGE, type ProjectOutcome, type ProjectStatus } from "../core/types.js";
+import { PROJECT_OUTCOME_BY_WORK_OUTCOME, PROJECT_STATUS_BY_STAGE, nextStepOf, type NextStep, type ProjectOutcome, type ProjectStatus } from "../core/types.js";
 import type { WorkManifest } from "../core/work-manifest.js";
 import { defaultIssueClassification, resolveWorkTypeLabel, type GitHubIssueClassificationConfig } from "../core/work-type-labels.js";
 import { manifestComments, reconcileIssueComments, type CommentSyncSummary, type DesiredIssueComment } from "./issue-comments.js";
@@ -24,7 +24,7 @@ export interface PublicationResult {
   issues: IssueSummary;
   comments: CommentSyncSummary;
   milestones: Array<{ initiative: string; number: number }>;
-  project: { number: number; title: string; statuses: Array<{ workId: string; status: ProjectStatus; outcome: ProjectOutcome }> };
+  project: { number: number; title: string; statuses: Array<{ workId: string; status: ProjectStatus; outcome: ProjectOutcome; next: NextStep }> };
   warnings: ProjectionWarning[];
 }
 
@@ -33,6 +33,7 @@ interface PublicationSnapshot {
   terminal: boolean;
   projectStatus: ProjectStatus;
   projectOutcome: ProjectOutcome;
+  next: NextStep;
 }
 
 /** What a disabled ref projection reports: the remote exists, nothing was pushed to it. */
@@ -54,7 +55,8 @@ function snapshotOf(manifest: WorkManifest): PublicationSnapshot {
       : PROJECT_STATUS_BY_STAGE[latest.stage];
   const projectOutcome = completion === null ? "None"
     : PROJECT_OUTCOME_BY_WORK_OUTCOME[completion.outcome];
-  return { comments: manifestComments(manifest), terminal: completion !== null, projectStatus, projectOutcome };
+  const next = nextStepOf(manifest);
+  return { comments: manifestComments(manifest), terminal: completion !== null, projectStatus, projectOutcome, next };
 }
 
 /**
@@ -234,7 +236,7 @@ export class PublicationService {
       comments.unchanged.push(...result.unchanged);
     }
 
-    const projectStatuses: Array<{ workId: string; status: ProjectStatus; outcome: ProjectOutcome }> = [];
+    const projectStatuses: Array<{ workId: string; status: ProjectStatus; outcome: ProjectOutcome; next: NextStep }> = [];
     let project: GitHubProject | undefined;
     // The board is an Issue view: with Issues disabled there is nothing to place
     // on it, so the Project projection has no independent existence.
@@ -242,8 +244,8 @@ export class PublicationService {
       const issue = require(issueByWork.get(entry.work.id), entry.work.id, "synchronized issue");
       const snapshot = require(publication.get(entry.work.id), entry.work.id, "Project publication state");
       project ??= await this.projects.ensure(resolved);
-      await this.projects.reconcile(project, issue, snapshot.projectStatus, snapshot.projectOutcome);
-      projectStatuses.push({ workId: entry.work.id, status: snapshot.projectStatus, outcome: snapshot.projectOutcome });
+      await this.projects.reconcile(project, issue, snapshot.projectStatus, snapshot.projectOutcome, snapshot.next);
+      projectStatuses.push({ workId: entry.work.id, status: snapshot.projectStatus, outcome: snapshot.projectOutcome, next: snapshot.next });
     }
 
     // One Milestone per Initiative that has published Works with Issues. The

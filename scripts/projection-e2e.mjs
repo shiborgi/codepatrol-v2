@@ -177,6 +177,7 @@ try {
   let item = projectItem(projectNumber, issueNumber);
   check(item !== undefined, "the Issue was added to the Project");
   check(item?.status === "Plan", `Project Status follows the stage (saw ${item?.status})`);
+  check(item?.next === "review", `Project Next shows the decided next step (saw ${item?.next}, expected review)`);
 
   // Build carries the product change the Change is meant to deliver.
   const built = codepatrol("build", "start", workId, "--harness", "e2e", "--model", "e2e", "--todo", TODO);
@@ -209,6 +210,7 @@ try {
 
   item = projectItem(projectNumber, issueNumber);
   check(item?.status === "Done", `a terminal Work reaches Project Status Done (saw ${item?.status})`);
+  check(item?.next === "done", `a terminal Work shows next as done (saw ${item?.next})`);
   const expectedOutcome = outcome === "accept" ? "Accepted" : "Rolled back";
   check(item?.outcome === expectedOutcome, `Project Outcome is ${expectedOutcome} (saw ${item?.outcome})`);
 
@@ -239,6 +241,7 @@ try {
   check(milestonesAfter.length === 1, "a repeated sync creates no duplicate Milestone");
   const repeated = projectItem(projectNumber, issueNumber);
   check(repeated?.status === "Done" && repeated?.outcome === expectedOutcome, "a repeated sync leaves the Project fields unchanged");
+  check(repeated?.next === "done", "a repeated sync leaves the Next field unchanged");
 
   process.stdout.write(`\n${failures === 0 ? `${outcome} scenario passed` : `${outcome} scenario FAILED with ${failures} problem(s)`}\n`);
   process.exitCode = failures === 0 ? 0 : 1;

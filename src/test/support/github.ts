@@ -16,7 +16,7 @@ import type {
   GitSyncResult,
 } from "../../application/ports.js";
 import { CodepatrolError } from "../../core/errors.js";
-import type { ProjectOutcome, ProjectStatus } from "../../core/types.js";
+import type { NextStep, ProjectOutcome, ProjectStatus } from "../../core/types.js";
 import { DEFAULT_WORK_TYPE_LABELS } from "../../core/work-type-labels.js";
 import { setInitiativeSection } from "../../application/publication/markers.js";
 
@@ -34,6 +34,7 @@ export class FakeGitHub implements GitHubIssues, GitHubProjects {
   private nextMilestone = 1000;
   readonly statuses = new Map<string, ProjectStatus>();
   readonly outcomes = new Map<string, ProjectOutcome>();
+  readonly nexts = new Map<string, NextStep>();
   readonly calls: Array<{ op: string; args: unknown }> = [];
   readonly project: GitHubProject = {
     id: "project-1",
@@ -44,6 +45,8 @@ export class FakeGitHub implements GitHubIssues, GitHubProjects {
     statusOptions: { Backlog: "backlog", Plan: "plan", Review: "review", Build: "build", Verify: "verify", Ship: "ship", Done: "done" },
     outcomeFieldId: "outcome-field",
     outcomeOptions: { None: "none", Accepted: "accepted", "Rolled back": "rolled-back", Superseded: "superseded", Cancelled: "cancelled" },
+    nextFieldId: "next-field",
+    nextOptions: { plan: "next-plan", review: "next-review", build: "next-build", verify: "next-verify", ship: "next-ship", done: "next-done" },
   };
 
   viewerLogin = "codepatrol";
@@ -243,10 +246,14 @@ export class FakeGitHub implements GitHubIssues, GitHubProjects {
     return this.project;
   }
 
-  async reconcile(_project: GitHubProject, issue: GitHubIssue, status: ProjectStatus, outcome: ProjectOutcome): Promise<void> {
-    this.record("reconcile", { issue: issue.number, status, outcome });
-    this.statuses.set(issue.url, status);
-    this.outcomes.set(issue.url, outcome);
+  async reconcile(_project: GitHubProject, issue: GitHubIssue, status: ProjectStatus, outcome: ProjectOutcome, next: NextStep): Promise<void> {
+    this.record("reconcile", { issue: issue.number, status, outcome, next });
+    const currentStatus = this.statuses.get(issue.url);
+    const currentOutcome = this.outcomes.get(issue.url);
+    const currentNext = this.nexts.get(issue.url);
+    if (currentStatus !== status) this.statuses.set(issue.url, status);
+    if (currentOutcome !== outcome) this.outcomes.set(issue.url, outcome);
+    if (currentNext !== next) this.nexts.set(issue.url, next);
   }
 }
 

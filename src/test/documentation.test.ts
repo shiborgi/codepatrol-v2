@@ -133,6 +133,9 @@ test("the projection E2E asserts remote state rather than only that the base mov
     "Project Status Done",
     "Project Outcome is",
     "leaves the Project fields unchanged",
+    "Project Next shows the decided next step",
+    "a terminal Work shows next as done",
+    "leaves the Next field unchanged",
   ]) {
     assert.ok(scenario.includes(assertion), `the projection E2E does not check: ${assertion}`);
   }
