@@ -1,5 +1,6 @@
 import process from "node:process";
 import path from "node:path";
+import { fileURLToPath } from "node:url";
 import { ChangeIntegration } from "../adapters/integration.js";
 import { GitManifestStore } from "../adapters/manifest-store.js";
 import { LocalGitPort } from "../adapters/git-port.js";
@@ -12,12 +13,14 @@ import { readPublicationSettings } from "../application/projections.js";
 import { PublicationService } from "../application/publication.js";
 import { SpecService } from "../application/spec-service.js";
 import { InitiativeService } from "../application/initiative-service.js";
-import { WorkService } from "../application/work-service.js";
+import { WorkService, type WorkServiceTelemetry } from "../application/work-service.js";
 import { InitService } from "../application/init-service.js";
 import { DoctorService } from "../application/doctor-service.js";
+import { makeDefaultCollector } from "../application/telemetry.js";
 import { CodepatrolError } from "../core/errors.js";
 import { COMMANDS, helpText } from "./registry.js";
 import { VERSION } from "./version.js";
+import { listShippedSkills, HOST_CAPABILITIES } from "./commands/skill.js";
 
 function extractWorkspace(args: string[]): { workspace: string; args: string[] } {
   const remaining = [...args];
@@ -46,7 +49,14 @@ export async function main(argv = process.argv.slice(2)): Promise<void> {
   const worktrees = new Worktrees(extracted.workspace);
   const store = new GitManifestStore(extracted.workspace, worktreeStoreHooks(worktrees));
   const git = new LocalGitPort(extracted.workspace);
-  const works = new WorkService(store, worktrees, new ChangeIntegration(extracted.workspace, worktrees), git);
+  const shippedSkillsDirectory = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../../../skills");
+  const skillManifests = await listShippedSkills(shippedSkillsDirectory);
+  const telemetry: WorkServiceTelemetry = {
+    collector: makeDefaultCollector(shippedSkillsDirectory, skillManifests),
+    skillManifests,
+    hostCapabilities: [...HOST_CAPABILITIES],
+  };
+  const works = new WorkService(store, worktrees, new ChangeIntegration(extracted.workspace, worktrees), git, undefined, extracted.workspace, telemetry);
   const initiatives = new InitiativeService(store);
   const spec = new SpecService(store, worktrees);
   // Publication reads the repository's decision, not just its remote: a

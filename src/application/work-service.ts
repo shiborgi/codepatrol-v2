@@ -7,12 +7,15 @@ import type { Worktrees } from "../adapters/worktree.js";
 import { changeOf, type ChangeView } from "../core/change.js";
 import { CodepatrolError } from "../core/errors.js";
 import { applyTransition, nextAttemptAt } from "../core/lifecycle.js";
+import type { SkillManifest } from "../core/skill.js";
+import type { AttemptTelemetry, TelemetryReport } from "../core/telemetry.js";
 import type { GitPort } from "./ports.js";
 import { STAGE_ROLES, nextStepOf, type NextStep, type RepositoryInspection, type Stage, type TodoItem, type WorkIdentity, type WorkOutcome, type WorkStatus } from "../core/types.js";
 import { assertBuildUnblocked, buildGraph, releasesDependents, type WorkGraph } from "../core/work-graph.js";
 import { archiveRef, manifestPath, manifestRef, serializeManifest, workBranchRef, type ManifestArtifact, type ManifestResult, type ManifestTrace, type VerificationSnapshot, type WorkManifest } from "../core/work-manifest.js";
 import { executorReservedOffenders } from "../core/paths.js";
 import { VERIFY_POLICY_PATH } from "../core/verify-policy.js";
+import { type TelemetryCollector, type TelemetryContext } from "./telemetry.js";
 import { VerificationGate } from "./verification-gate.js";
 
 export interface Clock {
@@ -149,6 +152,15 @@ function viewOf(revision: ManifestRevision, unresolvedBlockers: string[] = []): 
   return { ...partial, nextStep, nextCommand: nextCommand(partial, nextStep) };
 }
 
+export interface WorkServiceTelemetry {
+  /** Optional collector; absent means no telemetry is recorded. */
+  collector?: TelemetryCollector;
+  /** Manifests used to resolve the stage composition. */
+  skillManifests: readonly SkillManifest[];
+  /** Host capabilities passed to the resolver. */
+  hostCapabilities: readonly string[];
+}
+
 export class WorkService {
   private readonly verification: VerificationGate;
 
@@ -159,6 +171,7 @@ export class WorkService {
     private readonly git: GitPort,
     private readonly clock: Clock = systemClock,
     private readonly workspace: string = store.workspace,
+    private readonly telemetry?: WorkServiceTelemetry,
   ) {
     this.verification = new VerificationGate(git, worktrees, clock, (entry) => this.trace("verify", entry.data?.workId as string, entry.data?.runId as string, entry), workspace);
   }
@@ -412,6 +425,29 @@ export class WorkService {
   }
 
   /**
+   * Collects attempt telemetry, best-effort. A missing collector, a missing
+   * input handoff, or a throwing collector all drop the field — never the
+   * transition, the result, or Ship. The handoff is read from the runtime root
+   * before `runtimeRoot` is removed by `completeLocked`.
+   */
+  private async collectTelemetry(stage: Stage, workId: string, report: TelemetryReport | undefined): Promise<AttemptTelemetry | undefined> {
+    if (this.telemetry?.collector === undefined) return undefined;
+    const context: TelemetryContext = {
+      stage,
+      workId,
+      handoffPath: path.join(this.runtimeRoot(workId), "input.json"),
+      skillManifests: this.telemetry.skillManifests,
+      hostCapabilities: this.telemetry.hostCapabilities,
+      ...(report === undefined ? {} : { report }),
+    };
+    try {
+      return await this.telemetry.collector.collect(context);
+    } catch {
+      return undefined;
+    }
+  }
+
+  /**
    * Resolves a declared artifact to the blob committed on the Change branch.
    * Artifacts live in the Change, so they reach the base through the squash and
    * are content-addressed by git rather than snapshotted. Path shape is
@@ -477,16 +513,16 @@ export class WorkService {
     return (await this.git.changedPaths(candidate, head)).filter((file) => file !== manifestPath(workId));
   }
 
-  async complete(stage: Stage, workId: string, runId: string, input: ResultInput): Promise<WorkView & { integration?: IntegrationResult }> {
+  async complete(stage: Stage, workId: string, runId: string, input: ResultInput, options: { telemetry?: TelemetryReport } = {}): Promise<WorkView & { integration?: IntegrationResult }> {
     workId = await this.store.resolve(workId);
     return this.git.withLock(`work/${workId}`, () =>
       (["build", "verify", "ship"] as Stage[]).includes(stage)
-        ? this.git.withLock("repository", () => this.completeLocked(stage, workId, runId, input))
-        : this.completeLocked(stage, workId, runId, input),
+        ? this.git.withLock("repository", () => this.completeLocked(stage, workId, runId, input, options))
+        : this.completeLocked(stage, workId, runId, input, options),
     );
   }
 
-  private async completeLocked(stage: Stage, workId: string, runId: string, input: ResultInput): Promise<WorkView & { integration?: IntegrationResult }> {
+  private async completeLocked(stage: Stage, workId: string, runId: string, input: ResultInput, options: { telemetry?: TelemetryReport } = {}): Promise<WorkView & { integration?: IntegrationResult }> {
     const observed = await this.store.read(workId);
     const prior = observed.manifest.attempts.find((attempt) => attempt.runId === runId && attempt.stage === stage && attempt.result !== undefined);
     if (prior?.result !== undefined) {
@@ -524,6 +560,7 @@ export class WorkService {
     }
     const at = this.clock.now().toISOString();
     const traces = await this.bufferedTraces(workId);
+    const telemetry = await this.collectTelemetry(stage, workId, options.telemetry);
     const revision = await this.store.update(
       workId,
       async (current) => {
@@ -578,6 +615,7 @@ export class WorkService {
           result,
           traces,
           ...(verifiedCandidate === undefined ? {} : { verifiedCandidate }),
+          ...(telemetry === undefined ? {} : { telemetry }),
           at,
         });
       },

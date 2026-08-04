@@ -19,7 +19,7 @@ const shippedSkillsDirectory = path.resolve(fileURLToPath(import.meta.url), "../
  * real change: it requires the host to actually support it, not just declare
  * it.
  */
-const HOST_CAPABILITIES = ["cli"] as const;
+export const HOST_CAPABILITIES = ["cli"] as const;
 
 /**
  * Reads the skills this codepatrol installation ships: each skills/<id>/

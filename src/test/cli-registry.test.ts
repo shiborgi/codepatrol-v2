@@ -215,3 +215,73 @@ test("public JSON examples pass the real CLI decoders", async () => {
     await rm(controls, { recursive: true, force: true });
   }
 });
+
+test("complete accepts an optional --telemetry flag and forwards the parsed report", async (t) => {
+  const workspace = await mkdtemp(path.join(os.tmpdir(), "codepatrol-cli-"));
+  t.after(() => rm(workspace, { recursive: true, force: true }));
+  t.after(() => rm(`${workspace}.json`, { force: true }));
+  t.after(() => rm(`${workspace}-telemetry.json`, { force: true }));
+
+  let forwarded: Record<string, unknown> | undefined;
+  const fake = context(workspace, {
+    complete: async (_stage: string, _workId: string, _runId: string, _result: unknown, options: Record<string, unknown>) => {
+      forwarded = options;
+      return { workId: "work-1" };
+    },
+  });
+  const resultFile = await jsonFile(workspace, { decision: "continue", summary: "done", handoff: "next", todo: [{ id: "T1", status: "completed" }], artifacts: [] });
+  const telemetryFile = `${workspace}-telemetry.json`;
+  await writeFile(telemetryFile, JSON.stringify({ tools: { count: 3, failures: 0, inputBytes: 100, outputBytes: 50 }, model: { inputTokens: 200, outputTokens: 100 } }), "utf8");
+
+  await command("plan").run(fake, ["complete", "work-1", "--run", "run-1", "--result", resultFile, "--telemetry", telemetryFile]);
+  assert.deepEqual(forwarded, { telemetry: { tools: { count: 3, failures: 0, inputBytes: 100, outputBytes: 50 }, model: { inputTokens: 200, outputTokens: 100 } } });
+});
+
+test("--telemetry is refused on start, resume, and trace", async (t) => {
+  const workspace = await mkdtemp(path.join(os.tmpdir(), "codepatrol-cli-"));
+  t.after(() => rm(workspace, { recursive: true, force: true }));
+  t.after(() => rm(`${workspace}.json`, { force: true }));
+  const fake = context(workspace, {
+    start: async () => ({ workId: "work-1" }),
+    resume: async () => ({ workId: "work-1" }),
+    trace: async () => ({ type: "command" }),
+  });
+
+  // Unknown flag on start: parseArgs rejects it as INVALID_ARGUMENT.
+  const invalidArgument = (error: unknown) => error instanceof CodepatrolError && error.code === "INVALID_ARGUMENT";
+
+  await assert.rejects(
+    command("plan").run(fake, ["start", "work-1", "--harness", "h", "--model", "m", "--todo", await jsonFile(workspace, [{ id: "T1", title: "x" }]), "--telemetry", "file.json"]),
+    invalidArgument,
+  );
+
+  // Unknown flag on resume.
+  await assert.rejects(
+    command("plan").run(fake, ["resume", "work-1", "--telemetry", "file.json"]),
+    invalidArgument,
+  );
+});
+
+test("a malformed --telemetry file is refused", async (t) => {
+  const workspace = await mkdtemp(path.join(os.tmpdir(), "codepatrol-cli-"));
+  t.after(() => rm(workspace, { recursive: true, force: true }));
+  t.after(() => rm(`${workspace}.json`, { force: true }));
+  const fake = context(workspace, {
+    complete: async () => ({ workId: "work-1" }),
+  });
+  const resultFile = await jsonFile(workspace, { decision: "continue", summary: "done", handoff: "next", todo: [{ id: "T1", status: "completed" }], artifacts: [] });
+
+  for (const badTelemetry of [
+    { prompt: "hello" },
+    { tools: { count: 1, failures: 0, inputBytes: 1, outputBytes: "big" } },
+    "not an object",
+  ]) {
+    const telemetryFile = `${workspace}-telemetry.json`;
+    await writeFile(telemetryFile, JSON.stringify(badTelemetry), "utf8");
+    await assert.rejects(
+      command("plan").run(fake, ["complete", "work-1", "--run", "run-1", "--result", resultFile, "--telemetry", telemetryFile]),
+      invalidInput,
+    );
+    await rm(telemetryFile, { force: true });
+  }
+});

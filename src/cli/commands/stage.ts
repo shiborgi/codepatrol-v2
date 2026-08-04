@@ -1,6 +1,6 @@
 import { exactPositionals, parseArgs, readJsonFile, requiredFlag } from "../args.js";
 import { published, publish, type CommandSpec } from "../command.js";
-import { parseResult, parseTodo, parseTrace } from "../inputs.js";
+import { parseResult, parseTelemetryInput, parseTodo, parseTrace } from "../inputs.js";
 import { CodepatrolError } from "../../core/errors.js";
 import { STAGE_ROLES, type Stage } from "../../core/types.js";
 
@@ -16,13 +16,13 @@ export function stageCommand(stage: Stage): CommandSpec {
       `${stage} start <work-id> --harness <id> --model <id> --todo <todo.json> [--worktree]`,
       `${stage} resume <work-id>`,
       `${stage} trace <work-id> --run <run-id> --input <trace.json>`,
-      `${stage} complete <work-id> --run <run-id> --result <result.json>`,
+      `${stage} complete <work-id> --run <run-id> --result <result.json> [--telemetry <telemetry.json>]`,
     ],
     async run(context, rawArgs) {
       const action = rawArgs[0];
       const allowedFlags = action === "start" ? ["harness", "model", "todo", "worktree"]
         : action === "trace" ? ["run", "input"]
-          : action === "complete" ? ["run", "result"]
+          : action === "complete" ? ["run", "result", "telemetry"]
             : [];
       const args = parseArgs(rawArgs.slice(1), allowedFlags);
       exactPositionals(args, 1, `${stage} ${action ?? "<action>"} <work-id>`);
@@ -41,7 +41,9 @@ export function stageCommand(stage: Stage): CommandSpec {
       }
       if (action === "complete") {
         const result = parseResult(await readJsonFile(context.workspace, requiredFlag(args, "result")), stage);
-        const completed = await context.works.complete(stage, workId, requiredFlag(args, "run"), result);
+        const telemetryFlag = args.flags.get("telemetry");
+        const telemetryOptions = telemetryFlag === undefined ? {} : { telemetry: parseTelemetryInput(await readJsonFile(context.workspace, telemetryFlag)) };
+        const completed = await context.works.complete(stage, workId, requiredFlag(args, "run"), result, telemetryOptions);
         return published(completed, await publish(context, workId));
       }
       throw new CodepatrolError("INVALID_ARGUMENT", `${stage} action must be start, resume, trace, or complete.`, 2);

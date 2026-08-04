@@ -1,5 +1,6 @@
 import type { ResultInput } from "../application/work-service.js";
 import { CodepatrolError } from "../core/errors.js";
+import type { TelemetryReport } from "../core/telemetry.js";
 import { RETURN_TARGETS, STAGES, type Stage, type TodoItem } from "../core/types.js";
 import type { TraceInput } from "../application/work-service.js";
 import type { ManifestTrace } from "../core/work-manifest.js";
@@ -127,6 +128,53 @@ export function parseResult(raw: unknown, stage: Stage): ResultInput {
 }
 
 const TRACE_TYPES = ["observation", "decision", "action", "error", "metric", "command"];
+
+/**
+ * Strict parse of a harness-submitted `--telemetry` file. Mirrors
+ * `parseTelemetryReport` but reports malformed input as INVALID_INPUT — the
+ * caller typed something wrong, not the manifest.
+ */
+export function parseTelemetryInput(raw: unknown): TelemetryReport {
+  if (raw === null || typeof raw !== "object" || Array.isArray(raw)) {
+    throw new CodepatrolError("INVALID_INPUT", "Telemetry report must be an object.");
+  }
+  const record = raw as Record<string, unknown>;
+  const allowed = ["tools", "model"];
+  const unknown = Object.keys(record).find((key) => !allowed.includes(key));
+  if (unknown !== undefined) throw new CodepatrolError("INVALID_INPUT", `Telemetry report has an unknown field: ${unknown}.`);
+  const report: TelemetryReport = {};
+  if (record["tools"] !== undefined) {
+    if (record["tools"] === null || typeof record["tools"] !== "object" || Array.isArray(record["tools"])) {
+      throw new CodepatrolError("INVALID_INPUT", "Telemetry report tools must be an object.");
+    }
+    const tools = record["tools"] as Record<string, unknown>;
+    const toolsAllowed = ["count", "failures", "inputBytes", "outputBytes"];
+    const toolsUnknown = Object.keys(tools).find((key) => !toolsAllowed.includes(key));
+    if (toolsUnknown !== undefined) throw new CodepatrolError("INVALID_INPUT", `Telemetry report tools has an unknown field: ${toolsUnknown}.`);
+    for (const field of toolsAllowed) {
+      if (typeof tools[field] !== "number" || !Number.isSafeInteger(tools[field] as number) || (tools[field] as number) < 0) {
+        throw new CodepatrolError("INVALID_INPUT", `Telemetry report tools.${field} must be a non-negative safe integer.`);
+      }
+    }
+    report.tools = { count: tools["count"] as number, failures: tools["failures"] as number, inputBytes: tools["inputBytes"] as number, outputBytes: tools["outputBytes"] as number };
+  }
+  if (record["model"] !== undefined) {
+    if (record["model"] === null || typeof record["model"] !== "object" || Array.isArray(record["model"])) {
+      throw new CodepatrolError("INVALID_INPUT", "Telemetry report model must be an object.");
+    }
+    const model = record["model"] as Record<string, unknown>;
+    const modelAllowed = ["inputTokens", "outputTokens"];
+    const modelUnknown = Object.keys(model).find((key) => !modelAllowed.includes(key));
+    if (modelUnknown !== undefined) throw new CodepatrolError("INVALID_INPUT", `Telemetry report model has an unknown field: ${modelUnknown}.`);
+    for (const field of modelAllowed) {
+      if (typeof model[field] !== "number" || !Number.isSafeInteger(model[field] as number) || (model[field] as number) < 0) {
+        throw new CodepatrolError("INVALID_INPUT", `Telemetry report model.${field} must be a non-negative safe integer.`);
+      }
+    }
+    report.model = { inputTokens: model["inputTokens"] as number, outputTokens: model["outputTokens"] as number };
+  }
+  return report;
+}
 
 export function parseTrace(raw: unknown): TraceInput {
   const record = object(raw, "A trace");

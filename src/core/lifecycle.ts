@@ -1,4 +1,5 @@
 import { CodepatrolError } from "./errors.js";
+import type { AttemptTelemetry } from "./telemetry.js";
 import { RETURN_TARGETS, STAGES, STAGE_ROLES, todoContractViolations, type ExecutionIdentity, type Stage, type TodoItem } from "./types.js";
 import type { ManifestAttempt, ManifestResult, ManifestTrace, VerificationSnapshot, WorkManifest } from "./work-manifest.js";
 import { finalize } from "./terminalization.js";
@@ -12,6 +13,7 @@ export type Transition =
     result: ManifestResult;
     traces?: ManifestTrace[];
     verifiedCandidate?: VerificationSnapshot;
+    telemetry?: AttemptTelemetry;
     at: string;
   };
 
@@ -104,6 +106,7 @@ export function applyTransition(manifest: WorkManifest, transition: Transition):
     result: transition.result,
     ...(transition.traces === undefined || transition.traces.length === 0 ? {} : { traces: transition.traces }),
     ...(transition.verifiedCandidate === undefined ? {} : { verifiedCandidate: transition.verifiedCandidate }),
+    ...(transition.telemetry === undefined ? {} : { telemetry: transition.telemetry }),
     status: "completed",
   };
 

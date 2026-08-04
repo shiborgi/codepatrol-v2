@@ -1,6 +1,7 @@
 import { CodepatrolError } from "./errors.js";
 import { BRANCH_REF, GIT_HASH, TRACE_ID, UUID, WORK_ID } from "./identifiers.js";
 import { INITIATIVE_ID } from "./initiative.js";
+import { parseAttemptTelemetry, type AttemptTelemetry } from "./telemetry.js";
 import { ATTEMPT_STATUSES, ISSUE_TYPES, todoContractViolations, RETURN_TARGETS, SHIP_OUTCOMES, STAGES, STAGE_ROLES, WORK_OUTCOMES, WORK_PRIORITIES, type AttemptStatus, type ExecutionIdentity, type IssueType, type ShipOutcome, type Stage, type TodoItem, type TodoResult, type WorkIdentity, type WorkInitiative, type WorkOrigin, type WorkOutcome, type WorkPriority } from "./types.js";
 
 export const MANIFEST_SCHEMA_VERSION = 1;
@@ -73,6 +74,12 @@ export interface ManifestAttempt {
   traces?: ManifestTrace[];
   verificationTarget?: VerificationSnapshot;
   verifiedCandidate?: VerificationSnapshot;
+  /**
+   * Bounded, privacy-safe telemetry. Best-effort and non-authoritative. Absent
+   * when no collector was injected or the collector failed — schemaVersion 1
+   * does not require the field.
+   */
+  telemetry?: AttemptTelemetry;
 }
 
 export interface ManifestRepository {
@@ -195,6 +202,15 @@ function renderSnapshot(snapshot: VerificationSnapshot): Record<string, unknown>
   };
 }
 
+function renderTelemetry(telemetry: AttemptTelemetry): Record<string, unknown> {
+  return {
+    skills: { count: telemetry.skills.count, bytes: telemetry.skills.bytes },
+    context: { sections: telemetry.context.sections, bytes: telemetry.context.bytes },
+    tools: telemetry.tools,
+    model: telemetry.model,
+  };
+}
+
 /**
  * Renders the manifest with a fixed field order. Relying on object spread order
  * would make `git log -p` noisy for changes that are not really changes, and
@@ -269,6 +285,7 @@ export function serializeManifest(manifest: WorkManifest): string {
       }),
       ...(attempt.verificationTarget === undefined ? {} : { verificationTarget: renderSnapshot(attempt.verificationTarget) }),
       ...(attempt.verifiedCandidate === undefined ? {} : { verifiedCandidate: renderSnapshot(attempt.verifiedCandidate) }),
+      ...(attempt.telemetry === undefined ? {} : { telemetry: renderTelemetry(attempt.telemetry) }),
     })),
     completion: manifest.completion === null ? null : {
       outcome: manifest.completion.outcome,
@@ -497,7 +514,7 @@ export function parseWorkManifest(value: unknown, expectedId?: string): WorkMani
   const attempts: ManifestAttempt[] = array(manifest.attempts, "Work manifest attempts").map((raw, index) => {
     const label = `Work manifest attempts[${index}]`;
     const attempt = object(raw, label);
-    keys(attempt, ["stage", "attempt", "runId", "status", "execution", "startedAt", "finishedAt", "todo", "result", "traces", "verificationTarget", "verifiedCandidate"], ["stage", "attempt", "runId", "status", "execution", "startedAt", "todo"], label);
+    keys(attempt, ["stage", "attempt", "runId", "status", "execution", "startedAt", "finishedAt", "todo", "result", "traces", "verificationTarget", "verifiedCandidate", "telemetry"], ["stage", "attempt", "runId", "status", "execution", "startedAt", "todo"], label);
     if (!ATTEMPT_STATUSES.includes(attempt.status as AttemptStatus)) corrupt(`${label}.status is invalid.`);
     const runId = text(attempt.runId, `${label}.runId`);
     if (!UUID.test(runId)) corrupt(`${label}.runId is invalid.`);
@@ -541,6 +558,7 @@ export function parseWorkManifest(value: unknown, expectedId?: string): WorkMani
       ...(attempt.traces === undefined ? {} : { traces: parseTraces(attempt.traces, `${label}.traces`) }),
       ...(verificationTarget === undefined ? {} : { verificationTarget }),
       ...(verifiedCandidate === undefined ? {} : { verifiedCandidate }),
+      ...(attempt.telemetry === undefined ? {} : { telemetry: parseAttemptTelemetry(attempt.telemetry, `${label}.telemetry`) }),
     };
   });
 
