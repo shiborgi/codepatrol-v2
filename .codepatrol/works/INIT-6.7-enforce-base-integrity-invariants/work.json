@@ -1,0 +1,48 @@
+{
+  "schemaVersion": 1,
+  "type": "codepatrol-work",
+  "work": {
+    "id": "INIT-6.7-enforce-base-integrity-invariants",
+    "title": "Enforce base-integrity invariants",
+    "description": "Convert the characterization scenarios from INIT-5 into target invariant tests. Required invariant: baseAfter minus baseBefore is one commit when accepted, and zero commits for every other operation or outcome.",
+    "issueType": "Task",
+    "priority": "p1",
+    "acceptance": [
+      "Work creation does not move the base",
+      "Plan, Review, Build, Verify, and Ship start or completion do not move the base",
+      "Refresh does not move the base",
+      "Worktree creation or recreation does not move the base",
+      "Accept creates one commit",
+      "Rollback, cancel, and supersede create zero commits",
+      "The full repository test suite passes on macOS and Linux"
+    ],
+    "createdAt": "2026-08-04T01:44:10.989Z",
+    "requestedBy": "spec",
+    "initiative": {
+      "id": "INIT-6",
+      "position": 7
+    },
+    "origin": {
+      "createdAt": "2026-08-04T01:44:10.989Z"
+    }
+  },
+  "repository": {
+    "baseRef": "refs/heads/main"
+  },
+  "graph": {
+    "blockedBy": [
+      "INIT-6.4-integrate-the-final-manifest-only-during-accept",
+      "INIT-6.5-keep-non-accepted-outcomes-off-the-base",
+      "INIT-6.6-preserve-legacy-projection-compatibility"
+    ]
+  },
+  "issue": null,
+  "workflow": {
+    "state": "ready",
+    "stage": "plan",
+    "attempt": 1,
+    "updatedAt": "2026-08-04T01:44:10.989Z"
+  },
+  "attempts": [],
+  "completion": null
+}
