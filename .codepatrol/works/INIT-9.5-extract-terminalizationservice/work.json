@@ -1,0 +1,47 @@
+{
+  "schemaVersion": 1,
+  "type": "codepatrol-work",
+  "work": {
+    "id": "INIT-9.5-extract-terminalizationservice",
+    "title": "Extract TerminalizationService",
+    "description": "Move accept, rollback, archive coordination, the final manifest checkpoint, integration, terminal cleanup, and recovery-ref handling into TerminalizationService; Spec-driven cancel and supersede use the same domain finalization rules where applicable.",
+    "issueType": "Task",
+    "priority": "p1",
+    "acceptance": [
+      "All terminal outcomes share the same domain finalization logic",
+      "Accept creates one base commit",
+      "Other outcomes create none",
+      "Active attempts become abandoned when terminalized externally",
+      "Archive behavior remains immutable",
+      "Cleanup failures remain retryable without reverting terminal state"
+    ],
+    "createdAt": "2026-08-04T02:00:13.641Z",
+    "requestedBy": "spec",
+    "initiative": {
+      "id": "INIT-9",
+      "position": 5
+    },
+    "origin": {
+      "createdAt": "2026-08-04T02:00:13.641Z"
+    }
+  },
+  "repository": {
+    "baseRef": "refs/heads/main"
+  },
+  "graph": {
+    "blockedBy": [
+      "INIT-9.2-extract-changeservice",
+      "INIT-9.3-extract-stagerunservice",
+      "INIT-9.4-extract-evidenceservice"
+    ]
+  },
+  "issue": null,
+  "workflow": {
+    "state": "ready",
+    "stage": "plan",
+    "attempt": 1,
+    "updatedAt": "2026-08-04T02:00:13.641Z"
+  },
+  "attempts": [],
+  "completion": null
+}
