@@ -34,7 +34,10 @@
       "INIT-6.3-remove-mutable-manifest-state-from-open-change-b"
     ]
   },
-  "issue": null,
+  "issue": {
+    "repository": "shiborgi/codepatrol",
+    "number": 49
+  },
   "workflow": {
     "state": "ready",
     "stage": "plan",
