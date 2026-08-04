@@ -33,7 +33,10 @@
       "INIT-5.4-add-architectural-dependency-tests"
     ]
   },
-  "issue": null,
+  "issue": {
+    "repository": "shiborgi/codepatrol",
+    "number": 56
+  },
   "workflow": {
     "state": "ready",
     "stage": "plan",
