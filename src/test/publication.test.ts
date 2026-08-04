@@ -387,13 +387,13 @@ test("tracks the stage on the board and closes the issue only when terminal", as
 
     await app.runStage("plan", workId);
     const planned = await app.publication.reconcile({ repository: REPOSITORY, remote: "origin", workId });
-    assert.deepEqual(planned.project.statuses, [{ workId, status: "Plan", outcome: "None" }], "the board keeps the last-attacked stage while the Work waits for the next run");
+    assert.deepEqual(planned.project.statuses, [{ workId, status: "Plan", outcome: "None", next: "review" }], "the board keeps the last-attacked stage while the Work waits for the next run");
     assert.equal(app.github.issue(issue.number).state, "open");
     assert.ok(app.github.commentsFor(issue.number).some((comment) => /Codepatrol · `plan`/.test(comment.body)));
 
     await app.runThrough(workId);
     const shipped = await app.publication.reconcile({ repository: REPOSITORY, remote: "origin", workId });
-    assert.deepEqual(shipped.project.statuses, [{ workId, status: "Done", outcome: "Accepted" }]);
+    assert.deepEqual(shipped.project.statuses, [{ workId, status: "Done", outcome: "Accepted", next: "done" }]);
     assert.equal(app.github.issue(issue.number).state, "closed");
     assert.ok(app.github.commentsFor(issue.number).some((comment) => /Codepatrol · Ship/.test(comment.body)));
   } finally {
@@ -455,7 +455,7 @@ test("leaves the local fact intact when publication fails", async () => {
     // The Work advanced regardless; sync converges later.
     assert.equal((await app.works.show(workId)).stage, "review");
     const recovered = await app.publication.reconcile({ repository: REPOSITORY, remote: "origin", workId });
-    assert.deepEqual(recovered.project.statuses, [{ workId, status: "Plan", outcome: "None" }], "the board keeps the last-attacked stage while the Work waits for the next run");
+    assert.deepEqual(recovered.project.statuses, [{ workId, status: "Plan", outcome: "None", next: "review" }], "the board keeps the last-attacked stage while the Work waits for the next run");
   } finally {
     await app.cleanup();
   }
@@ -645,7 +645,7 @@ test("the board shows the stage of a live run, not the stage the Work is ready f
 
     const started = await app.works.start("review", workId, "test-harness", "test-model", TODO);
     const result = await app.publication.reconcile({ repository: REPOSITORY, remote: "origin", workId });
-    assert.deepEqual(result.project.statuses, [{ workId, status: "Review", outcome: "None" }], "the board moves to Review as soon as the run starts");
+    assert.deepEqual(result.project.statuses, [{ workId, status: "Review", outcome: "None", next: "review" }], "the board moves to Review as soon as the run starts");
     assert.equal(lastReconcileStatus(), "Review");
 
     await app.works.complete("review", workId, started.runId, {
@@ -669,15 +669,15 @@ test("a terminal Work projects Done and a repeated sync with no new run does not
     const workId = await app.createWork({ title: "Terminal stability" });
     await app.runThrough(workId);
     await app.publication.reconcile({ repository: REPOSITORY, remote: "origin", workId });
-    const lastReconcileArgs = (): { issue: number; status: string; outcome: string } => {
+    const lastReconcileArgs = (): { issue: number; status: string; outcome: string; next: string } => {
       const calls = app.github.calls.filter((call) => call.op === "reconcile");
-      return calls.at(-1)?.args as { issue: number; status: string; outcome: string };
+      return calls.at(-1)?.args as { issue: number; status: string; outcome: string; next: string };
     };
-    assert.deepEqual(lastReconcileArgs(), { issue: 1, status: "Done", outcome: "Accepted" }, "the terminal status is Done");
+    assert.deepEqual(lastReconcileArgs(), { issue: 1, status: "Done", outcome: "Accepted", next: "done" }, "the terminal status is Done");
 
     const result = await app.publication.reconcile({ repository: REPOSITORY, remote: "origin", workId });
-    assert.deepEqual(result.project.statuses, [{ workId, status: "Done", outcome: "Accepted" }], "the derived status is unchanged");
-    assert.deepEqual(lastReconcileArgs(), { issue: 1, status: "Done", outcome: "Accepted" }, "the second sync writes the same status back, so the board value does not move");
+    assert.deepEqual(result.project.statuses, [{ workId, status: "Done", outcome: "Accepted", next: "done" }], "the derived status is unchanged");
+    assert.deepEqual(lastReconcileArgs(), { issue: 1, status: "Done", outcome: "Accepted", next: "done" }, "the second sync writes the same status back, so the board value does not move");
   } finally {
     await app.cleanup();
   }

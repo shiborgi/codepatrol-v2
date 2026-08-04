@@ -8,7 +8,7 @@ import { changeOf, type ChangeView } from "../core/change.js";
 import { CodepatrolError } from "../core/errors.js";
 import { applyTransition, nextAttemptAt } from "../core/lifecycle.js";
 import type { GitPort } from "./ports.js";
-import { STAGE_ROLES, type RepositoryInspection, type Stage, type TodoItem, type WorkIdentity, type WorkOutcome, type WorkStatus } from "../core/types.js";
+import { STAGE_ROLES, nextStepOf, type NextStep, type RepositoryInspection, type Stage, type TodoItem, type WorkIdentity, type WorkOutcome, type WorkStatus } from "../core/types.js";
 import { assertBuildUnblocked, buildGraph, releasesDependents, type WorkGraph } from "../core/work-graph.js";
 import { archiveRef, manifestPath, manifestRef, serializeManifest, workBranchRef, type ManifestArtifact, type ManifestResult, type ManifestTrace, type VerificationSnapshot, type WorkManifest } from "../core/work-manifest.js";
 import { executorReservedOffenders } from "../core/paths.js";
@@ -41,6 +41,7 @@ export interface WorkView {
   attempts: WorkManifest["attempts"];
   source: ManifestRevision["source"];
   nextCommand: string | null;
+  nextStep: NextStep;
 }
 
 export interface StartResult {
@@ -96,13 +97,14 @@ export interface ResultInput {
   authority?: string;
 }
 
-function nextCommand(view: Omit<WorkView, "nextCommand">): string | null {
-  if (view.state === "terminal") return null;
-  if (view.stage === "build" && view.graph.unresolvedBlockers.length > 0) {
+function nextCommand(view: Omit<WorkView, "nextCommand" | "nextStep">, next: NextStep): string | null {
+  if (next === "done") return null;
+  if (next === "build" && view.graph.unresolvedBlockers.length > 0) {
     return `codepatrol work show ${view.graph.unresolvedBlockers[0] as string}`;
   }
-  if (view.state === "ready") return `codepatrol ${view.stage} start ${view.identity.id} --harness <harness> --model <model> --todo <todo.json>`;
-  return `codepatrol ${view.stage} complete ${view.identity.id} --run ${view.activeRunId ?? "<run-id>"} --result <result.json>`;
+  if (view.state === "ready") return `codepatrol ${next} start ${view.identity.id} --harness <harness> --model <model> --todo <todo.json>`;
+  if (view.state === "active") return `codepatrol ${next} complete ${view.identity.id} --run ${view.activeRunId ?? "<run-id>"} --result <result.json>`;
+  return null;
 }
 
 /**
@@ -119,7 +121,7 @@ function viewOf(revision: ManifestRevision, unresolvedBlockers: string[] = []): 
   const status: WorkStatus = manifest.completion !== null ? manifest.completion.outcome
     : manifest.workflow.state === "active" ? "active"
       : unresolvedBlockers.length > 0 ? "blocked" : "executable";
-  const partial: Omit<WorkView, "nextCommand"> = {
+  const partial: Omit<WorkView, "nextCommand" | "nextStep"> = {
     identity: manifest.work,
     repository: {
       baseRef: manifest.repository.baseRef,
@@ -143,7 +145,8 @@ function viewOf(revision: ManifestRevision, unresolvedBlockers: string[] = []): 
     attempts: manifest.attempts,
     source: revision.source,
   };
-  return { ...partial, nextCommand: nextCommand(partial) };
+  const nextStep = nextStepOf(manifest);
+  return { ...partial, nextStep, nextCommand: nextCommand(partial, nextStep) };
 }
 
 export class WorkService {

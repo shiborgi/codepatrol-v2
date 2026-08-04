@@ -1,4 +1,4 @@
-import type { ProjectOutcome, ProjectStatus } from "../core/types.js";
+import type { NextStep, ProjectOutcome, ProjectStatus } from "../core/types.js";
 
 export interface GitHubIssue {
   number: number;
@@ -33,11 +33,13 @@ export interface GitHubProject {
   statusOptions: Readonly<Record<ProjectStatus, string>>;
   outcomeFieldId: string;
   outcomeOptions: Readonly<Record<ProjectOutcome, string>>;
+  nextFieldId: string;
+  nextOptions: Readonly<Record<NextStep, string>>;
 }
 
 export interface GitHubProjects {
   ensure(repository: GitHubRepository): Promise<GitHubProject>;
-  reconcile(project: GitHubProject, issue: GitHubIssue, status: ProjectStatus, outcome: ProjectOutcome): Promise<void>;
+  reconcile(project: GitHubProject, issue: GitHubIssue, status: ProjectStatus, outcome: ProjectOutcome, next: NextStep): Promise<void>;
 }
 
 export interface GitHubMilestone {

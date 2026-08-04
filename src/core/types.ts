@@ -51,6 +51,14 @@ export type WorkOutcome = (typeof WORK_OUTCOMES)[number];
 export const SHIP_OUTCOMES = ["accepted", "rolled-back"] as const;
 export type ShipOutcome = (typeof SHIP_OUTCOMES)[number];
 
+export const NEXT_STEPS = [...STAGES, "done"] as const;
+export type NextStep = (typeof NEXT_STEPS)[number];
+
+export function nextStepOf(work: { completion: unknown | null; workflow: { stage: Stage } }): NextStep {
+  if (work.completion !== null) return "done";
+  return work.workflow.stage;
+}
+
 export const RETURN_TARGETS: Readonly<Partial<Record<Stage, readonly Stage[]>>> = {
   review: ["plan"],
   build: ["plan"],
