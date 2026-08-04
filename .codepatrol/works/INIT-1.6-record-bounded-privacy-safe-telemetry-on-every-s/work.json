@@ -39,10 +39,10 @@
     "number": 34
   },
   "workflow": {
-    "state": "ready",
+    "state": "active",
     "stage": "verify",
     "attempt": 1,
-    "updatedAt": "2026-08-04T03:51:16.720Z"
+    "updatedAt": "2026-08-04T03:53:53.141Z"
   },
   "attempts": [
     {
@@ -427,6 +427,53 @@
           }
         }
       ]
+    },
+    {
+      "stage": "verify",
+      "attempt": 1,
+      "runId": "054768f1-e066-4519-8f7b-33ac7b62c412",
+      "status": "active",
+      "execution": {
+        "role": "verifier",
+        "harness": "opencode",
+        "model": "deepseek-v4-pro"
+      },
+      "startedAt": "2026-08-04T03:53:53.141Z",
+      "todo": [
+        {
+          "id": "V1",
+          "title": "Inspect changed files, diff, and candidate/baseline commits",
+          "description": "Examine every changed file from the Build handoff, inspect the git diff, and verify candidate commit 8a15080 against baseline 35cace3."
+        },
+        {
+          "id": "V2",
+          "title": "Run required commands (npm run verify) and check acceptance criteria",
+          "description": "Execute npm run verify (typecheck + tests + smoke + --help), validate all 5 acceptance criteria against the codebase."
+        },
+        {
+          "id": "V3",
+          "title": "Inspect telemetry privacy boundary and structural guarantees",
+          "description": "Verify no prompt, response, reasoning, raw output, environment value, or credential can reach the manifest; walk AttemptTelemetry type leaves."
+        },
+        {
+          "id": "V4",
+          "title": "Verify best-effort failure isolation and integration coverage",
+          "description": "Confirm throwing collector does not affect transitions/results/Ship; telemetry survives terminal Work manifest."
+        },
+        {
+          "id": "V5",
+          "title": "Record evidence and complete verification",
+          "description": "Record verification result with all trace evidence and complete the Verify run."
+        }
+      ],
+      "verificationTarget": {
+        "attempt": 1,
+        "candidateCommit": "8a1508085c16901e418e1bd27070d18fe8dfb703",
+        "manifestCommit": "8aaaa799cda2727a7da340a2d1dbbf4edbb355b3",
+        "baselineCommit": "35cace34058848672ab935042d4c7538d0c5eeae",
+        "targetCommit": "35cace34058848672ab935042d4c7538d0c5eeae",
+        "policyHash": "738b7dca7b2b865e7de12c3f1ca6c05da0d1762f30e202a18709b6290fafb7b4"
+      }
     }
   ],
   "completion": null
