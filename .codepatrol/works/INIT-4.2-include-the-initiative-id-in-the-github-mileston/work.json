@@ -36,10 +36,10 @@
     "number": 43
   },
   "workflow": {
-    "state": "active",
+    "state": "terminal",
     "stage": "ship",
     "attempt": 1,
-    "updatedAt": "2026-08-04T02:25:16.211Z"
+    "updatedAt": "2026-08-04T02:26:05.982Z"
   },
   "attempts": [
     {
@@ -483,21 +483,60 @@
       "stage": "ship",
       "attempt": 1,
       "runId": "c7c0c058-5769-4ebd-8a84-82d2f4cf8808",
-      "status": "active",
+      "status": "completed",
       "execution": {
         "role": "shipper",
         "harness": "opencode",
         "model": "minimax-coding-plan/MiniMax-M3"
       },
       "startedAt": "2026-08-04T02:25:16.211Z",
+      "finishedAt": "2026-08-04T02:26:05.982Z",
       "todo": [
         {
           "id": "S1",
           "title": "Audit and accept the verified INIT-4.2 Change",
           "description": "Inspect the complete lifecycle, all candidate commits, changed files, verification evidence, base alignment, and clean Work checkout; then record user authority and accept the exact verified Change."
         }
+      ],
+      "result": {
+        "decision": "accept",
+        "summary": "Accepted the verified INIT-4.2 Change. Full lifecycle (plan, review, build, verify) recorded continue decisions; candidate 44cff52 matches the verified checkpoint and is the only commit on the work branch; verification baseline 94fd150 and target 8799c55 still align; clean inspection and clean working tree; verify policy hash 738b7dca unchanged; the change makes ensureMilestone reconcile identity by the managed marker so existing milestones are retitled in place and never duplicated.",
+        "handoff": "No handoff; lifecycle terminal.",
+        "todo": [
+          {
+            "id": "S1",
+            "status": "completed",
+            "note": "Audited the lifecycle attempts, candidate and baseline commits, changed files, inspection cleanliness, and policy-hash stability; user authorized acceptance."
+          }
+        ],
+        "artifacts": [],
+        "authority": "user (this CLI session)"
+      },
+      "traces": [
+        {
+          "id": "60c946970bb3",
+          "type": "decision",
+          "message": "Accept the verified INIT-4.2 Change: full lifecycle (plan, review, build, verify) completed; candidate 44cff52 is the only commit on the work branch and matches the verified checkpoint; verification baseline 94fd150 and target 8799c55 still align; clean working tree and clean inspection; verify policy hash 738b7dca unchanged; the change reconciles GitHub Milestone identity by the managed marker so existing milestones are retitled in place and never duplicated; user authority.",
+          "at": "2026-08-04T02:25:50.937Z",
+          "data": {
+            "authority": "user (this CLI session)",
+            "decision": "accept",
+            "verifiedCheckpoint": "44cff52275ef7d229b9680b82a45f4b1c2397ed8",
+            "candidateCheckpoint": "44cff52275ef7d229b9680b82a45f4b1c2397ed8",
+            "baseCheckpoint": "94fd150dbddd0dccff58d0cc65362e432535c655",
+            "targetCommit": "8799c55a9871ae4d6e93b94e9d768d1f9f911fe6",
+            "manifestCommit": "c965029a421768a7fa062964827dab183e3d23e5",
+            "policyHash": "738b7dca7b2b865e7de12c3f1ca6c05da0d1762f30e202a18709b6290fafb7b4"
+          }
+        }
       ]
     }
   ],
-  "completion": null
+  "completion": {
+    "outcome": "accepted",
+    "via": "ship",
+    "authority": "user (this CLI session)",
+    "finalizedAt": "2026-08-04T02:26:05.982Z",
+    "summary": "Accepted the verified INIT-4.2 Change. Full lifecycle (plan, review, build, verify) recorded continue decisions; candidate 44cff52 matches the verified checkpoint and is the only commit on the work branch; verification baseline 94fd150 and target 8799c55 still align; clean inspection and clean working tree; verify policy hash 738b7dca unchanged; the change makes ensureMilestone reconcile identity by the managed marker so existing milestones are retitled in place and never duplicated."
+  }
 }
