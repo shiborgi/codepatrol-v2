@@ -1,0 +1,43 @@
+{
+  "schemaVersion": 1,
+  "type": "codepatrol-work",
+  "work": {
+    "id": "INIT-8.1-separate-manifest-model-and-ref-naming",
+    "title": "Separate manifest model and ref naming",
+    "description": "Move interfaces, constants, paths, and ref naming into focused modules under src/core/work-manifest/ with an index module preserving existing import paths during migration.",
+    "issueType": "Task",
+    "priority": "p1",
+    "acceptance": [
+      "Manifest types do not depend on serialization code",
+      "Ref naming functions do not depend on parsing",
+      "Existing import paths remain available through an index module during migration",
+      "No JSON output changes"
+    ],
+    "createdAt": "2026-08-04T01:57:27.785Z",
+    "requestedBy": "spec",
+    "initiative": {
+      "id": "INIT-8",
+      "position": 1
+    },
+    "origin": {
+      "createdAt": "2026-08-04T01:57:27.785Z"
+    }
+  },
+  "repository": {
+    "baseRef": "refs/heads/main"
+  },
+  "graph": {
+    "blockedBy": [
+      "INIT-7.2-extract-manifestrepository"
+    ]
+  },
+  "issue": null,
+  "workflow": {
+    "state": "ready",
+    "stage": "plan",
+    "attempt": 1,
+    "updatedAt": "2026-08-04T01:57:27.785Z"
+  },
+  "attempts": [],
+  "completion": null
+}
