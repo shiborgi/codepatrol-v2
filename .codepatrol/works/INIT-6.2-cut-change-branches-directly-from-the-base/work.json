@@ -33,7 +33,10 @@
       "INIT-6.1-define-the-open-work-persistence-contract"
     ]
   },
-  "issue": null,
+  "issue": {
+    "repository": "shiborgi/codepatrol",
+    "number": 46
+  },
   "workflow": {
     "state": "ready",
     "stage": "plan",
