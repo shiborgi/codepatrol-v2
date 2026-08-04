@@ -37,10 +37,10 @@
     "number": 42
   },
   "workflow": {
-    "state": "ready",
+    "state": "active",
     "stage": "review",
     "attempt": 1,
-    "updatedAt": "2026-08-04T00:30:53.757Z"
+    "updatedAt": "2026-08-04T00:39:03.226Z"
   },
   "attempts": [
     {
@@ -135,6 +135,35 @@
             "field": "Next",
             "reconcile": "drift-aware, all three fields"
           }
+        }
+      ]
+    },
+    {
+      "stage": "review",
+      "attempt": 1,
+      "runId": "0b3b12d1-e5ba-450e-9d0f-846a57630d46",
+      "status": "active",
+      "execution": {
+        "role": "reviewer",
+        "harness": "opencode",
+        "model": "minimax-coding-plan/MiniMax-M3"
+      },
+      "startedAt": "2026-08-04T00:39:03.226Z",
+      "todo": [
+        {
+          "id": "R1",
+          "title": "Audit plan completeness against SPEC-FORMAT and PLAN-FORMAT",
+          "description": "Verify every acceptance criterion is testable and maps to tasks; task dependencies form a DAG; every task names its file set and verify command; blast radius covers union of task files."
+        },
+        {
+          "id": "R2",
+          "title": "Validate plan references against the repository",
+          "description": "Check that referenced paths, symbols, and verification commands exist and are executable. No hidden production edits."
+        },
+        {
+          "id": "R3",
+          "title": "Write review report and seal verdict",
+          "description": "Write report.md and evidence, curate traces.md, record the run, and checkpoint or return."
         }
       ]
     }
