@@ -1,0 +1,11 @@
+{
+  "schemaVersion": 1,
+  "type": "codepatrol-initiative",
+  "id": "INIT-8",
+  "title": "Modularize the Manifest Contract",
+  "slug": "modularize-the-manifest-contract",
+  "intent": "Separate the Work manifest model, serialization, parsing, refs, factories, and invariants",
+  "motivation": "The manifest contract is central and intentionally strict, but its implementation currently concentrates many unrelated responsibilities in one module. Splitting the contract improves cohesion without introducing a schema dependency or changing the JSON format. Non-goals: no schema version increase unless unavoidable, no Zod or runtime schema framework, no change to manifest authority, no semantic lifecycle change.",
+  "ordering": "Model and ref naming first, then shared decoding primitives, then the invariant split, then canonical fixtures, then the evolution rules that govern future change. Behavior-preserving throughout.",
+  "createdAt": "2026-08-04T01:57:27.783Z"
+}
