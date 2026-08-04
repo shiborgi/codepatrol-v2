@@ -37,10 +37,10 @@
     "number": 42
   },
   "workflow": {
-    "state": "ready",
+    "state": "active",
     "stage": "build",
     "attempt": 1,
-    "updatedAt": "2026-08-04T00:41:26.292Z"
+    "updatedAt": "2026-08-04T01:12:11.250Z"
   },
   "attempts": [
     {
@@ -243,6 +243,25 @@
             },
             "noHiddenEdits": true
           }
+        }
+      ]
+    },
+    {
+      "stage": "build",
+      "attempt": 1,
+      "runId": "e418b18e-c692-4637-8bde-3d39147a4998",
+      "status": "active",
+      "execution": {
+        "role": "builder",
+        "harness": "opencode",
+        "model": "opencode-go/deepseek-v4-pro"
+      },
+      "startedAt": "2026-08-04T01:12:11.250Z",
+      "todo": [
+        {
+          "id": "T1",
+          "title": "Inspect acceptance and relevant context",
+          "description": "Read plan handoff, inspect worktree and source files"
         }
       ]
     }
