@@ -1,0 +1,44 @@
+{
+  "schemaVersion": 1,
+  "type": "codepatrol-work",
+  "work": {
+    "id": "INIT-10.3-aggregate-verification-and-repository-signals",
+    "title": "Aggregate verification and repository signals",
+    "description": "Calculate required command success and failure frequency, repeated command instability, stale-baseline frequency, refresh frequency and conflicts, untested-area and residual-risk recurrence, and paths repeatedly involved in returned Changes.",
+    "issueType": "Feature",
+    "priority": "p2",
+    "acceptance": [
+      "Signals distinguish missing evidence from failing evidence",
+      "Verification data is tied to exact attempts and candidates",
+      "Path statistics exclude .codepatrol/**",
+      "No raw sensitive command output is exposed",
+      "Results remain usable after runtime cleanup"
+    ],
+    "createdAt": "2026-08-04T02:03:50.127Z",
+    "requestedBy": "spec",
+    "initiative": {
+      "id": "INIT-10",
+      "position": 3
+    },
+    "origin": {
+      "createdAt": "2026-08-04T02:03:50.127Z"
+    }
+  },
+  "repository": {
+    "baseRef": "refs/heads/main"
+  },
+  "graph": {
+    "blockedBy": [
+      "INIT-10.2-aggregate-lifecycle-and-rework-signals"
+    ]
+  },
+  "issue": null,
+  "workflow": {
+    "state": "ready",
+    "stage": "plan",
+    "attempt": 1,
+    "updatedAt": "2026-08-04T02:03:50.127Z"
+  },
+  "attempts": [],
+  "completion": null
+}
