@@ -1,0 +1,43 @@
+{
+  "schemaVersion": 1,
+  "type": "codepatrol-work",
+  "work": {
+    "id": "INIT-5.1-create-a-side-effect-free-package-entrypoint",
+    "title": "Create a side-effect-free package entrypoint",
+    "description": "Separate the library API from the executable CLI entrypoint: src/index.ts as the package root, src/cli/run-cli.ts exposing the CLI as an explicit function, and src/cli/entry.ts as the only module that invokes it with process.argv, with bin/codepatrol.js pointed at the entry. Today the package root executes the CLI on import, so no consumer can import the library safely.",
+    "issueType": "Task",
+    "priority": "p1",
+    "acceptance": [
+      "Importing the package root does not execute a command",
+      "Importing the package does not write to stdout or stderr",
+      "Importing the package does not change process.exitCode",
+      "bin/codepatrol.js continues to execute the CLI",
+      "codepatrol --help and codepatrol --version remain compatible",
+      "The published tarball is tested through the real executable"
+    ],
+    "createdAt": "2026-08-04T01:38:53.946Z",
+    "requestedBy": "spec",
+    "initiative": {
+      "id": "INIT-5",
+      "position": 1
+    },
+    "origin": {
+      "createdAt": "2026-08-04T01:38:53.946Z"
+    }
+  },
+  "repository": {
+    "baseRef": "refs/heads/main"
+  },
+  "graph": {
+    "blockedBy": []
+  },
+  "issue": null,
+  "workflow": {
+    "state": "ready",
+    "stage": "plan",
+    "attempt": 1,
+    "updatedAt": "2026-08-04T01:38:53.946Z"
+  },
+  "attempts": [],
+  "completion": null
+}
