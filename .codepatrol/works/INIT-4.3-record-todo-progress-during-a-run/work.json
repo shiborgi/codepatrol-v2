@@ -24,7 +24,9 @@
     }
   },
   "repository": {
-    "baseRef": "refs/heads/main"
+    "baseRef": "refs/heads/main",
+    "createdFromCommit": "02607c6d1c744c03ad7d48e0fba101c6d6241469",
+    "baselineCommit": "02607c6d1c744c03ad7d48e0fba101c6d6241469"
   },
   "graph": {
     "blockedBy": []
@@ -34,11 +36,46 @@
     "number": 44
   },
   "workflow": {
-    "state": "ready",
+    "state": "active",
     "stage": "plan",
     "attempt": 1,
-    "updatedAt": "2026-08-04T01:24:09.980Z"
+    "updatedAt": "2026-08-04T01:34:45.558Z"
   },
-  "attempts": [],
+  "attempts": [
+    {
+      "stage": "plan",
+      "attempt": 1,
+      "runId": "f937eece-845d-4d27-9898-63ef3aa2d12b",
+      "status": "active",
+      "execution": {
+        "role": "planner",
+        "harness": "opencode",
+        "model": "kimi-for-coding/k3"
+      },
+      "startedAt": "2026-08-04T01:34:45.558Z",
+      "todo": [
+        {
+          "id": "P1",
+          "title": "Inspect trace mechanism (ManifestTrace, parseTrace, work-service trace) and work show derivation"
+        },
+        {
+          "id": "P2",
+          "title": "Design the todo-progress channel (trace type, validation, derivation rule)"
+        },
+        {
+          "id": "P3",
+          "title": "Decide test coverage incl. unknown-id refusal, resume, and completion contract"
+        },
+        {
+          "id": "P4",
+          "title": "Write decision-complete plan covering all four acceptance criteria"
+        },
+        {
+          "id": "P5",
+          "title": "Record traces; complete Plan with decision continue"
+        }
+      ]
+    }
+  ],
   "completion": null
 }
