@@ -32,7 +32,10 @@
       "INIT-10.1-define-the-improvement-signal-contract"
     ]
   },
-  "issue": null,
+  "issue": {
+    "repository": "shiborgi/codepatrol",
+    "number": 78
+  },
   "workflow": {
     "state": "ready",
     "stage": "plan",
