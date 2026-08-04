@@ -36,7 +36,10 @@
       "INIT-6.6-preserve-legacy-projection-compatibility"
     ]
   },
-  "issue": null,
+  "issue": {
+    "repository": "shiborgi/codepatrol",
+    "number": 51
+  },
   "workflow": {
     "state": "ready",
     "stage": "plan",
