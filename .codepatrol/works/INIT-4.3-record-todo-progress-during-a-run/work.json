@@ -36,23 +36,24 @@
     "number": 44
   },
   "workflow": {
-    "state": "active",
-    "stage": "plan",
+    "state": "ready",
+    "stage": "review",
     "attempt": 1,
-    "updatedAt": "2026-08-04T01:34:45.558Z"
+    "updatedAt": "2026-08-04T01:36:39.549Z"
   },
   "attempts": [
     {
       "stage": "plan",
       "attempt": 1,
       "runId": "f937eece-845d-4d27-9898-63ef3aa2d12b",
-      "status": "active",
+      "status": "completed",
       "execution": {
         "role": "planner",
         "harness": "opencode",
         "model": "kimi-for-coding/k3"
       },
       "startedAt": "2026-08-04T01:34:45.558Z",
+      "finishedAt": "2026-08-04T01:36:39.549Z",
       "todo": [
         {
           "id": "P1",
@@ -73,6 +74,68 @@
         {
           "id": "P5",
           "title": "Record traces; complete Plan with decision continue"
+        }
+      ],
+      "result": {
+        "decision": "continue",
+        "summary": "Todo progress rides the existing trace channel: a new trace type \"todo\" carrying { id, status: in_progress|completed }, validated against the active attempt's starting todo, surfaced by work show and the resume handoff as the latest progress per id merged over the starting todo. The starting todo is never rewritten, the completion contract is unchanged, and buffered progress reaches the terminal manifest through the normal trace flush.",
+        "handoff": "# Plan: Record todo progress during a run (INIT-4.3)\n\n## Finding (P1)\nThe trace channel already has the right shape: trace() validates the active run and appends to a JSONL buffer under the runtime root (work-service.ts:388-400), and completion flushes buffered traces into the attempt — so progress recorded as traces reaches the terminal manifest for free. Trace types are a strict union parsed in cli/inputs.ts:129 and core/work-manifest.ts:367. work show derives from the manifest alone, so mid-run progress must be merged from the buffer at read time.\n\n## Product files Build touches\n1. src/cli/inputs.ts — TRACE_TYPES gains \"todo\"; for that type, data is required with a non-empty id and status in [\"in_progress\", \"completed\"]; other types are untouched.\n2. src/core/work-manifest.ts — the ManifestTrace type union and the stored-trace parser accept \"todo\" (same key rules as today).\n3. src/application/work-service.ts — trace(): a todo entry whose id is not in the active attempt's starting todo refuses with INVALID_INPUT naming it (acceptance 2). show(): when a run is active, merge the buffer's latest todo trace per id over the starting todo and expose it on the view (e.g. todoProgress: [{ id, status }] with the derivation rule documented — latest wins). handoff(): include the same progress so resume shows where the run stood (acceptance 3).\n4. skills/codepatrol-{plan,review,build,verify,ship}/SKILL.md — one instruction: report todo progress as items start and finish, via trace type todo. Refresh each skill.json digest (sha256 of the edited SKILL.md); harness-adapters.test.ts stays green.\n5. Tests: src/test/work-service.test.ts and the inputs/trace parsing coverage wherever it lives.\n\n## Rules (P2)\n- The starting todo is immutable: progress is a parallel record, never an edit (acceptance 3).\n- Statuses are mid-run only: in_progress and completed. failed/skipped remain completion-time judgements in the result, so progress can never pre-answer the contract.\n- The completion contract is untouched: the result answers the starting ids, and todoContractViolations keeps its current meaning (acceptance 4).\n\n## Tests (P3)\n1. An active run records a todo trace; work show reports that item in progress, then done after a second entry; ids never recorded move (acceptance 1).\n2. A todo trace naming an unknown id refuses with INVALID_INPUT and stores nothing (acceptance 2).\n3. Resume after progress: the handoff carries the recorded progress; completion flushes the todo traces into the attempt like any other trace (acceptance 3).\n4. A result answering the starting ids completes exactly as before, with or without progress entries; the existing suite passes (acceptance 4).\n\n## Acceptance coverage\n1. Mid-run progress recorded and surfaced — trace type + show derivation + test 1.\n2. Unknown id refused — service validation + test 2.\n3. Starting todo immutable, progress survives resume — buffer merge + test 3.\n4. Completion contract unchanged — test 4 + full suite.\n\n## Verification for Build\nnpm run verify (typecheck, full unit suite, smoke, --help).\n\n## Non-goals\nNo board projection of progress (the local read is the ask). No new command — the trace channel is the channel. No telemetry aggregation (INIT-1.6 reads this later). No mandatory progress reporting — the skills instruct it, the Core does not require it.",
+        "todo": [
+          {
+            "id": "P1",
+            "status": "completed",
+            "note": "Traces buffer mid-run and flush at completion; strict type union in inputs.ts and work-manifest.ts; work show reads the manifest only."
+          },
+          {
+            "id": "P2",
+            "status": "completed",
+            "note": "Trace type todo with {id, in_progress|completed}; id validated against the starting todo; show and resume derive latest-per-id; skills instruct reporting, digests refreshed."
+          },
+          {
+            "id": "P3",
+            "status": "completed",
+            "note": "Tests cover visibility, unknown-id refusal, resume continuity, and the unchanged completion contract."
+          },
+          {
+            "id": "P4",
+            "status": "completed",
+            "note": "Handoff covers all four acceptance criteria with exact files and rules."
+          },
+          {
+            "id": "P5",
+            "status": "completed",
+            "note": "Two traces recorded (observation + decision); completing with decision continue."
+          }
+        ],
+        "artifacts": []
+      },
+      "traces": [
+        {
+          "id": "1b510f020432",
+          "type": "observation",
+          "message": "Traces already do exactly what mid-run progress needs: trace() validates the active run and appends to a JSONL buffer under the runtime root (work-service.ts:388-400), and completion flushes the buffer into the attempt's traces, so progress persisted this way reaches the terminal manifest for free. Trace types are a fixed union (observation|decision|action|error|metric|command) parsed strictly in cli/inputs.ts:129 and core/work-manifest.ts:367. work show derives its view from the manifest only, so mid-run progress must be merged from the buffer at read time.",
+          "at": "2026-08-04T01:36:39.391Z",
+          "data": {
+            "files": [
+              "src/application/work-service.ts",
+              "src/cli/inputs.ts",
+              "src/core/work-manifest.ts"
+            ]
+          }
+        },
+        {
+          "id": "14bedb58020f",
+          "type": "decision",
+          "message": "Progress rides the trace channel as a new type \"todo\" with data { id, status: \"in_progress\" | \"completed\" }: parseTrace validates the shape, and WorkService.trace validates the id against the active attempt's starting todo — an unknown id refuses with INVALID_INPUT and is never stored. The starting todo is never rewritten; work show and the resume handoff derive the current position as the latest todo trace per id merged over the starting todo, reading the JSONL buffer for the active run. The completion contract is untouched: the result still answers the starting ids, and the buffered todo traces flush into the attempt like every other trace. The five stage skills gain one line — report todo progress as you cross items — with skill.json digests refreshed.",
+          "at": "2026-08-04T01:36:39.460Z",
+          "data": {
+            "traceType": "todo",
+            "statuses": [
+              "in_progress",
+              "completed"
+            ],
+            "unknownId": "INVALID_INPUT"
+          }
         }
       ]
     }
