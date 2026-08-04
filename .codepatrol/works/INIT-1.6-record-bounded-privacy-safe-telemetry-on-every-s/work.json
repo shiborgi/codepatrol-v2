@@ -39,10 +39,10 @@
     "number": 34
   },
   "workflow": {
-    "state": "ready",
+    "state": "active",
     "stage": "build",
     "attempt": 1,
-    "updatedAt": "2026-08-04T03:28:45.191Z"
+    "updatedAt": "2026-08-04T03:29:39.024Z"
   },
   "attempts": [
     {
@@ -252,6 +252,60 @@
               "src/test/telemetry.test.ts"
             ]
           }
+        }
+      ]
+    },
+    {
+      "stage": "build",
+      "attempt": 1,
+      "runId": "6c381d52-6e17-43a0-a0cf-5d02339c6c65",
+      "status": "active",
+      "execution": {
+        "role": "builder",
+        "harness": "opencode",
+        "model": "opencode-current"
+      },
+      "startedAt": "2026-08-04T03:29:39.024Z",
+      "todo": [
+        {
+          "id": "B1",
+          "title": "Inspect accepted plan and current source state"
+        },
+        {
+          "id": "B2",
+          "title": "Add src/core/telemetry.ts with AttemptTelemetry + parseAttemptTelemetry + privacy doc"
+        },
+        {
+          "id": "B3",
+          "title": "Wire optional telemetry into work-manifest.ts and lifecycle.ts"
+        },
+        {
+          "id": "B4",
+          "title": "Add src/application/telemetry.ts collector port and best-effort collection in work-service.ts"
+        },
+        {
+          "id": "B5",
+          "title": "Add parseTelemetryReport to cli/inputs.ts and --telemetry flag to stage.ts"
+        },
+        {
+          "id": "B6",
+          "title": "Export HOST_CAPABILITIES and wire default collector in main.ts"
+        },
+        {
+          "id": "B7",
+          "title": "Tests covering all five acceptance criteria + cli registry + privacy test net"
+        },
+        {
+          "id": "B8",
+          "title": "Run npm run verify"
+        },
+        {
+          "id": "B9",
+          "title": "Commit product changes; verify clean worktree"
+        },
+        {
+          "id": "B10",
+          "title": "Complete Build with continue"
         }
       ]
     }
