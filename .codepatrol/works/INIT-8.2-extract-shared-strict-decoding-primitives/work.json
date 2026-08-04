@@ -1,0 +1,44 @@
+{
+  "schemaVersion": 1,
+  "type": "codepatrol-work",
+  "work": {
+    "id": "INIT-8.2-extract-shared-strict-decoding-primitives",
+    "title": "Extract shared strict-decoding primitives",
+    "description": "Create small internal decoding helpers for object validation, allowed and required keys, text, timestamps, positive integers, arrays, enums, and Git hashes, reusable by Work manifest, Initiative, skill manifest, and suite parsing.",
+    "issueType": "Task",
+    "priority": "p1",
+    "acceptance": [
+      "Unknown fields remain rejected",
+      "Missing fields remain rejected",
+      "Error messages remain specific",
+      "No runtime package is added",
+      "At least two existing codecs use the shared primitives"
+    ],
+    "createdAt": "2026-08-04T01:57:27.785Z",
+    "requestedBy": "spec",
+    "initiative": {
+      "id": "INIT-8",
+      "position": 2
+    },
+    "origin": {
+      "createdAt": "2026-08-04T01:57:27.785Z"
+    }
+  },
+  "repository": {
+    "baseRef": "refs/heads/main"
+  },
+  "graph": {
+    "blockedBy": [
+      "INIT-8.1-separate-manifest-model-and-ref-naming"
+    ]
+  },
+  "issue": null,
+  "workflow": {
+    "state": "ready",
+    "stage": "plan",
+    "attempt": 1,
+    "updatedAt": "2026-08-04T01:57:27.785Z"
+  },
+  "attempts": [],
+  "completion": null
+}
