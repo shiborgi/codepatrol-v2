@@ -1,0 +1,45 @@
+{
+  "schemaVersion": 1,
+  "type": "codepatrol-work",
+  "work": {
+    "id": "INIT-9.1-extract-workqueries",
+    "title": "Extract WorkQueries",
+    "description": "Move read-only operations — list, show, graph, inspect, next-command derivation, blocker resolution — into WorkQueries.",
+    "issueType": "Task",
+    "priority": "p1",
+    "acceptance": [
+      "WorkQueries performs no writes",
+      "WorkQueries does not create worktrees",
+      "WorkQueries does not mutate refs",
+      "Graph status remains derived",
+      "show remains efficient for one Work"
+    ],
+    "createdAt": "2026-08-04T02:00:13.641Z",
+    "requestedBy": "spec",
+    "initiative": {
+      "id": "INIT-9",
+      "position": 1
+    },
+    "origin": {
+      "createdAt": "2026-08-04T02:00:13.641Z"
+    }
+  },
+  "repository": {
+    "baseRef": "refs/heads/main"
+  },
+  "graph": {
+    "blockedBy": [
+      "INIT-7.7-introduce-application-facing-git-ports",
+      "INIT-8.3-separate-parsing-from-domain-invariants"
+    ]
+  },
+  "issue": null,
+  "workflow": {
+    "state": "ready",
+    "stage": "plan",
+    "attempt": 1,
+    "updatedAt": "2026-08-04T02:00:13.641Z"
+  },
+  "attempts": [],
+  "completion": null
+}
