@@ -1,0 +1,11 @@
+{
+  "schemaVersion": 1,
+  "type": "codepatrol-initiative",
+  "id": "INIT-7",
+  "title": "Clarify Git Workspace Boundaries",
+  "slug": "clarify-git-workspace-boundaries",
+  "intent": "Separate manifest persistence, Change management, worktree management, and atomic ref operations",
+  "motivation": "Git responsibilities are currently spread across GitManifestStore, Worktrees, ChangeIntegration, and application services. Removing early manifest projections creates an opportunity to simplify these boundaries without changing externally visible behavior. Non-goals: no lifecycle redesign, no new state backend, no generic Git abstraction for every Git command, no large public API change.",
+  "ordering": "Discovery first, then persistence, then Change operations, then worktrees, then hook removal, then the refresh/integration rewrite, then the narrow ports. The core Git refactors run sequentially because they touch the same transaction boundaries.",
+  "createdAt": "2026-08-04T01:55:22.850Z"
+}
