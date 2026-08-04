@@ -32,7 +32,10 @@
       "INIT-10.5-add-an-improvement-inspection-command"
     ]
   },
-  "issue": null,
+  "issue": {
+    "repository": "shiborgi/codepatrol",
+    "number": 82
+  },
   "workflow": {
     "state": "ready",
     "stage": "plan",
