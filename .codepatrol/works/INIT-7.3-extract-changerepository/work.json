@@ -1,0 +1,45 @@
+{
+  "schemaVersion": 1,
+  "type": "codepatrol-work",
+  "work": {
+    "id": "INIT-7.3-extract-changerepository",
+    "title": "Extract ChangeRepository",
+    "description": "Create a component responsible for Change branch operations: materialize branch, inspect candidate, resolve head, refresh against base, determine changed paths, verify baseline relationships, archive branch state.",
+    "issueType": "Task",
+    "priority": "p1",
+    "acceptance": [
+      "ChangeRepository contains no lifecycle transition policy",
+      "Refresh is expressed as a Change operation",
+      "Refresh cannot run with an active stage",
+      "Refresh invalidation decisions remain in the application layer",
+      "Branch operations are idempotent",
+      "A branchless Work remains a normal state"
+    ],
+    "createdAt": "2026-08-04T01:55:22.853Z",
+    "requestedBy": "spec",
+    "initiative": {
+      "id": "INIT-7",
+      "position": 3
+    },
+    "origin": {
+      "createdAt": "2026-08-04T01:55:22.853Z"
+    }
+  },
+  "repository": {
+    "baseRef": "refs/heads/main"
+  },
+  "graph": {
+    "blockedBy": [
+      "INIT-7.2-extract-manifestrepository"
+    ]
+  },
+  "issue": null,
+  "workflow": {
+    "state": "ready",
+    "stage": "plan",
+    "attempt": 1,
+    "updatedAt": "2026-08-04T01:55:22.853Z"
+  },
+  "attempts": [],
+  "completion": null
+}
