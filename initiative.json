@@ -1,0 +1,11 @@
+{
+  "schemaVersion": 1,
+  "type": "codepatrol-initiative",
+  "id": "INIT-9",
+  "title": "Decompose the Work Lifecycle Application Layer",
+  "slug": "decompose-the-work-lifecycle-application-layer",
+  "intent": "Split WorkService into cohesive use-case services while preserving its external behavior",
+  "motivation": "WorkService currently coordinates queries, lifecycle transitions, stage runs, evidence, worktrees, refresh, verification, integration, and terminalization — a central change hotspot. Non-goals: no change to lifecycle transition rules, no automatic stage advancement, no service class per function, no framework-based command bus.",
+  "ordering": "Read-only behavior first, stage runs second, then evidence and Change in parallel, terminalization last, the facade to hold compatibility, lazy CLI dependencies, and ownership rules to keep the boundaries.",
+  "createdAt": "2026-08-04T02:00:13.639Z"
+}
