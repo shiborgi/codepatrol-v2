@@ -1,0 +1,45 @@
+{
+  "schemaVersion": 1,
+  "type": "codepatrol-work",
+  "work": {
+    "id": "INIT-7.2-extract-manifestrepository",
+    "title": "Extract ManifestRepository",
+    "description": "Limit manifest persistence responsibilities to read, list, write with compare-and-swap, batch apply, Initiative persistence, issue linking, and manifest ref recovery. Move Change refresh, worktree synchronization, and branch inspection elsewhere.",
+    "issueType": "Task",
+    "priority": "p1",
+    "acceptance": [
+      "ManifestRepository does not create or attach worktrees",
+      "ManifestRepository does not move Change branches",
+      "ManifestRepository does not move the base branch",
+      "Manifest writes remain atomic",
+      "Concurrent manifest updates remain corruption-free",
+      "Batch Initiative application remains all-or-nothing"
+    ],
+    "createdAt": "2026-08-04T01:55:22.853Z",
+    "requestedBy": "spec",
+    "initiative": {
+      "id": "INIT-7",
+      "position": 2
+    },
+    "origin": {
+      "createdAt": "2026-08-04T01:55:22.853Z"
+    }
+  },
+  "repository": {
+    "baseRef": "refs/heads/main"
+  },
+  "graph": {
+    "blockedBy": [
+      "INIT-7.1-centralize-work-discovery-and-resolution"
+    ]
+  },
+  "issue": null,
+  "workflow": {
+    "state": "ready",
+    "stage": "plan",
+    "attempt": 1,
+    "updatedAt": "2026-08-04T01:55:22.853Z"
+  },
+  "attempts": [],
+  "completion": null
+}
