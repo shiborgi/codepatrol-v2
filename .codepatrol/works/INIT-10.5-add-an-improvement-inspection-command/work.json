@@ -33,7 +33,10 @@
       "INIT-10.4-correlate-execution-identity-and-skill-compositi"
     ]
   },
-  "issue": null,
+  "issue": {
+    "repository": "shiborgi/codepatrol",
+    "number": 81
+  },
   "workflow": {
     "state": "ready",
     "stage": "plan",
