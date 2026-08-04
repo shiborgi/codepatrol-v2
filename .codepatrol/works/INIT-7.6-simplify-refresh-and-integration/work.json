@@ -36,7 +36,10 @@
       "INIT-7.5-remove-manifeststore-worktree-hooks"
     ]
   },
-  "issue": null,
+  "issue": {
+    "repository": "shiborgi/codepatrol",
+    "number": 62
+  },
   "workflow": {
     "state": "ready",
     "stage": "plan",
