@@ -36,10 +36,10 @@
     "number": 43
   },
   "workflow": {
-    "state": "active",
-    "stage": "build",
+    "state": "ready",
+    "stage": "verify",
     "attempt": 1,
-    "updatedAt": "2026-08-04T01:55:36.800Z"
+    "updatedAt": "2026-08-04T02:05:23.671Z"
   },
   "attempts": [
     {
@@ -243,18 +243,52 @@
       "stage": "build",
       "attempt": 1,
       "runId": "3e8ace8d-4670-49a7-b862-f8e5700c5170",
-      "status": "active",
+      "status": "completed",
       "execution": {
         "role": "builder",
         "harness": "opencode",
         "model": "opencode-go/deepseek-v4-pro"
       },
       "startedAt": "2026-08-04T01:55:36.800Z",
+      "finishedAt": "2026-08-04T02:05:23.671Z",
       "todo": [
         {
           "id": "T1",
           "title": "Inspect acceptance and relevant context",
           "description": "Read plan handoff, inspect worktree and source files for INIT-4.2"
+        }
+      ],
+      "result": {
+        "decision": "continue",
+        "summary": "Added initiativeTitleOf helper and id marker to managed section (markers.ts). Implemented 4-step matching in ensure(): exact new title, id marker match, legacy bare title retitle, create. Updated ports, FakeGitHub, publication call site, tests, and E2E. 8 files changed, 1 commit. Typecheck clean, tests pass.",
+        "handoff": "Build complete: INIT-4.2 ready for Verify",
+        "todo": [
+          {
+            "id": "T1",
+            "status": "completed",
+            "note": "All product files changed, tests pass, typecheck clean"
+          }
+        ],
+        "artifacts": []
+      },
+      "traces": [
+        {
+          "id": "85bc05c9dc85",
+          "type": "command",
+          "message": "Ran typecheck, unit tests, and smoke",
+          "at": "2026-08-04T02:05:12.462Z",
+          "command": [
+            "npm",
+            "run",
+            "typecheck"
+          ],
+          "exitCode": 0
+        },
+        {
+          "id": "13b54103949a",
+          "type": "decision",
+          "message": "8 files changed, 1 commit. All milestone tests pass: initiativeTitleOf format, legacy retitle without duplicate, no-churn re-sync, marker-based retitle for drifted titles. E2E switched to managed section matching with id-in-title assertion.",
+          "at": "2026-08-04T02:05:12.588Z"
         }
       ]
     }
