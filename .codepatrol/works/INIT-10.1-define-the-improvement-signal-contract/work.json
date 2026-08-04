@@ -1,0 +1,46 @@
+{
+  "schemaVersion": 1,
+  "type": "codepatrol-work",
+  "work": {
+    "id": "INIT-10.1-define-the-improvement-signal-contract",
+    "title": "Define the improvement signal contract",
+    "description": "Create a versioned derived output contract (codepatrol-improvement-signals, schemaVersion 1) with scope, works, returns, verification, baselines, execution, patterns, and observedAt.",
+    "issueType": "Feature",
+    "priority": "p2",
+    "acceptance": [
+      "The contract is derived entirely from canonical state",
+      "Every signal contains supporting Work, attempt, or trace references",
+      "Absence of evidence is distinguishable from successful evidence",
+      "The contract contains no mutable recommendation state",
+      "Signal calculation is deterministic for the same repository state"
+    ],
+    "createdAt": "2026-08-04T02:03:50.127Z",
+    "requestedBy": "spec",
+    "initiative": {
+      "id": "INIT-10",
+      "position": 1
+    },
+    "origin": {
+      "createdAt": "2026-08-04T02:03:50.127Z"
+    }
+  },
+  "repository": {
+    "baseRef": "refs/heads/main"
+  },
+  "graph": {
+    "blockedBy": [
+      "INIT-8.5-document-schema-evolution-rules",
+      "INIT-9.1-extract-workqueries",
+      "INIT-9.4-extract-evidenceservice"
+    ]
+  },
+  "issue": null,
+  "workflow": {
+    "state": "ready",
+    "stage": "plan",
+    "attempt": 1,
+    "updatedAt": "2026-08-04T02:03:50.127Z"
+  },
+  "attempts": [],
+  "completion": null
+}
