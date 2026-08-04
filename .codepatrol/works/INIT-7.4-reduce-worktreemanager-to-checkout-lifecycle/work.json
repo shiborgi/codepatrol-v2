@@ -1,0 +1,44 @@
+{
+  "schemaVersion": 1,
+  "type": "codepatrol-work",
+  "work": {
+    "id": "INIT-7.4-reduce-worktreemanager-to-checkout-lifecycle",
+    "title": "Reduce WorktreeManager to checkout lifecycle",
+    "description": "Restrict worktree behavior to attach, find, remove, prune, validate checkout ownership, and inspect cleanliness of a live checkout. It must not create base commits, advance the base, write manifests, or decide lifecycle transitions.",
+    "issueType": "Task",
+    "priority": "p1",
+    "acceptance": [
+      "WorktreeManager does not move any repository ref except through explicit branch checkout operations",
+      "Recreating a missing worktree is safe",
+      "An occupied or unrecognized directory is refused",
+      "Worktree cleanup remains idempotent",
+      "Base checkout dirtiness can be inspected through an explicit operation"
+    ],
+    "createdAt": "2026-08-04T01:55:22.853Z",
+    "requestedBy": "spec",
+    "initiative": {
+      "id": "INIT-7",
+      "position": 4
+    },
+    "origin": {
+      "createdAt": "2026-08-04T01:55:22.853Z"
+    }
+  },
+  "repository": {
+    "baseRef": "refs/heads/main"
+  },
+  "graph": {
+    "blockedBy": [
+      "INIT-7.3-extract-changerepository"
+    ]
+  },
+  "issue": null,
+  "workflow": {
+    "state": "ready",
+    "stage": "plan",
+    "attempt": 1,
+    "updatedAt": "2026-08-04T01:55:22.853Z"
+  },
+  "attempts": [],
+  "completion": null
+}
