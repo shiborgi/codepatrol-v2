@@ -1,0 +1,45 @@
+{
+  "schemaVersion": 1,
+  "type": "codepatrol-work",
+  "work": {
+    "id": "INIT-10.5-add-an-improvement-inspection-command",
+    "title": "Add an improvement inspection command",
+    "description": "Expose the derived signals through a local command, codepatrol improve inspect, with deterministic filters for initiative, work, and since.",
+    "issueType": "Feature",
+    "priority": "p2",
+    "acceptance": [
+      "The command works without a remote",
+      "Output is JSON",
+      "The command performs no writes",
+      "Filters are deterministic",
+      "Large backlogs do not require reading product file contents",
+      "The output includes references to the evidence supporting each pattern"
+    ],
+    "createdAt": "2026-08-04T02:03:50.127Z",
+    "requestedBy": "spec",
+    "initiative": {
+      "id": "INIT-10",
+      "position": 5
+    },
+    "origin": {
+      "createdAt": "2026-08-04T02:03:50.127Z"
+    }
+  },
+  "repository": {
+    "baseRef": "refs/heads/main"
+  },
+  "graph": {
+    "blockedBy": [
+      "INIT-10.4-correlate-execution-identity-and-skill-compositi"
+    ]
+  },
+  "issue": null,
+  "workflow": {
+    "state": "ready",
+    "stage": "plan",
+    "attempt": 1,
+    "updatedAt": "2026-08-04T02:03:50.127Z"
+  },
+  "attempts": [],
+  "completion": null
+}
