@@ -1,0 +1,46 @@
+{
+  "schemaVersion": 1,
+  "type": "codepatrol-work",
+  "work": {
+    "id": "INIT-6.4-integrate-the-final-manifest-only-during-accept",
+    "title": "Integrate the final manifest only during accept",
+    "description": "When a Work is accepted, construct one squash commit containing the accepted product tree and the final canonical manifest projection, when final projections remain part of the v1 base format. The accepted commit is created directly from the current base, the verified candidate, and the final authoritative manifest.",
+    "issueType": "Feature",
+    "priority": "p1",
+    "acceptance": [
+      "Accept creates exactly one new commit on the base",
+      "The commit contains the final product content",
+      "The commit contains the final canonical manifest projection when required by the compatibility contract",
+      "No earlier open-Work projection commit is required",
+      "The integration commit contains the Work trailer",
+      "Repeating integration converges on the existing integration commit",
+      "A stale or conflicting base is refused before the base moves"
+    ],
+    "createdAt": "2026-08-04T01:44:10.989Z",
+    "requestedBy": "spec",
+    "initiative": {
+      "id": "INIT-6",
+      "position": 4
+    },
+    "origin": {
+      "createdAt": "2026-08-04T01:44:10.989Z"
+    }
+  },
+  "repository": {
+    "baseRef": "refs/heads/main"
+  },
+  "graph": {
+    "blockedBy": [
+      "INIT-6.3-remove-mutable-manifest-state-from-open-change-b"
+    ]
+  },
+  "issue": null,
+  "workflow": {
+    "state": "ready",
+    "stage": "plan",
+    "attempt": 1,
+    "updatedAt": "2026-08-04T01:44:10.989Z"
+  },
+  "attempts": [],
+  "completion": null
+}
