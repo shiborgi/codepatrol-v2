@@ -39,10 +39,10 @@
     "number": 34
   },
   "workflow": {
-    "state": "active",
-    "stage": "build",
+    "state": "ready",
+    "stage": "verify",
     "attempt": 1,
-    "updatedAt": "2026-08-04T03:29:39.024Z"
+    "updatedAt": "2026-08-04T03:51:16.720Z"
   },
   "attempts": [
     {
@@ -259,13 +259,14 @@
       "stage": "build",
       "attempt": 1,
       "runId": "6c381d52-6e17-43a0-a0cf-5d02339c6c65",
-      "status": "active",
+      "status": "completed",
       "execution": {
         "role": "builder",
         "harness": "opencode",
         "model": "opencode-current"
       },
       "startedAt": "2026-08-04T03:29:39.024Z",
+      "finishedAt": "2026-08-04T03:51:16.720Z",
       "todo": [
         {
           "id": "B1",
@@ -306,6 +307,124 @@
         {
           "id": "B10",
           "title": "Complete Build with continue"
+        }
+      ],
+      "result": {
+        "decision": "continue",
+        "summary": "Bounded privacy-safe telemetry is now recorded on every stage attempt. The optional additive AttemptTelemetry field (skills, context, tools, model) is collected once at complete by an injected best-effort collector. Every leaf is a non-negative safe integer or 'unavailable'. A throwing collector drops the field and never affects the transition, result, or Ship. The --telemetry flag on complete accepts harness-reported tools/model counts. Privacy is structural: parseAttemptTelemetry refuses any field that would carry content.",
+        "handoff": "# Build: Record bounded, privacy-safe telemetry on every stage attempt (INIT-1.6)\n\n## What changed\n- src/core/telemetry.ts (new): AttemptTelemetry interface with skills {count, bytes}, context {sections, bytes}, tools {count, failures, inputBytes, outputBytes} | \"unavailable\", model {inputTokens, outputTokens} | \"unavailable\". TELEMETRY_UNAVAILABLE constant. parseAttemptTelemetry strict parser. TelemetryReport for harness submission.\n- src/core/work-manifest.ts: ManifestAttempt gains optional telemetry field; serializer emits it only when present with renderTelemetry; parser accepts it via parseAttemptTelemetry on the keys() gate.\n- src/core/lifecycle.ts: finish transition gains optional telemetry; the finished attempt carries it.\n- src/application/telemetry.ts (new): TelemetryCollector port and makeDefaultCollector that reads the runtime handoff for context sections/bytes, resolves skill composition for count/bytes, and folds the harness report.\n- src/application/work-service.ts: WorkServiceTelemetry constructor parameter with optional collector, skillManifests, hostCapabilities. complete/completeLocked accept an optional telemetry options argument. collectTelemetry wraps the collector best-effort (a failure returns undefined).\n- src/cli/inputs.ts: parseTelemetryInput parses the --telemetry file with INVALID_INPUT for malformed input.\n- src/cli/commands/stage.ts: complete gains an optional --telemetry flag; usage updated.\n- src/cli/commands/skill.ts: HOST_CAPABILITIES is now exported.\n- src/cli/main.ts: loads shipped skills once, creates the default collector, passes it to WorkService.\n- src/test/telemetry.test.ts (new): 9 tests covering all 5 acceptance criteria.\n- src/test/cli-registry.test.ts: 3 tests for --telemetry flag parsing and refusal.\n\n## Validation\n- npm run typecheck: clean.\n- npm test: 312/315 pass (12 new tests, 3 pre-existing skill-suite failures).\n- Candidate commit 8a1508085c16901e418e1bd27070d18fe8dfb703.\n\n## Acceptance evidence\n1. Completed attempt carries bounded telemetry; manifest without parses under schemaVersion 1 — T1, T2.\n2. Absent model/tools recorded as explicitly unavailable — T3.\n3. Privacy test net — T5 (unknown fields refused), T6 (content-carrying fields refused), T8 (parser rejects non-integers).\n4. Throwing collector leaves transition/result/Ship unaffected — T4.\n5. Telemetry survives into terminal Work's manifest — T9.\n\n## Files declared as artifacts\n- src/core/telemetry.ts (new)\n- src/core/work-manifest.ts (modified)\n- src/core/lifecycle.ts (modified)\n- src/application/telemetry.ts (new)\n- src/application/work-service.ts (modified)\n- src/cli/inputs.ts (modified)\n- src/cli/commands/stage.ts (modified)\n- src/cli/commands/skill.ts (modified)\n- src/cli/main.ts (modified)\n- src/test/telemetry.test.ts (new)\n- src/test/cli-registry.test.ts (modified)",
+        "todo": [
+          {
+            "id": "B1",
+            "status": "completed"
+          },
+          {
+            "id": "B2",
+            "status": "completed"
+          },
+          {
+            "id": "B3",
+            "status": "completed"
+          },
+          {
+            "id": "B4",
+            "status": "completed"
+          },
+          {
+            "id": "B5",
+            "status": "completed"
+          },
+          {
+            "id": "B6",
+            "status": "completed"
+          },
+          {
+            "id": "B7",
+            "status": "completed"
+          },
+          {
+            "id": "B8",
+            "status": "completed"
+          },
+          {
+            "id": "B9",
+            "status": "completed"
+          },
+          {
+            "id": "B10",
+            "status": "completed"
+          }
+        ],
+        "artifacts": [
+          {
+            "path": "src/core/telemetry.ts",
+            "kind": "source",
+            "blob": "a8f651d83502d48aa54e13fbf9244e87160ec019"
+          },
+          {
+            "path": "src/core/work-manifest.ts",
+            "kind": "source",
+            "blob": "97a9e19a63360ab78ab3bc155cddce77d9d5f6ce"
+          },
+          {
+            "path": "src/core/lifecycle.ts",
+            "kind": "source",
+            "blob": "a6bd959a405c9bac6b7013355ef0700ca6abce01"
+          },
+          {
+            "path": "src/application/telemetry.ts",
+            "kind": "source",
+            "blob": "36e9f13c7bb3142ba37b7bddb917ec9e55e15ba5"
+          },
+          {
+            "path": "src/application/work-service.ts",
+            "kind": "source",
+            "blob": "49c3a647aad6fe96c1153377148eba6fc2f6e7a0"
+          },
+          {
+            "path": "src/cli/inputs.ts",
+            "kind": "source",
+            "blob": "1674226dc67ad08da4cb89a2bce5481a7db0a54b"
+          },
+          {
+            "path": "src/cli/commands/stage.ts",
+            "kind": "cli",
+            "blob": "0f6045a9c16182fb5dfaeeb9b7a10fffeed9ff7e"
+          },
+          {
+            "path": "src/cli/commands/skill.ts",
+            "kind": "cli",
+            "blob": "dc44409a973a415b0eb0351e43d6b007feabee54"
+          },
+          {
+            "path": "src/cli/main.ts",
+            "kind": "cli",
+            "blob": "813f8cf7637c7a140ea5d19cc46f727cf2a396ab"
+          },
+          {
+            "path": "src/test/telemetry.test.ts",
+            "kind": "test",
+            "blob": "c5b0b34c18e81cd4f88e572759bf99a7e4204b93"
+          },
+          {
+            "path": "src/test/cli-registry.test.ts",
+            "kind": "test",
+            "blob": "17d13aa39dfd14048cde5efe8c7b90f21584211b"
+          }
+        ]
+      },
+      "traces": [
+        {
+          "id": "f4073e34fe0d",
+          "type": "observation",
+          "message": "Build complete. Bounded privacy-safe telemetry is now recorded on every stage attempt. An optional additive AttemptTelemetry field {skills, context, tools, model} is collected once at complete by an injected best-effort collector. Every leaf is a non-negative safe integer or the literal 'unavailable' — the privacy boundary is structural. A throwing collector drops the field and never affects the transition, result, or Ship. The --telemetry flag on complete accepts harness-reported tools and model counts. Validation: typecheck clean; 312/315 tests pass (3 pre-existing skill-suite failures); telemetry/cli-registry tests all pass. Candidate commit 8a1508085c16901e418e1bd27070d18fe8dfb703 on codepatrol/work/INIT-1.6-record-bounded-privacy-safe-telemetry-on-every-s.",
+          "at": "2026-08-04T03:50:49.836Z",
+          "data": {
+            "candidateCommit": "8a1508085c16901e418e1bd27070d18fe8dfb703",
+            "testsAdded": 12,
+            "filesChanged": 11,
+            "newFiles": 3
+          }
         }
       ]
     }
