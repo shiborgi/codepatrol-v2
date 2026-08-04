@@ -1,0 +1,46 @@
+{
+  "schemaVersion": 1,
+  "type": "codepatrol-work",
+  "work": {
+    "id": "INIT-6.6-preserve-legacy-projection-compatibility",
+    "title": "Preserve legacy projection compatibility",
+    "description": "Keep existing repositories readable when manifests already exist on manifest refs, archive refs, the base branch, and older Change branches. The compatibility layer prefers the authoritative manifest ref and uses older locations only as recovery fallbacks.",
+    "issueType": "Feature",
+    "priority": "p1",
+    "acceptance": [
+      "Repositories created before INIT-6 remain readable",
+      "A manifest ref always wins over a base projection",
+      "Legacy base-only Works can be discovered",
+      "Legacy Works can be migrated without rewriting accepted integration commits",
+      "Compatibility fallback usage is visible through inspection or doctor output",
+      "New Works never depend on the legacy fallback"
+    ],
+    "createdAt": "2026-08-04T01:44:10.989Z",
+    "requestedBy": "spec",
+    "initiative": {
+      "id": "INIT-6",
+      "position": 6
+    },
+    "origin": {
+      "createdAt": "2026-08-04T01:44:10.989Z"
+    }
+  },
+  "repository": {
+    "baseRef": "refs/heads/main"
+  },
+  "graph": {
+    "blockedBy": [
+      "INIT-6.4-integrate-the-final-manifest-only-during-accept",
+      "INIT-6.5-keep-non-accepted-outcomes-off-the-base"
+    ]
+  },
+  "issue": null,
+  "workflow": {
+    "state": "ready",
+    "stage": "plan",
+    "attempt": 1,
+    "updatedAt": "2026-08-04T01:44:10.989Z"
+  },
+  "attempts": [],
+  "completion": null
+}
