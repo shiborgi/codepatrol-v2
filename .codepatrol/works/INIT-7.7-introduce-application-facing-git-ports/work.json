@@ -1,0 +1,44 @@
+{
+  "schemaVersion": 1,
+  "type": "codepatrol-work",
+  "work": {
+    "id": "INIT-7.7-introduce-application-facing-git-ports",
+    "title": "Introduce application-facing Git ports",
+    "description": "Define narrow interfaces based on application needs — WorkRepository, ChangeWorkspace, IntegrationTarget — without exposing every Git helper through a generic interface.",
+    "issueType": "Task",
+    "priority": "p1",
+    "acceptance": [
+      "Application services do not import concrete Git adapter classes",
+      "Test doubles can model Work and Change state without spawning Git for pure application tests",
+      "Repository-level integration tests continue to use real Git",
+      "Ports describe domain operations rather than Git command syntax",
+      "No unnecessary dependency-injection framework is introduced"
+    ],
+    "createdAt": "2026-08-04T01:55:22.853Z",
+    "requestedBy": "spec",
+    "initiative": {
+      "id": "INIT-7",
+      "position": 7
+    },
+    "origin": {
+      "createdAt": "2026-08-04T01:55:22.853Z"
+    }
+  },
+  "repository": {
+    "baseRef": "refs/heads/main"
+  },
+  "graph": {
+    "blockedBy": [
+      "INIT-7.6-simplify-refresh-and-integration"
+    ]
+  },
+  "issue": null,
+  "workflow": {
+    "state": "ready",
+    "stage": "plan",
+    "attempt": 1,
+    "updatedAt": "2026-08-04T01:55:22.853Z"
+  },
+  "attempts": [],
+  "completion": null
+}
