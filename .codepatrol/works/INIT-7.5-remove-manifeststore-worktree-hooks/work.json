@@ -34,7 +34,10 @@
       "INIT-7.4-reduce-worktreemanager-to-checkout-lifecycle"
     ]
   },
-  "issue": null,
+  "issue": {
+    "repository": "shiborgi/codepatrol",
+    "number": 61
+  },
   "workflow": {
     "state": "ready",
     "stage": "plan",
