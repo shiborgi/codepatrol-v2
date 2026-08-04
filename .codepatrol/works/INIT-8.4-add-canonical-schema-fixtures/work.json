@@ -32,7 +32,10 @@
       "INIT-8.3-separate-parsing-from-domain-invariants"
     ]
   },
-  "issue": null,
+  "issue": {
+    "repository": "shiborgi/codepatrol",
+    "number": 75
+  },
   "workflow": {
     "state": "ready",
     "stage": "plan",
