@@ -32,7 +32,10 @@
       "INIT-9.3-extract-stagerunservice"
     ]
   },
-  "issue": null,
+  "issue": {
+    "repository": "shiborgi/codepatrol",
+    "number": 67
+  },
   "workflow": {
     "state": "ready",
     "stage": "plan",
