@@ -1,0 +1,46 @@
+{
+  "schemaVersion": 1,
+  "type": "codepatrol-work",
+  "work": {
+    "id": "INIT-7.5-remove-manifeststore-worktree-hooks",
+    "title": "Remove ManifestStore-Worktree hooks",
+    "description": "Remove the checkpoint callbacks that reconcile manifest contents inside live worktrees (onCheckpoint, onRefreshPreflight, onRefreshed), replacing them with explicit orchestration inside application use cases only where still necessary.",
+    "issueType": "Task",
+    "priority": "p1",
+    "acceptance": [
+      "ManifestRepository construction no longer requires WorktreeManager hooks",
+      "Manifest writes have no hidden checkout side effects",
+      "No manifest index reconciliation remains for new-format Works",
+      "Refresh preflight is an explicit application operation",
+      "Tests prove a manifest checkpoint cannot modify a worktree"
+    ],
+    "createdAt": "2026-08-04T01:55:22.853Z",
+    "requestedBy": "spec",
+    "initiative": {
+      "id": "INIT-7",
+      "position": 5
+    },
+    "origin": {
+      "createdAt": "2026-08-04T01:55:22.853Z"
+    }
+  },
+  "repository": {
+    "baseRef": "refs/heads/main"
+  },
+  "graph": {
+    "blockedBy": [
+      "INIT-6.3-remove-mutable-manifest-state-from-open-change-b",
+      "INIT-7.2-extract-manifestrepository",
+      "INIT-7.4-reduce-worktreemanager-to-checkout-lifecycle"
+    ]
+  },
+  "issue": null,
+  "workflow": {
+    "state": "ready",
+    "stage": "plan",
+    "attempt": 1,
+    "updatedAt": "2026-08-04T01:55:22.853Z"
+  },
+  "attempts": [],
+  "completion": null
+}
