@@ -31,7 +31,10 @@
       "INIT-8.2-extract-shared-strict-decoding-primitives"
     ]
   },
-  "issue": null,
+  "issue": {
+    "repository": "shiborgi/codepatrol",
+    "number": 74
+  },
   "workflow": {
     "state": "ready",
     "stage": "plan",
