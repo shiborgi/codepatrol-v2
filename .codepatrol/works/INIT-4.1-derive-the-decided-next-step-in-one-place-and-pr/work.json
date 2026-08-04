@@ -37,10 +37,10 @@
     "number": 42
   },
   "workflow": {
-    "state": "active",
-    "stage": "build",
+    "state": "ready",
+    "stage": "verify",
     "attempt": 1,
-    "updatedAt": "2026-08-04T01:12:11.250Z"
+    "updatedAt": "2026-08-04T01:22:52.569Z"
   },
   "attempts": [
     {
@@ -250,18 +250,52 @@
       "stage": "build",
       "attempt": 1,
       "runId": "e418b18e-c692-4637-8bde-3d39147a4998",
-      "status": "active",
+      "status": "completed",
       "execution": {
         "role": "builder",
         "harness": "opencode",
         "model": "opencode-go/deepseek-v4-pro"
       },
       "startedAt": "2026-08-04T01:12:11.250Z",
+      "finishedAt": "2026-08-04T01:22:52.569Z",
       "todo": [
         {
           "id": "T1",
           "title": "Inspect acceptance and relevant context",
           "description": "Read plan handoff, inspect worktree and source files"
+        }
+      ],
+      "result": {
+        "decision": "continue",
+        "summary": "Implemented nextStepOf derivation in core/types.ts, consumed by nextCommand, WorkView.nextStep, and publication snapshot. Added Next single-select field to Project board via gh-projects.ts, ensured like Status/Outcome with drift-aware reconcile covering all three fields. Updated FakeGitHub, all tests, and E2E assertions. 11 files changed, 1 commit. Typecheck, unit tests, and smoke all pass.",
+        "handoff": "Verified: INCREMENT-4.1 all five acceptance criteria",
+        "todo": [
+          {
+            "id": "T1",
+            "status": "completed",
+            "note": "All product files changed, tests pass, typecheck clean, smoke green"
+          }
+        ],
+        "artifacts": []
+      },
+      "traces": [
+        {
+          "id": "685512676d3a",
+          "type": "command",
+          "message": "Ran typecheck, unit tests, and smoke",
+          "at": "2026-08-04T01:22:35.133Z",
+          "command": [
+            "npm",
+            "run",
+            "typecheck"
+          ],
+          "exitCode": 0
+        },
+        {
+          "id": "01b610adace1",
+          "type": "decision",
+          "message": "All 35 touched tests pass; drift-aware reconcile on Next/Status/Outcome fields confirmed. 11 files changed, 1 commit.",
+          "at": "2026-08-04T01:22:35.257Z"
         }
       ]
     }
