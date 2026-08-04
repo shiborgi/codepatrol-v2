@@ -54,7 +54,7 @@ export interface GitHubMilestone {
  */
 export interface GitHubMilestones {
   list(repository: string): Promise<GitHubMilestone[]>;
-  ensure(repository: string, title: string, section: string): Promise<GitHubMilestone>;
+  ensure(repository: string, initiative: { id: string; title: string }, section: string): Promise<GitHubMilestone>;
   attachIssue(repository: string, issueNumber: number, milestoneNumber: number): Promise<void>;
 }
 

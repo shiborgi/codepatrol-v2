@@ -263,13 +263,14 @@ export class PublicationService {
         });
         if (initiative === undefined) continue;
         const section = initiativeSection({
+          initiativeId: initiativeId,
           title: initiative.title,
           intent: initiative.intent,
           motivation: initiative.motivation,
           ordering: initiative.ordering,
           works: members.map(({ entry }) => ({ id: entry.work.id, title: entry.work.title })),
         });
-        const milestone = await this.milestones.ensure(resolved.nameWithOwner, initiative.title, section);
+        const milestone = await this.milestones.ensure(resolved.nameWithOwner, { id: initiativeId, title: initiative.title }, section);
         for (const { issue } of members) await this.milestones.attachIssue(resolved.nameWithOwner, issue.number, milestone.number);
         milestones.push({ initiative: initiativeId, number: milestone.number });
       }

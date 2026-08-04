@@ -87,8 +87,11 @@ export function setManagedWorkSection(body: string, details: ManagedWorkDetails)
 }
 
 const INITIATIVE_SECTION = /<!-- codepatrol:initiative:start -->[\s\S]*?<!-- codepatrol:initiative:end -->/;
+export const INITIATIVE_SECTION_PRESENT = /<!-- codepatrol:initiative:start -->/;
+const INITIATIVE_ID_MARKER = /^<!-- codepatrol-initiative-id: ([^\s]+) -->$/;
 
 export interface InitiativeSectionDetails {
+  initiativeId: string;
   title: string;
   intent: string;
   motivation: string;
@@ -96,9 +99,14 @@ export interface InitiativeSectionDetails {
   works: Array<{ id: string; title: string }>;
 }
 
+export function initiativeTitleOf(initiative: { id: string; title: string }): string {
+  return `${initiative.id}: ${initiative.title}`;
+}
+
 export function initiativeSection(details: InitiativeSectionDetails): string {
   return [
     "<!-- codepatrol:initiative:start -->",
+    `<!-- codepatrol-initiative-id: ${details.initiativeId} -->`,
     "",
     `## ${details.title}`,
     "",
@@ -117,6 +125,16 @@ export function setInitiativeSection(description: string, section: string): stri
   if (INITIATIVE_SECTION.test(description)) return description.replace(INITIATIVE_SECTION, section);
   const trimmed = description.trimEnd();
   return `${trimmed}${trimmed === "" ? "" : "\n\n"}${section}`;
+}
+
+export function readInitiativeIdFromSection(description: string): string | undefined {
+  const match = INITIATIVE_SECTION.exec(description);
+  if (match === null) return undefined;
+  for (const line of match[0].split(/\r?\n/)) {
+    const idMatch = INITIATIVE_ID_MARKER.exec(line.trim());
+    if (idMatch?.[1] !== undefined) return idMatch[1];
+  }
+  return undefined;
 }
 
 /** Whether a marker written by this author may be trusted to claim a Work. */

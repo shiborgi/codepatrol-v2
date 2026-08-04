@@ -185,7 +185,7 @@ test("retitling an Issue never causes a duplicate to be opened on a subsequent s
   }
 });
 
-test("projects the Initiative onto one Milestone and attaches every Work's Issue", async () => {
+test("projects the Initiative onto one Milestone titled INIT-<n>: <title> and attaches every Work's Issue", async () => {
   const app = await createTestApp({ remoteRepository: REPOSITORY });
   try {
     const first = await app.createWork({ title: "First Work" });
@@ -196,7 +196,9 @@ test("projects the Initiative onto one Milestone and attaches every Work's Issue
     assert.equal(result.milestones.length, 1, "one Initiative, one Milestone");
     const milestone = app.github.milestones[0];
     assert.ok(milestone);
+    assert.match(milestone.title, /^INIT-\d+: .+/, "the Milestone title carries the Initiative id");
     assert.match(milestone.description, /<!-- codepatrol:initiative:start -->[\s\S]*<!-- codepatrol:initiative:end -->/);
+    assert.match(milestone.description, /<!-- codepatrol-initiative-id:/, "the managed section carries the Initiative id marker");
     assert.match(milestone.description, new RegExp(first));
     assert.match(milestone.description, new RegExp(second));
     const attached = app.github.issues.filter((issue) => (issue as { milestone?: number }).milestone === milestone.number);
@@ -228,6 +230,65 @@ test("skips the Milestone projection when it is disabled", async () => {
     assert.equal(result.issues.created.length, 1, "the Issue is still created");
     assert.deepEqual(result.milestones, []);
     assert.equal(app.github.milestones.length, 0);
+  } finally {
+    await app.cleanup();
+  }
+});
+
+test("a legacy Milestone with bare title is retitled in place and never duplicated", async () => {
+  // Simulate a pre-change Milestone: bare title, managed section, no id marker.
+  const app = await createTestApp({ remoteRepository: REPOSITORY });
+  try {
+    const github = app.github as FakeGitHub;
+    github.milestones.push({ number: 42, title: "Test initiative", description: "<!-- codepatrol:initiative:start -->\nOld section\n<!-- codepatrol:initiative:end -->", state: "open" });
+
+    await app.createWork({ title: "Legacy work" });
+    const result = await app.publication.reconcile({ repository: REPOSITORY, remote: "origin" });
+
+    assert.equal(result.milestones.length, 1, "the legacy Milestone is found, not created");
+    assert.match(github.milestones[0]?.title ?? "", /^INIT-\d+: Test initiative$/, "the Milestone is retitled to carry the Initiative id");
+    assert.equal(github.milestones[0]?.number, 42, "the same Milestone, not a duplicate");
+    assert.equal(github.milestones.length, 1, "still exactly one Milestone");
+  } finally {
+    await app.cleanup();
+  }
+});
+
+test("a repeated sync makes no edit once the Milestone carries the id", async () => {
+  const app = await createTestApp({ remoteRepository: REPOSITORY });
+  try {
+    await app.createWork({ title: "Converging" });
+    await app.publication.reconcile({ repository: REPOSITORY, remote: "origin" });
+    const github = app.github as FakeGitHub;
+    const titleBefore = github.milestones[0]?.title;
+    assert.match(titleBefore ?? "", /^INIT-\d+:/);
+
+    const edits = github.calls.filter((call) => call.op === "edit").length;
+    const again = await app.publication.reconcile({ repository: REPOSITORY, remote: "origin" });
+    assert.equal(again.milestones.length, 1);
+    assert.equal(github.calls.filter((call) => call.op === "edit").length, edits, "no edit call on a converged Milestone");
+    assert.equal(github.milestones[0]?.title, titleBefore, "the title is unchanged");
+  } finally {
+    await app.cleanup();
+  }
+});
+
+test("a Milestone with a drifted title is found by the id marker and retitled", async () => {
+  const app = await createTestApp({ remoteRepository: REPOSITORY });
+  try {
+    await app.createWork({ title: "Drifted" });
+    await app.publication.reconcile({ repository: REPOSITORY, remote: "origin" });
+    const github = app.github as FakeGitHub;
+    const originalTitle = github.milestones[0]?.title;
+    assert.ok(github.milestones[0]);
+    // Simulate a human renaming the Milestone
+    github.milestones[0].title = "A human renamed this milestone";
+
+    const result = await app.publication.reconcile({ repository: REPOSITORY, remote: "origin" });
+    assert.equal(result.milestones.length, 1);
+    assert.equal(github.milestones.length, 1, "no duplicate");
+    assert.equal(github.milestones[0]?.title, originalTitle, "the title is restored via the id marker");
+    assert.match(github.milestones[0]?.description ?? "", /<!-- codepatrol-initiative-id:/);
   } finally {
     await app.cleanup();
   }

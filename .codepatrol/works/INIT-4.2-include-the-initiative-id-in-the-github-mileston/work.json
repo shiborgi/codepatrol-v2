@@ -24,7 +24,9 @@
     }
   },
   "repository": {
-    "baseRef": "refs/heads/main"
+    "baseRef": "refs/heads/main",
+    "createdFromCommit": "94fd150dbddd0dccff58d0cc65362e432535c655",
+    "baselineCommit": "94fd150dbddd0dccff58d0cc65362e432535c655"
   },
   "graph": {
     "blockedBy": []
@@ -34,11 +36,228 @@
     "number": 43
   },
   "workflow": {
-    "state": "ready",
-    "stage": "plan",
+    "state": "active",
+    "stage": "build",
     "attempt": 1,
-    "updatedAt": "2026-08-04T00:38:17.625Z"
+    "updatedAt": "2026-08-04T01:55:36.800Z"
   },
-  "attempts": [],
+  "attempts": [
+    {
+      "stage": "plan",
+      "attempt": 1,
+      "runId": "a95e7955-3712-44fc-80bb-9620ef48abf7",
+      "status": "completed",
+      "execution": {
+        "role": "planner",
+        "harness": "opencode",
+        "model": "kimi-for-coding/k3"
+      },
+      "startedAt": "2026-08-04T00:43:37.035Z",
+      "finishedAt": "2026-08-04T00:45:10.890Z",
+      "todo": [
+        {
+          "id": "P1",
+          "title": "Inspect gh-milestones ensure/list, markers (managed section), and the E2E milestone matching"
+        },
+        {
+          "id": "P2",
+          "title": "Decide the titled format, identity reconciliation (marker-based), and convergence rule"
+        },
+        {
+          "id": "P3",
+          "title": "Decide test coverage incl. retitle-without-duplicate and E2E assertion"
+        },
+        {
+          "id": "P4",
+          "title": "Write decision-complete plan covering all four acceptance criteria"
+        },
+        {
+          "id": "P5",
+          "title": "Record traces; complete Plan with decision continue"
+        }
+      ],
+      "result": {
+        "decision": "continue",
+        "summary": "Milestone titles become \"INIT-<n>: <title>\" via a shared initiativeTitleOf helper, and identity stops depending on the title: the managed section gains a hidden codepatrol-initiative-id marker, and ensure() matches new title, then marker, then legacy bare title, retitling in place and never duplicating. The E2E matches by the managed section and asserts the id in the title.",
+        "handoff": "# Plan: Include the Initiative id in the GitHub Milestone title (INIT-4.2)\n\n## Finding (P1)\nensure() finds a Milestone by exact title (gh-milestones.ts:32), and the managed initiative section carries no initiative id (markers.ts:99-113). Two consequences: a naive title change creates a second Milestone, and a marker alone cannot identify which Initiative a pre-change Milestone belongs to — so reconciliation needs a legacy path. The E2E finds the Milestone by exact title (projection-e2e.mjs milestoneFor) and must switch to the managed section.\n\n## Product files Build touches\n1. src/application/publication/markers.ts — add `initiativeTitleOf(initiative: { id, title }): string` returning `INIT-<n>: <title>`; add the hidden marker `<!-- codepatrol-initiative-id: <id> -->` inside the managed section of initiativeSection (right after the start marker, so the section stays wholly owned); export a reader for the id marker.\n2. src/application/ports.ts — GitHubMilestones.ensure becomes `ensure(repository, initiative: { id: string; title: string }, section)`.\n3. src/adapters/gh-milestones.ts — ensure() matches in order: (a) exact new title → converge description only; (b) a Milestone whose description carries this initiative's id marker → PATCH title + converged description; (c) legacy: exact bare title AND an initiative section present → retitle + converge; (d) otherwise create. Two different Milestones matching (a) and (b) is SYNC_CONFLICT, never a silent pick.\n4. src/application/publication.ts — the milestone call passes the initiative identity (id + title) instead of the bare title (publication.ts:263).\n5. src/test/support/github.ts — the fake milestones port mirrors the new signature and matching, and records edits so tests can count them.\n6. src/test/publication.test.ts — updated milestone tests plus the new ones below.\n7. scripts/projection-e2e.mjs — milestoneFor matches by the managed section (`codepatrol:initiative:start`) instead of the exact title; a new check asserts the id is in the title.\n8. src/test/documentation.test.ts — register the new E2E assertion string (e.g. \"the Milestone title carries the Initiative id\").\n\n## Rules (P2)\n- Format: `INIT-2: Shareable Initiatives` — the id, colon, title; the same convention INIT-2.2 set for Issue titles.\n- Identity never depends on the title again: the id marker inside the managed section is the durable handle; the legacy bare-title path exists only for Milestones written before the marker did, and only when an initiative section is present.\n- Convergence stays the existing mechanism: the managed section is replaced wholesale, and an already-correct Milestone is not edited (title compared, description compared).\n\n## Tests (P3)\n1. A published Initiative's Milestone is titled `INIT-<n>: <title>` (acceptance 1) — update the existing milestone projection test.\n2. A pre-change Milestone (bare title, initiative section, no id marker) is retitled in place on the next sync — one Milestone before, one after, same number (acceptance 2).\n3. A repeated sync issues no title or description edit once the Milestone carries the id (acceptance 3, via the fake's recorded calls).\n4. A Milestone carrying the id marker under a drifted title is found by the marker and retitled (the durable-handle path).\n5. E2E: the scenario matches through the managed section and asserts the id in the title; the documentation guard registers the string (acceptance 4).\n\n## Acceptance coverage\n1. Id in the title at ensure — initiativeTitleOf + test 1.\n2. Retitle, never duplicate — four-step matching + tests 2 and 4.\n3. No churn — existing compare-then-edit + test 3.\n4. E2E matches the managed section and asserts the id — script + guard + test 5.\n\n## Verification for Build\nnpm run verify (typecheck, full unit suite, smoke, --help).\n\n## Non-goals\nNo change to what the managed section shows beyond the hidden marker. No Milestone deletion or merging. No id marker retrofit for closed Milestones beyond the same ensure path (a closed Milestone is retitled like any other — reconciliation does not reopen it).",
+        "todo": [
+          {
+            "id": "P1",
+            "status": "completed",
+            "note": "ensure matches by exact title; the managed section has no id; E2E matches by title; duplication risk confirmed."
+          },
+          {
+            "id": "P2",
+            "status": "completed",
+            "note": "INIT-<n>: <title> via initiativeTitleOf; hidden id marker in the section; four-step matching (new title, marker, legacy, create); port signature carries the initiative identity."
+          },
+          {
+            "id": "P3",
+            "status": "completed",
+            "note": "Tests: prefixed ensure, legacy retitle without duplicate, no-churn re-sync, marker-path retitle, E2E section matching + guard string."
+          },
+          {
+            "id": "P4",
+            "status": "completed",
+            "note": "Handoff covers all four acceptance criteria with exact files and the matching order."
+          },
+          {
+            "id": "P5",
+            "status": "completed",
+            "note": "Two traces recorded (observation + decision); completing with decision continue."
+          }
+        ],
+        "artifacts": []
+      },
+      "traces": [
+        {
+          "id": "6e50983a86e2",
+          "type": "observation",
+          "message": "ensure() finds a Milestone by exact title (gh-milestones.ts:32) and the managed initiative section carries no initiative id (markers.ts:99-113), so a naive title change duplicates the Milestone and a marker alone cannot say which Initiative a legacy Milestone belongs to. publication.ts:263 passes initiative.title; the E2E finds the Milestone by exact title (projection-e2e.mjs milestoneFor).",
+          "at": "2026-08-04T00:45:10.732Z",
+          "data": {
+            "files": [
+              "src/adapters/gh-milestones.ts",
+              "src/application/publication/markers.ts",
+              "src/application/publication.ts",
+              "scripts/projection-e2e.mjs"
+            ]
+          }
+        },
+        {
+          "id": "192a87bb6331",
+          "type": "decision",
+          "message": "Format \"INIT-<n>: <title>\" via initiativeTitleOf in markers.ts, and the managed section gains a hidden <!-- codepatrol-initiative-id: INIT-<n> --> marker inside the owned section. ensure() matches in four steps: exact new title (converge description), the id marker (retitle + converge), the legacy bare title with an initiative section present (retitle + converge), otherwise create. The port signature becomes ensure(repository, initiative: { id, title }, section); the E2E matches milestones by the managed section and asserts the id is in the title, with the assertion string registered in documentation.test.ts.",
+          "at": "2026-08-04T00:45:10.802Z",
+          "data": {
+            "format": "INIT-<n>: <title>",
+            "marker": "codepatrol-initiative-id",
+            "matching": "new title -> id marker -> legacy bare title -> create"
+          }
+        }
+      ]
+    },
+    {
+      "stage": "review",
+      "attempt": 1,
+      "runId": "f7bfa36e-e509-4c4d-8ab2-8a16dad52362",
+      "status": "completed",
+      "execution": {
+        "role": "reviewer",
+        "harness": "opencode",
+        "model": "minimax-coding-plan/MiniMax-M3"
+      },
+      "startedAt": "2026-08-04T01:11:30.191Z",
+      "finishedAt": "2026-08-04T01:13:05.516Z",
+      "todo": [
+        {
+          "id": "R1",
+          "title": "Audit plan completeness against SPEC-FORMAT and PLAN-FORMAT",
+          "description": "Verify every acceptance criterion is testable and maps to tasks; task dependencies form a DAG; every task names its file set and verify command; blast radius covers union of task files."
+        },
+        {
+          "id": "R2",
+          "title": "Validate plan references against the repository",
+          "description": "Check that referenced paths, symbols, and verification commands exist and are executable. No hidden production edits."
+        },
+        {
+          "id": "R3",
+          "title": "Write review report and seal verdict",
+          "description": "Write report.md and evidence, curate traces.md, record the run, and checkpoint or return."
+        }
+      ],
+      "result": {
+        "decision": "continue",
+        "summary": "Plan is approved. It successfully diagnoses the duplication issue tied to bare-title milestones, introduces a durable identity marker in the managed section, and details a precise 4-step reconciliation strategy to prevent duplication and churn.",
+        "handoff": "# Review Report: INIT-4.2 Include the Initiative id in the GitHub Milestone title\n\n## Verdict\n- decision: continue\n- rationale: plan is decision-complete and strictly maps to the given acceptance criteria. It covers the migration safely.\n- return targets: none\n\n## R1 - SPEC-FORMAT / PLAN-FORMAT Audit\nAll 4 acceptance criteria have a 1:1 mapping with technical execution tasks:\n1. Milestone titled `INIT-<n>: <title>` -> `initiativeTitleOf` helper + test 1.\n2. Pre-change Milestone retitled in place -> 4-step `ensure()` matching + tests 2 and 4.\n3. Repeated sync no-edit -> `ensure()` converge mechanism + test 3 via fake.\n4. E2E keeps matching via managed section -> `projection-e2e.mjs` switched to section marker + guard in `documentation.test.ts`.\n\nThe tasks form a clean DAG (P1 -> P2 -> P3 -> P4 -> P5). The files impacted are properly specified and match the scope of changes perfectly. Verification command is `npm run verify`.\n\n## R2 - Repository Validation\nThe validation against the active codebase is clean:\n- `gh-milestones.ts` line 31 uses title explicitly today.\n- `markers.ts` lines 99-113 constructs the initiative section which definitively lacks an ID marker today.\n- `publication.ts` line 272 leverages `this.milestones.ensure` using the title directly.\n- `projection-e2e.mjs` line 102 matches via title directly.\n\nAll existing points of drift and failure described in the plan perfectly reflect the real code base. The proposed modifications are comprehensive.\n\n## Next command\n```bash\ncodepatrol build start INIT-4.2-include-the-initiative-id-in-the-github-mileston --harness <harness> --model <model> --todo <todo.json>\n```\n",
+        "todo": [
+          {
+            "id": "R1",
+            "status": "completed",
+            "note": "Audited plan; it complies strictly with SPEC-FORMAT and PLAN-FORMAT. Task dependencies form a strict DAG."
+          },
+          {
+            "id": "R2",
+            "status": "completed",
+            "note": "Validated existence of references (gh-milestones.ts, markers.ts, publication.ts, projection-e2e.mjs) against main."
+          },
+          {
+            "id": "R3",
+            "status": "completed",
+            "note": "Review report written and verdict sealed as continue."
+          }
+        ],
+        "artifacts": []
+      },
+      "traces": [
+        {
+          "id": "c4ef6dae0e3c",
+          "type": "observation",
+          "message": "Audited plan completeness against SPEC-FORMAT and PLAN-FORMAT. The plan strictly adheres to the format. It identifies the 4 acceptance criteria and accurately maps them to product files and tests: (1) Format INIT-<n>: <title> is handled in markers.ts via `initiativeTitleOf` and tested in test 1. (2) Retitling legacy milestones matches the 4-step process in `gh-milestones.ts` and is tested in tests 2 & 4. (3) Repeated sync idempotency relies on `gh-milestones.ts` convergence logic and is tested via `FakeGitHub` in test 3. (4) E2E matches via managed section and asserts the title in `projection-e2e.mjs` and `documentation.test.ts` (test 5). The task graph is a proper DAG (P1 -> P2 -> P3 -> P4 -> P5). The blast radius covers the files correctly. The verify command (`npm run verify`) is correctly specified.",
+          "at": "2026-08-04T01:12:30.896Z",
+          "data": {
+            "acceptanceToTaskMap": {
+              "1": "P2 + test 1",
+              "2": "P2 + tests 2 and 4",
+              "3": "P2 + test 3",
+              "4": "P2 + test 5"
+            },
+            "taskDag": [
+              "P1",
+              "P2",
+              "P3",
+              "P4",
+              "P5"
+            ],
+            "fileSet": [
+              "src/application/publication/markers.ts",
+              "src/application/ports.ts",
+              "src/adapters/gh-milestones.ts",
+              "src/application/publication.ts",
+              "src/test/support/github.ts",
+              "src/test/publication.test.ts",
+              "scripts/projection-e2e.mjs",
+              "src/test/documentation.test.ts"
+            ],
+            "verifyCommand": "npm run verify"
+          }
+        },
+        {
+          "id": "1529c6696b81",
+          "type": "observation",
+          "message": "Validated plan references against the repository. (a) `src/adapters/gh-milestones.ts` line 31 has `ensure(repository: string, title: string, section: string)` confirming it uses title today. (b) `src/application/publication/markers.ts` lines 99-113 contains `initiativeSection` which currently embeds no `codepatrol-initiative-id`. (c) `src/application/publication.ts` line 272 calls `this.milestones.ensure(..., initiative.title, ...)`. (d) `scripts/projection-e2e.mjs` has `milestoneFor` finding by exact title. All current states align perfectly with the plan's assertions. No hidden production edits identified.",
+          "at": "2026-08-04T01:12:45.098Z",
+          "data": {
+            "verifiedPaths": {
+              "gh-milestones.ts": "Lines 31 (ensure signature uses title)",
+              "markers.ts": "Lines 99-113 (initiativeSection does not include ID marker)",
+              "publication.ts": "Line 272 (passes bare title to ensure)",
+              "projection-e2e.mjs": "Line 102 (milestoneFor uses title)"
+            },
+            "noHiddenEdits": true
+          }
+        }
+      ]
+    },
+    {
+      "stage": "build",
+      "attempt": 1,
+      "runId": "3e8ace8d-4670-49a7-b862-f8e5700c5170",
+      "status": "active",
+      "execution": {
+        "role": "builder",
+        "harness": "opencode",
+        "model": "opencode-go/deepseek-v4-pro"
+      },
+      "startedAt": "2026-08-04T01:55:36.800Z",
+      "todo": [
+        {
+          "id": "T1",
+          "title": "Inspect acceptance and relevant context",
+          "description": "Read plan handoff, inspect worktree and source files for INIT-4.2"
+        }
+      ]
+    }
+  ],
   "completion": null
 }

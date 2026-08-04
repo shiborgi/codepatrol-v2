@@ -101,7 +101,7 @@ function issues() {
 
 function milestoneFor(title) {
   const all = gh("api", `repos/${repository}/milestones?state=all&per_page=100`);
-  return (all ?? []).find((milestone) => milestone.title === title);
+  return (all ?? []).find((milestone) => milestone.description?.includes("<!-- codepatrol:initiative:start -->") && milestone.title.includes(title));
 }
 
 let workId = "";
@@ -168,6 +168,7 @@ try {
   const initiativeTitle = codepatrol("initiative", "show", applied.initiative).initiative.title;
   const milestone = milestoneFor(initiativeTitle);
   check(milestone !== undefined, "the Initiative projects onto exactly one Milestone");
+  check(/^INIT-\d+: /.test(milestone?.title ?? ""), "the Milestone title carries the Initiative id");
   check((milestone?.description ?? "").includes("codepatrol:initiative:start"), "the Milestone carries the managed section");
   const issueMilestone = gh("api", `repos/${repository}/issues/${issueNumber}`)?.milestone;
   check(issueMilestone?.number === milestone?.number, "the Work's Issue is attached to the Initiative's Milestone");
