@@ -33,7 +33,10 @@
       "INIT-9.1-extract-workqueries"
     ]
   },
-  "issue": null,
+  "issue": {
+    "repository": "shiborgi/codepatrol",
+    "number": 65
+  },
   "workflow": {
     "state": "ready",
     "stage": "plan",
