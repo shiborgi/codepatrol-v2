@@ -39,10 +39,10 @@
     "number": 34
   },
   "workflow": {
-    "state": "active",
-    "stage": "review",
+    "state": "ready",
+    "stage": "build",
     "attempt": 1,
-    "updatedAt": "2026-08-04T03:26:54.710Z"
+    "updatedAt": "2026-08-04T03:28:45.191Z"
   },
   "attempts": [
     {
@@ -173,13 +173,14 @@
       "stage": "review",
       "attempt": 1,
       "runId": "20899438-b87d-43a8-b4a5-d0a21c03374c",
-      "status": "active",
+      "status": "completed",
       "execution": {
         "role": "reviewer",
         "harness": "opencode",
         "model": "deepseek-v4-pro"
       },
       "startedAt": "2026-08-04T03:26:54.710Z",
+      "finishedAt": "2026-08-04T03:28:45.191Z",
       "todo": [
         {
           "id": "R1",
@@ -195,6 +196,62 @@
           "id": "R3",
           "title": "Write review report and seal verdict",
           "description": "Write report.md and evidence, curate traces.md, record the run, and checkpoint or return."
+        }
+      ],
+      "result": {
+        "decision": "continue",
+        "summary": "Plan approved. The telemetry design is decision-complete: additive schemaVersion-1 field, structural privacy boundary (counts/sizes/identifiers/unavailable only), best-effort collection at complete with no impact on transitions or Ship, harness channel via --telemetry file. Every acceptance criterion maps to a test, and every reference resolves against main.",
+        "handoff": "# Review Report: INIT-1.6 Record bounded, privacy-safe telemetry on every stage attempt\n\n## Verdict\n- decision: continue\n- rationale: plan is executable and decision-complete\n- return targets: none\n\n## R1 — SPEC-FORMAT / PLAN-FORMAT audit\nAll 5 acceptance criteria map to 8 tests in telemetry.test.ts. Tasks form a DAG (design → types → persistence → collection → harness → wiring → tests). File set is 3 new + 7 modified. Verification is npm run verify. Privacy boundary is structurally enforced: AttemptTelemetry only contains non-negative integers or the literal \"unavailable\"; T4-T6 prove no content can leak through.\n\n## R2 — Repository validation\nEvery reference resolves against main: ManifestAttempt interface at line 63, keys() gate at line 500, finish transition at lifecycle.ts:8-16/103, completeLocked at work-service.ts:484-489, allowedFlags at stage.ts:23-25, strict parsing patterns in inputs.ts, HOST_CAPABILITIES at skill.ts:22, WorkService construction at main.ts:49. No collisions. schemaVersion 1 stays.",
+        "todo": [
+          {
+            "id": "R1",
+            "status": "completed",
+            "note": "Audited plan; all 5 acceptance criteria map to 8 tests in a DAG. Privacy boundary is structural."
+          },
+          {
+            "id": "R2",
+            "status": "completed",
+            "note": "Validated every reference against main. All paths resolve, no collisions."
+          },
+          {
+            "id": "R3",
+            "status": "completed",
+            "note": "Review report written and verdict sealed as continue."
+          }
+        ],
+        "artifacts": []
+      },
+      "traces": [
+        {
+          "id": "06d1cad9adfe",
+          "type": "observation",
+          "message": "R1: Audited plan against SPEC-FORMAT and PLAN-FORMAT. All 5 acceptance criteria map to 8 tests (T1-T8 in telemetry.test.ts). Tasks form a DAG: design → new types (core/telemetry.ts, application/telemetry.ts) → persistence (work-manifest.ts, lifecycle.ts) → collection (work-service.ts) → harness (stage.ts, inputs.ts) → wiring (main.ts, skill.ts) → tests. File set: 3 new (telemetry.ts x2, test) + 7 modified. Verification command is npm run verify. Blast radius is the union. Non-goals are honest: no metric duplication (startedAt/finishedAt and command traces already carry duration/commands), no prompt/response/content storage, no mandatory collection. Privacy boundary is structural: counts, sizes, identifiers, and the literal \"unavailable\" — nothing else fits the AttemptTelemetry type.",
+          "at": "2026-08-04T03:28:29.291Z",
+          "data": {
+            "acceptanceToTestMap": {
+              "1": "T1+T2: complete with collector records all sections; field-less manifest parses",
+              "2": "T3: complete without --telemetry stores \"unavailable\"",
+              "3": "T4+T5+T6: leaf-walker, parser forbids content fields, serializer/parser symmetry",
+              "4": "T7: throwing collector leaves transition/result/Ship unaffected",
+              "5": "T8: runThrough to ship accept"
+            }
+          }
+        },
+        {
+          "id": "d3126c97bb36",
+          "type": "observation",
+          "message": "R2: Validated plan references against main. (a) src/core/work-manifest.ts:63 — ManifestAttempt interface present; keys() gate at line 500 accepts adding \"telemetry\" to the allowed set. (b) src/core/lifecycle.ts:8-16 + :103 — finish transition and attempt assembly confirmed. (c) src/application/work-service.ts:484-489 — completeLocked exists, collection wrapper fits here. (d) src/cli/commands/stage.ts:23-25 — complete allowedFlags [\"run\",\"result\"]; adding --telemetry is the same pattern. (e) src/cli/inputs.ts:91-131 — parseResult and parseTrace establish the strict parsing style for new parseTelemetryReport. (f) src/cli/commands/skill.ts:22 — HOST_CAPABILITIES needs export (or already exported by INIT-1.4 if landed). (g) src/cli/main.ts:49 — WorkService construction is injection point. (h) MANIFEST_SCHEMA_VERSION = 1; no bump. (i) No collisions: AttemptTelemetry, TELEMETRY_UNAVAILABLE, telemetry.ts are all fresh names. (j) New files do not exist yet. No hidden production edits.",
+          "at": "2026-08-04T03:28:30.850Z",
+          "data": {
+            "allPathsResolve": true,
+            "noCollisions": true,
+            "schemaVersionStays1": true,
+            "newFiles": [
+              "src/core/telemetry.ts",
+              "src/application/telemetry.ts",
+              "src/test/telemetry.test.ts"
+            ]
+          }
         }
       ]
     }
