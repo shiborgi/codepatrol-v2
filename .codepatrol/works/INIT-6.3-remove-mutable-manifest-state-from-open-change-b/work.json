@@ -33,7 +33,10 @@
       "INIT-6.2-cut-change-branches-directly-from-the-base"
     ]
   },
-  "issue": null,
+  "issue": {
+    "repository": "shiborgi/codepatrol",
+    "number": 47
+  },
   "workflow": {
     "state": "ready",
     "stage": "plan",
