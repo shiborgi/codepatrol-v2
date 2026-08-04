@@ -1,0 +1,44 @@
+{
+  "schemaVersion": 1,
+  "type": "codepatrol-work",
+  "work": {
+    "id": "INIT-4.2-include-the-initiative-id-in-the-github-mileston",
+    "title": "Include the Initiative id in the GitHub Milestone title",
+    "description": "The Milestone projection ensures a Milestone by the bare Initiative title, so the milestone list shows prose with no stable handle — the gap INIT-2.2 already fixed for Issue titles. Name the Milestone \"INIT-<n>: <title>\". Because ensure finds a Milestone by title, the change must reconcile identity, not just the string: an existing Milestone for the Initiative — found by the managed marker in its description, not by name — is retitled in place, and a sync never opens a second Milestone for one Initiative. Converges: a Milestone already carrying the id is left alone.",
+    "issueType": "Bug",
+    "priority": "p2",
+    "acceptance": [
+      "Publishing an Initiative's Works ensures its Milestone titled \"INIT-<n>: <title>\"",
+      "A Milestone created before this change is retitled in place on the next sync, never duplicated",
+      "A repeated sync makes no edit once the Milestone carries the id",
+      "The projection end-to-end scenario keeps matching the Milestone through the managed section, and asserts the id is in the title"
+    ],
+    "createdAt": "2026-08-04T00:38:17.625Z",
+    "requestedBy": "spec",
+    "initiative": {
+      "id": "INIT-4",
+      "position": 2
+    },
+    "origin": {
+      "createdAt": "2026-08-04T00:38:17.625Z"
+    }
+  },
+  "repository": {
+    "baseRef": "refs/heads/main"
+  },
+  "graph": {
+    "blockedBy": []
+  },
+  "issue": {
+    "repository": "shiborgi/codepatrol",
+    "number": 43
+  },
+  "workflow": {
+    "state": "ready",
+    "stage": "plan",
+    "attempt": 1,
+    "updatedAt": "2026-08-04T00:38:17.625Z"
+  },
+  "attempts": [],
+  "completion": null
+}
