@@ -37,10 +37,10 @@
     "number": 42
   },
   "workflow": {
-    "state": "ready",
+    "state": "active",
     "stage": "ship",
     "attempt": 1,
-    "updatedAt": "2026-08-04T01:43:17.945Z"
+    "updatedAt": "2026-08-04T01:52:41.223Z"
   },
   "attempts": [
     {
@@ -486,6 +486,25 @@
         "targetCommit": "02607c6d1c744c03ad7d48e0fba101c6d6241469",
         "policyHash": "738b7dca7b2b865e7de12c3f1ca6c05da0d1762f30e202a18709b6290fafb7b4"
       }
+    },
+    {
+      "stage": "ship",
+      "attempt": 1,
+      "runId": "3369df6a-48d7-4977-87b4-aed62435e183",
+      "status": "active",
+      "execution": {
+        "role": "shipper",
+        "harness": "opencode",
+        "model": "minimax-coding-plan/MiniMax-M3"
+      },
+      "startedAt": "2026-08-04T01:52:41.223Z",
+      "todo": [
+        {
+          "id": "S1",
+          "title": "Audit and accept the verified INIT-4.1 Change",
+          "description": "Inspect the complete lifecycle, all candidate commits, changed files, verification evidence, base alignment, and clean Work checkout; then record user authority and accept the exact verified Change."
+        }
+      ]
     }
   ],
   "completion": null
