@@ -1,0 +1,44 @@
+{
+  "schemaVersion": 1,
+  "type": "codepatrol-work",
+  "work": {
+    "id": "INIT-10.6-integrate-signals-into-spec-discovery",
+    "title": "Integrate signals into Spec discovery",
+    "description": "Update codepatrol-spec so Discovery and Backlog Review consume the structured improvement output before proposing: inspect the graph, inspect signals, inspect supporting evidence for selected patterns, propose, validate, and require normal approval and apply.",
+    "issueType": "Feature",
+    "priority": "p2",
+    "acceptance": [
+      "Spec distinguishes observed signals from its interpretation",
+      "Proposed improvement Works cite supporting Works and patterns",
+      "Spec never applies an improvement Initiative automatically",
+      "Suggestions without sufficient evidence are marked as hypotheses",
+      "Duplicate improvement Works are detected against the current graph"
+    ],
+    "createdAt": "2026-08-04T02:03:50.127Z",
+    "requestedBy": "spec",
+    "initiative": {
+      "id": "INIT-10",
+      "position": 6
+    },
+    "origin": {
+      "createdAt": "2026-08-04T02:03:50.127Z"
+    }
+  },
+  "repository": {
+    "baseRef": "refs/heads/main"
+  },
+  "graph": {
+    "blockedBy": [
+      "INIT-10.5-add-an-improvement-inspection-command"
+    ]
+  },
+  "issue": null,
+  "workflow": {
+    "state": "ready",
+    "stage": "plan",
+    "attempt": 1,
+    "updatedAt": "2026-08-04T02:03:50.127Z"
+  },
+  "attempts": [],
+  "completion": null
+}
