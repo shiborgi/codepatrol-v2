@@ -31,7 +31,10 @@
       "INIT-8.4-add-canonical-schema-fixtures"
     ]
   },
-  "issue": null,
+  "issue": {
+    "repository": "shiborgi/codepatrol",
+    "number": 76
+  },
   "workflow": {
     "state": "ready",
     "stage": "plan",
