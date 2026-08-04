@@ -1,0 +1,46 @@
+{
+  "schemaVersion": 1,
+  "type": "codepatrol-work",
+  "work": {
+    "id": "INIT-6.5-keep-non-accepted-outcomes-off-the-base",
+    "title": "Keep non-accepted outcomes off the base",
+    "description": "Update rollback, cancel, and supersede behavior to guarantee none of these outcomes creates or modifies a base projection.",
+    "issueType": "Feature",
+    "priority": "p1",
+    "acceptance": [
+      "Rollback does not move the base",
+      "Cancel does not move the base",
+      "Supersede does not move the base",
+      "Candidate code is archived when candidate code exists",
+      "Branch and worktree cleanup remain idempotent",
+      "The terminal manifest remains available through the manifest ref",
+      "Late GitHub synchronization does not amend an integration commit"
+    ],
+    "createdAt": "2026-08-04T01:44:10.989Z",
+    "requestedBy": "spec",
+    "initiative": {
+      "id": "INIT-6",
+      "position": 5
+    },
+    "origin": {
+      "createdAt": "2026-08-04T01:44:10.989Z"
+    }
+  },
+  "repository": {
+    "baseRef": "refs/heads/main"
+  },
+  "graph": {
+    "blockedBy": [
+      "INIT-6.3-remove-mutable-manifest-state-from-open-change-b"
+    ]
+  },
+  "issue": null,
+  "workflow": {
+    "state": "ready",
+    "stage": "plan",
+    "attempt": 1,
+    "updatedAt": "2026-08-04T01:44:10.989Z"
+  },
+  "attempts": [],
+  "completion": null
+}
