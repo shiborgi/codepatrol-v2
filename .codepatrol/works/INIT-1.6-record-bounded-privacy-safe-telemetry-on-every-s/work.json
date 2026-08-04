@@ -25,7 +25,9 @@
     }
   },
   "repository": {
-    "baseRef": "refs/heads/main"
+    "baseRef": "refs/heads/main",
+    "createdFromCommit": "35cace34058848672ab935042d4c7538d0c5eeae",
+    "baselineCommit": "35cace34058848672ab935042d4c7538d0c5eeae"
   },
   "graph": {
     "blockedBy": [
@@ -37,11 +39,51 @@
     "number": 34
   },
   "workflow": {
-    "state": "ready",
+    "state": "active",
     "stage": "plan",
     "attempt": 1,
-    "updatedAt": "2026-08-03T11:16:22.452Z"
+    "updatedAt": "2026-08-04T03:04:07.832Z"
   },
-  "attempts": [],
+  "attempts": [
+    {
+      "stage": "plan",
+      "attempt": 1,
+      "runId": "6a70824d-bf8a-4fe9-98ba-d2a3e5cc2b95",
+      "status": "active",
+      "execution": {
+        "role": "planner",
+        "harness": "opencode",
+        "model": "kimi-for-coding/k3"
+      },
+      "startedAt": "2026-08-04T03:04:07.832Z",
+      "todo": [
+        {
+          "id": "P1",
+          "title": "Inspect Work, acceptance, and telemetry-relevant source state",
+          "description": "Read the work handoff, inspect work-manifest attempt schema, work-service, lifecycle, traces, and any existing telemetry/derivable data."
+        },
+        {
+          "id": "P2",
+          "title": "Design additive telemetry field and collection points",
+          "description": "Decide the optional attempt telemetry shape, where it is computed, privacy boundary, unavailable-vs-zero model usage, and failure isolation."
+        },
+        {
+          "id": "P3",
+          "title": "Validate plan references against the repository",
+          "description": "Check every referenced path, symbol, and verification command exists; no hidden production edits."
+        },
+        {
+          "id": "P4",
+          "title": "Write decision-complete v1 plan handoff",
+          "description": "Map each acceptance criterion to named files and tests; name verification command and non-goals."
+        },
+        {
+          "id": "P5",
+          "title": "Record traces and complete Plan with continue",
+          "description": "Trace key observations and complete the Plan attempt."
+        }
+      ]
+    }
+  ],
   "completion": null
 }
