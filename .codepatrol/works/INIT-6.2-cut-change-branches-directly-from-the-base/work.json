@@ -1,0 +1,45 @@
+{
+  "schemaVersion": 1,
+  "type": "codepatrol-work",
+  "work": {
+    "id": "INIT-6.2-cut-change-branches-directly-from-the-base",
+    "title": "Cut Change branches directly from the base",
+    "description": "Change branch materialization so a branch is created from the current base tip without first committing a manifest projection to the base. Current flow: manifest projection commit on base, then Change branch. Target flow: current base tip, then Change branch. The cut still records createdFromCommit and baselineCommit.",
+    "issueType": "Feature",
+    "priority": "p1",
+    "acceptance": [
+      "First stage start creates the Change branch from the current base tip",
+      "The base ref is unchanged",
+      "createdFromCommit equals the base tip used for the cut",
+      "baselineCommit equals the base tip used for the cut",
+      "Repeating materialization is idempotent",
+      "Concurrent materialization of the same Work cannot create divergent branches"
+    ],
+    "createdAt": "2026-08-04T01:44:10.989Z",
+    "requestedBy": "spec",
+    "initiative": {
+      "id": "INIT-6",
+      "position": 2
+    },
+    "origin": {
+      "createdAt": "2026-08-04T01:44:10.989Z"
+    }
+  },
+  "repository": {
+    "baseRef": "refs/heads/main"
+  },
+  "graph": {
+    "blockedBy": [
+      "INIT-6.1-define-the-open-work-persistence-contract"
+    ]
+  },
+  "issue": null,
+  "workflow": {
+    "state": "ready",
+    "stage": "plan",
+    "attempt": 1,
+    "updatedAt": "2026-08-04T01:44:10.989Z"
+  },
+  "attempts": [],
+  "completion": null
+}
