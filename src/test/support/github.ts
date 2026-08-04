@@ -18,7 +18,7 @@ import type {
 import { CodepatrolError } from "../../core/errors.js";
 import type { NextStep, ProjectOutcome, ProjectStatus } from "../../core/types.js";
 import { DEFAULT_WORK_TYPE_LABELS } from "../../core/work-type-labels.js";
-import { setInitiativeSection } from "../../application/publication/markers.js";
+import { setInitiativeSection, initiativeTitleOf, readInitiativeIdFromSection } from "../../application/publication/markers.js";
 
 /**
  * One port-level fake for every GitHub surface. Anything above the adapter
@@ -175,15 +175,36 @@ export class FakeGitHub implements GitHubIssues, GitHubProjects {
     return this.milestones.map((milestone) => ({ ...milestone }));
   }
 
-  async ensureMilestone(_repository: string, title: string, section: string): Promise<GitHubMilestone> {
-    this.record("milestone.ensure", { title });
-    const existing = this.milestones.find((milestone) => milestone.title === title);
-    if (existing !== undefined) {
-      const desired = setInitiativeSection(existing.description, section);
-      if (desired !== existing.description) existing.description = desired;
-      return { ...existing };
+  async ensureMilestone(_repository: string, initiative: { id: string; title: string }, section: string): Promise<GitHubMilestone> {
+    const desiredTitle = initiativeTitleOf(initiative);
+    this.record("milestone.ensure", { initiative, desiredTitle });
+
+    // (a) exact new title
+    const exactMatch = this.milestones.find((milestone) => milestone.title === desiredTitle);
+    if (exactMatch !== undefined) {
+      const desired = setInitiativeSection(exactMatch.description, section);
+      if (desired !== exactMatch.description) exactMatch.description = desired;
+      return { ...exactMatch };
     }
-    const created: GitHubMilestone = { number: this.nextMilestone++, title, description: section, state: "open" };
+
+    // (b) id marker match
+    const markerMatch = this.milestones.find((milestone) => readInitiativeIdFromSection(milestone.description) === initiative.id);
+    if (markerMatch !== undefined) {
+      markerMatch.title = desiredTitle;
+      markerMatch.description = setInitiativeSection(markerMatch.description, section);
+      return { ...markerMatch };
+    }
+
+    // (c) legacy: exact bare title with initiative section
+    const legacyMatch = this.milestones.find((milestone) => milestone.title === initiative.title && /<!-- codepatrol:initiative:start -->/.test(milestone.description));
+    if (legacyMatch !== undefined) {
+      legacyMatch.title = desiredTitle;
+      legacyMatch.description = setInitiativeSection(legacyMatch.description, section);
+      return { ...legacyMatch };
+    }
+
+    // (d) create
+    const created: GitHubMilestone = { number: this.nextMilestone++, title: desiredTitle, description: section, state: "open" };
     this.milestones.push(created);
     return { ...created };
   }
@@ -198,7 +219,7 @@ export class FakeGitHub implements GitHubIssues, GitHubProjects {
   get milestonesPort(): GitHubMilestones {
     return {
       list: (repository) => this.listMilestones(repository),
-      ensure: (repository, title, section) => this.ensureMilestone(repository, title, section),
+      ensure: (repository, initiative, section) => this.ensureMilestone(repository, initiative, section),
       attachIssue: (repository, issueNumber, milestoneNumber) => this.attachMilestone(repository, issueNumber, milestoneNumber),
     };
   }

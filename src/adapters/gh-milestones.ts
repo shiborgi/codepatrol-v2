@@ -1,6 +1,6 @@
 import type { GitHubMilestone, GitHubMilestones } from "../application/ports.js";
 import { CodepatrolError } from "../core/errors.js";
-import { setInitiativeSection } from "../application/publication/markers.js";
+import { INITIATIVE_SECTION_PRESENT, initiativeTitleOf, readInitiativeIdFromSection, setInitiativeSection } from "../application/publication/markers.js";
 import { executeGh, parseGhJson } from "./gh-command.js";
 
 type GhRunner = (args: string[]) => Promise<string>;
@@ -28,15 +28,37 @@ export class GhGitHubMilestones implements GitHubMilestones {
    * created once, and its managed section converged afterwards. Human text
    * outside the markers is preserved; an unchanged description is not edited.
    */
-  async ensure(repository: string, title: string, section: string): Promise<GitHubMilestone> {
-    const existing = (await this.list(repository)).find((milestone) => milestone.title === title);
-    if (existing !== undefined) {
-      const desired = setInitiativeSection(existing.description, section);
-      if (desired === existing.description) return existing;
-      const raw = parseGhJson(await this.run(["api", "-X", "PATCH", `repos/${repository}/milestones/${existing.number}`, "-f", `description=${desired}`]), "gh api milestone update");
+  async ensure(repository: string, initiative: { id: string; title: string }, section: string): Promise<GitHubMilestone> {
+    const desiredTitle = initiativeTitleOf(initiative);
+    const milestones = await this.list(repository);
+
+    // (a) exact new title → converge description only
+    const exactMatch = milestones.find((milestone) => milestone.title === desiredTitle);
+    if (exactMatch !== undefined) return this.converge(repository, exactMatch, section);
+
+    // (b) id marker match → retitle + converge
+    const markerMatch = milestones.find((milestone) => readInitiativeIdFromSection(milestone.description) === initiative.id);
+    if (markerMatch !== undefined) {
+      const raw = parseGhJson(await this.run(["api", "-X", "PATCH", `repos/${repository}/milestones/${markerMatch.number}`, "-f", `title=${desiredTitle}`, "-f", `description=${setInitiativeSection(markerMatch.description, section)}`]), "gh api milestone update");
       return parseMilestone(raw);
     }
-    const raw = parseGhJson(await this.run(["api", `repos/${repository}/milestones`, "-f", `title=${title}`, "-f", `description=${section}`, "-f", "state=open"]), "gh api milestone create");
+
+    // (c) legacy: exact bare title AND an initiative section present → retitle + converge
+    const legacyMatch = milestones.find((milestone) => milestone.title === initiative.title && INITIATIVE_SECTION_PRESENT.test(milestone.description));
+    if (legacyMatch !== undefined) {
+      const raw = parseGhJson(await this.run(["api", "-X", "PATCH", `repos/${repository}/milestones/${legacyMatch.number}`, "-f", `title=${desiredTitle}`, "-f", `description=${setInitiativeSection(legacyMatch.description, section)}`]), "gh api milestone update");
+      return parseMilestone(raw);
+    }
+
+    // (d) create
+    const raw = parseGhJson(await this.run(["api", `repos/${repository}/milestones`, "-f", `title=${desiredTitle}`, "-f", `description=${section}`, "-f", "state=open"]), "gh api milestone create");
+    return parseMilestone(raw);
+  }
+
+  private async converge(repository: string, milestone: GitHubMilestone, section: string): Promise<GitHubMilestone> {
+    const desired = setInitiativeSection(milestone.description, section);
+    if (desired === milestone.description) return milestone;
+    const raw = parseGhJson(await this.run(["api", "-X", "PATCH", `repos/${repository}/milestones/${milestone.number}`, "-f", `description=${desired}`]), "gh api milestone update");
     return parseMilestone(raw);
   }
 

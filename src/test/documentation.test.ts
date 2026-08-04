@@ -121,6 +121,7 @@ test("the projection E2E asserts remote state rather than only that the base mov
     "no longer exists remotely",
     "no duplicate Issue",
     "the Initiative projects onto exactly one Milestone",
+    "the Milestone title carries the Initiative id",
     "the Work's Issue is attached to the Initiative's Milestone",
     "a repeated sync creates no duplicate Milestone",
     "no raw command output is published",
