@@ -32,7 +32,10 @@
       "INIT-8.1-separate-manifest-model-and-ref-naming"
     ]
   },
-  "issue": null,
+  "issue": {
+    "repository": "shiborgi/codepatrol",
+    "number": 73
+  },
   "workflow": {
     "state": "ready",
     "stage": "plan",
