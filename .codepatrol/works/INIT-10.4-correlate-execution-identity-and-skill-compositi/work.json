@@ -1,0 +1,45 @@
+{
+  "schemaVersion": 1,
+  "type": "codepatrol-work",
+  "work": {
+    "id": "INIT-10.4-correlate-execution-identity-and-skill-compositi",
+    "title": "Correlate execution identity and skill composition",
+    "description": "Use recorded execution information to report correlations by role, harness, model, skill identity, skill version, and effective skill composition digest, clearly identified as correlation rather than causation.",
+    "issueType": "Feature",
+    "priority": "p2",
+    "acceptance": [
+      "Every correlation has a minimum sample count",
+      "Small samples are marked as inconclusive",
+      "Model and harness names are reported exactly as recorded",
+      "No ranking is produced without evidence counts",
+      "Results can compare different skill compositions for the same stage"
+    ],
+    "createdAt": "2026-08-04T02:03:50.127Z",
+    "requestedBy": "spec",
+    "initiative": {
+      "id": "INIT-10",
+      "position": 4
+    },
+    "origin": {
+      "createdAt": "2026-08-04T02:03:50.127Z"
+    }
+  },
+  "repository": {
+    "baseRef": "refs/heads/main"
+  },
+  "graph": {
+    "blockedBy": [
+      "INIT-10.2-aggregate-lifecycle-and-rework-signals",
+      "INIT-10.3-aggregate-verification-and-repository-signals"
+    ]
+  },
+  "issue": null,
+  "workflow": {
+    "state": "ready",
+    "stage": "plan",
+    "attempt": 1,
+    "updatedAt": "2026-08-04T02:03:50.127Z"
+  },
+  "attempts": [],
+  "completion": null
+}
