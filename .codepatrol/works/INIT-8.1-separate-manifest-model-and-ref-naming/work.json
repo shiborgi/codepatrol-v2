@@ -31,7 +31,10 @@
       "INIT-7.2-extract-manifestrepository"
     ]
   },
-  "issue": null,
+  "issue": {
+    "repository": "shiborgi/codepatrol",
+    "number": 72
+  },
   "workflow": {
     "state": "ready",
     "stage": "plan",
