@@ -32,7 +32,10 @@
       "INIT-7.6-simplify-refresh-and-integration"
     ]
   },
-  "issue": null,
+  "issue": {
+    "repository": "shiborgi/codepatrol",
+    "number": 63
+  },
   "workflow": {
     "state": "ready",
     "stage": "plan",
