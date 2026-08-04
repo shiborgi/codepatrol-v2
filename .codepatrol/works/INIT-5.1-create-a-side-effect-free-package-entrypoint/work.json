@@ -31,7 +31,10 @@
   "graph": {
     "blockedBy": []
   },
-  "issue": null,
+  "issue": {
+    "repository": "shiborgi/codepatrol",
+    "number": 52
+  },
   "workflow": {
     "state": "ready",
     "stage": "plan",
