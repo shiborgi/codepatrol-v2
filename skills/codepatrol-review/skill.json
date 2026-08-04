@@ -7,7 +7,7 @@
   "capabilities": [
     "cli"
   ],
-  "digest": "4662d569375c57ae63dcbf17fed491709bfd29057f4f200a5db189cdf5a1521c",
+  "digest": "3be073dfd3e07dc78e6c81d3ba63636901cea58a953396ab771803525167296a",
   "recommends": [
     "codepatrol-work"
   ]

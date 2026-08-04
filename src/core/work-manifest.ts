@@ -1,7 +1,13 @@
 import { CodepatrolError } from "./errors.js";
-import { BRANCH_REF, GIT_HASH, TRACE_ID, UUID, WORK_ID } from "./identifiers.js";
+import { BRANCH_REF, GIT_HASH, SKILL_ID, TRACE_ID, UUID, WORK_ID } from "./identifiers.js";
 import { INITIATIVE_ID } from "./initiative.js";
+import { sha256 } from "./json.js";
 import { ATTEMPT_STATUSES, ISSUE_TYPES, todoContractViolations, RETURN_TARGETS, SHIP_OUTCOMES, STAGES, STAGE_ROLES, WORK_OUTCOMES, WORK_PRIORITIES, type AttemptStatus, type ExecutionIdentity, type IssueType, type ShipOutcome, type Stage, type TodoItem, type TodoResult, type WorkIdentity, type WorkInitiative, type WorkOrigin, type WorkOutcome, type WorkPriority } from "./types.js";
+
+/** Lowercase hex SHA-256 of a SKILL.md — the digest a skill manifest carries. */
+const SKILL_DIGEST = /^[0-9a-f]{64}$/;
+const SKILL_VERSION = /^\d+\.\d+\.\d+$/;
+const SKILL_KINDS = ["stage", "secondary"] as const;
 
 export const MANIFEST_SCHEMA_VERSION = 1;
 export const MANIFEST_TYPE = "codepatrol-work";
@@ -33,6 +39,31 @@ export interface ManifestArtifact {
   kind: string;
   blob: string;
   description?: string;
+}
+
+/**
+ * One resolved skill identity, the unit a stage attempt ran under. The
+ * resolved digest is the SKILL.md digest the manifest carries; recomputing it
+ * from the shipped SKILL.md at verify time and comparing is the strict way to
+ * detect a tampered manifest.
+ */
+export interface ManifestSkillEntry {
+  id: string;
+  version: string;
+  kind: "stage" | "secondary";
+  /** Lowercase hex SHA-256 of the resolved skill's SKILL.md. */
+  digest: string;
+}
+
+/**
+ * The composition the attempt resolved under: every included skill's
+ * identity and the digest of the ordered resolved set. Recorded only when
+ * the stage's run declared it; otherwise absent, so older manifests parse.
+ */
+export interface EffectiveComposition {
+  skills: readonly ManifestSkillEntry[];
+  /** sha256 over the canonical JSON of `skills` in their recorded order. */
+  digest: string;
 }
 
 export interface ManifestTrace {
@@ -73,6 +104,12 @@ export interface ManifestAttempt {
   traces?: ManifestTrace[];
   verificationTarget?: VerificationSnapshot;
   verifiedCandidate?: VerificationSnapshot;
+  /**
+   * The composition the attempt resolved under. Optional and additive under
+   * schemaVersion 1: a manifest written before this field was introduced
+   * still parses, and a run that did not declare one records nothing.
+   */
+  skills?: EffectiveComposition;
 }
 
 export interface ManifestRepository {
@@ -195,6 +232,41 @@ function renderSnapshot(snapshot: VerificationSnapshot): Record<string, unknown>
   };
 }
 
+function renderComposition(composition: EffectiveComposition): Record<string, unknown> {
+  return {
+    skills: composition.skills.map((skill) => ({ id: skill.id, version: skill.version, kind: skill.kind, digest: skill.digest })),
+    digest: composition.digest,
+  };
+}
+
+function parseComposition(value: unknown, label: string): EffectiveComposition {
+  const record = object(value, label);
+  keys(record, ["skills", "digest"], ["skills", "digest"], label);
+  if (!Array.isArray(record.skills)) corrupt(`${label}.skills must be an array.`);
+  const skills: ManifestSkillEntry[] = (record.skills as unknown[]).map((entry, index) => {
+    const itemLabel = `${label}.skills[${index}]`;
+    const item = object(entry, itemLabel);
+    keys(item, ["id", "version", "kind", "digest"], ["id", "version", "kind", "digest"], itemLabel);
+    const id = text(item.id, `${itemLabel}.id`);
+    if (!SKILL_ID.test(id)) corrupt(`${itemLabel}.id is invalid.`);
+    const version = text(item.version, `${itemLabel}.version`);
+    if (!SKILL_VERSION.test(version)) corrupt(`${itemLabel}.version is invalid.`);
+    const kind = text(item.kind, `${itemLabel}.kind`);
+    if (!(SKILL_KINDS as readonly string[]).includes(kind)) corrupt(`${itemLabel}.kind is invalid.`);
+    const digest = text(item.digest, `${itemLabel}.digest`);
+    if (!SKILL_DIGEST.test(digest)) corrupt(`${itemLabel}.digest is invalid.`);
+    return { id, version, kind: kind as ManifestSkillEntry["kind"], digest };
+  });
+  const digest = text(record.digest, `${label}.digest`);
+  if (!SKILL_DIGEST.test(digest)) corrupt(`${label}.digest is invalid.`);
+  // Recompute the resolution digest from the entries. A mismatch is
+  // corruption — either the field was tampered with or the entries are out
+  // of the order that produced the recorded digest.
+  const recomputed = sha256(JSON.stringify(skills.map((skill) => ({ id: skill.id, version: skill.version, kind: skill.kind, digest: skill.digest }))));
+  if (recomputed !== digest) corrupt(`${label}.digest does not match its skills.`);
+  return { skills, digest };
+}
+
 /**
  * Renders the manifest with a fixed field order. Relying on object spread order
  * would make `git log -p` noisy for changes that are not really changes, and
@@ -244,6 +316,7 @@ export function serializeManifest(manifest: WorkManifest): string {
       startedAt: attempt.startedAt,
       ...(attempt.finishedAt === undefined ? {} : { finishedAt: attempt.finishedAt }),
       todo: attempt.todo.map((item) => ({ id: item.id, title: item.title, ...(item.description === undefined ? {} : { description: item.description }) })),
+      ...(attempt.skills === undefined ? {} : { skills: renderComposition(attempt.skills) }),
       ...(attempt.result === undefined ? {} : {
         result: {
           decision: attempt.result.decision,
@@ -497,7 +570,7 @@ export function parseWorkManifest(value: unknown, expectedId?: string): WorkMani
   const attempts: ManifestAttempt[] = array(manifest.attempts, "Work manifest attempts").map((raw, index) => {
     const label = `Work manifest attempts[${index}]`;
     const attempt = object(raw, label);
-    keys(attempt, ["stage", "attempt", "runId", "status", "execution", "startedAt", "finishedAt", "todo", "result", "traces", "verificationTarget", "verifiedCandidate"], ["stage", "attempt", "runId", "status", "execution", "startedAt", "todo"], label);
+    keys(attempt, ["stage", "attempt", "runId", "status", "execution", "startedAt", "finishedAt", "todo", "result", "traces", "verificationTarget", "verifiedCandidate", "skills"], ["stage", "attempt", "runId", "status", "execution", "startedAt", "todo"], label);
     if (!ATTEMPT_STATUSES.includes(attempt.status as AttemptStatus)) corrupt(`${label}.status is invalid.`);
     const runId = text(attempt.runId, `${label}.runId`);
     if (!UUID.test(runId)) corrupt(`${label}.runId is invalid.`);
@@ -541,6 +614,7 @@ export function parseWorkManifest(value: unknown, expectedId?: string): WorkMani
       ...(attempt.traces === undefined ? {} : { traces: parseTraces(attempt.traces, `${label}.traces`) }),
       ...(verificationTarget === undefined ? {} : { verificationTarget }),
       ...(verifiedCandidate === undefined ? {} : { verifiedCandidate }),
+      ...(attempt.skills === undefined ? {} : { skills: parseComposition(attempt.skills, `${label}.skills`) }),
     };
   });
 

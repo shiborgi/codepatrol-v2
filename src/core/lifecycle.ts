@@ -1,10 +1,10 @@
 import { CodepatrolError } from "./errors.js";
 import { RETURN_TARGETS, STAGES, STAGE_ROLES, todoContractViolations, type ExecutionIdentity, type Stage, type TodoItem } from "./types.js";
-import type { ManifestAttempt, ManifestResult, ManifestTrace, VerificationSnapshot, WorkManifest } from "./work-manifest.js";
+import type { EffectiveComposition, ManifestAttempt, ManifestResult, ManifestTrace, VerificationSnapshot, WorkManifest } from "./work-manifest.js";
 import { finalize } from "./terminalization.js";
 
 export type Transition =
-  | { type: "start"; stage: Stage; runId: string; execution: ExecutionIdentity; todo: TodoItem[]; verificationTarget?: VerificationSnapshot; at: string }
+  | { type: "start"; stage: Stage; runId: string; execution: ExecutionIdentity; todo: TodoItem[]; verificationTarget?: VerificationSnapshot; skills?: EffectiveComposition; at: string }
   | {
     type: "finish";
     stage: Stage;
@@ -63,6 +63,7 @@ export function applyTransition(manifest: WorkManifest, transition: Transition):
       startedAt: transition.at,
       todo: transition.todo,
       ...(transition.verificationTarget === undefined ? {} : { verificationTarget: transition.verificationTarget }),
+      ...(transition.skills === undefined ? {} : { skills: transition.skills }),
     };
     return {
       ...manifest,

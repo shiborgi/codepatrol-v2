@@ -29,7 +29,7 @@ Never paste command output, logs, or environment contents into the summary. The 
 
 ```bash
 codepatrol --workspace /absolute/path/to/repository \
-  ship start <work-id> \
+  ship start <work-id> --skills <id,id,...> \
   --harness <harness> \
   --model <model> \
   --todo /absolute/path/outside/repository/ship-todo.json

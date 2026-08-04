@@ -12,12 +12,16 @@ import { readPublicationSettings } from "../application/projections.js";
 import { PublicationService } from "../application/publication.js";
 import { SpecService } from "../application/spec-service.js";
 import { InitiativeService } from "../application/initiative-service.js";
-import { WorkService } from "../application/work-service.js";
+import { WorkService, systemClock } from "../application/work-service.js";
 import { InitService } from "../application/init-service.js";
 import { DoctorService } from "../application/doctor-service.js";
+import { HOST_CAPABILITIES, listShippedSkills } from "../cli/commands/skill.js";
+import { fileURLToPath } from "node:url";
 import { CodepatrolError } from "../core/errors.js";
 import { COMMANDS, helpText } from "./registry.js";
 import { VERSION } from "./version.js";
+
+const shippedSkillsDirectory = path.resolve(fileURLToPath(import.meta.url), "../../../skills");
 
 function extractWorkspace(args: string[]): { workspace: string; args: string[] } {
   const remaining = [...args];
@@ -46,7 +50,14 @@ export async function main(argv = process.argv.slice(2)): Promise<void> {
   const worktrees = new Worktrees(extracted.workspace);
   const store = new GitManifestStore(extracted.workspace, worktreeStoreHooks(worktrees));
   const git = new LocalGitPort(extracted.workspace);
-  const works = new WorkService(store, worktrees, new ChangeIntegration(extracted.workspace, worktrees), git);
+  // Load the shipped skill manifests once: every stage start can resolve its
+  // composition against the same set, and the host capability the CLI
+  // truthfully offers is the named constant.
+  const skillManifests = await listShippedSkills(shippedSkillsDirectory);
+  const works = new WorkService(store, worktrees, new ChangeIntegration(extracted.workspace, worktrees), git, systemClock, extracted.workspace, {
+    skillManifests,
+    hostCapabilities: [...HOST_CAPABILITIES],
+  });
   const initiatives = new InitiativeService(store);
   const spec = new SpecService(store, worktrees);
   // Publication reads the repository's decision, not just its remote: a

@@ -23,7 +23,7 @@ Use complete command forms. Every JSON path is absolute and outside the reposito
 
 ```bash
 codepatrol --workspace /absolute/path/to/repository \
-  verify start <work-id> \
+  verify start <work-id> --skills <id,id,...> \
   --harness <harness> \
   --model <model> \
   --todo /absolute/path/outside/repository/verify-todo.json

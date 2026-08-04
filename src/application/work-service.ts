@@ -7,10 +7,12 @@ import type { Worktrees } from "../adapters/worktree.js";
 import { changeOf, type ChangeView } from "../core/change.js";
 import { CodepatrolError } from "../core/errors.js";
 import { applyTransition, nextAttemptAt } from "../core/lifecycle.js";
+import { resolveComposition } from "../core/skill-resolution.js";
+import type { SkillManifest } from "../core/skill.js";
 import type { GitPort } from "./ports.js";
 import { STAGE_ROLES, type RepositoryInspection, type Stage, type TodoItem, type WorkIdentity, type WorkOutcome, type WorkStatus } from "../core/types.js";
 import { assertBuildUnblocked, buildGraph, releasesDependents, type WorkGraph } from "../core/work-graph.js";
-import { archiveRef, manifestPath, manifestRef, serializeManifest, workBranchRef, type ManifestArtifact, type ManifestResult, type ManifestTrace, type VerificationSnapshot, type WorkManifest } from "../core/work-manifest.js";
+import { archiveRef, manifestPath, manifestRef, serializeManifest, workBranchRef, type EffectiveComposition, type ManifestArtifact, type ManifestResult, type ManifestTrace, type VerificationSnapshot, type WorkManifest } from "../core/work-manifest.js";
 import { executorReservedOffenders } from "../core/paths.js";
 import { VERIFY_POLICY_PATH } from "../core/verify-policy.js";
 import { VerificationGate } from "./verification-gate.js";
@@ -70,6 +72,12 @@ export interface HandoffV1 {
   change: ChangeView;
   inspection: RepositoryInspection;
   attempts: WorkManifest["attempts"];
+  /**
+   * The composition the active attempt resolved under. Absent when the
+   * host did not declare one, in which case the attempt itself carries
+   * nothing either.
+   */
+  skills?: { skills: { id: string; version: string; digest: string }[]; digest: string };
   pathPolicy: { executorForbidden: string[]; artifactForbidden: string[] };
   trigger: unknown;
   availableResults: unknown[];
@@ -148,6 +156,10 @@ function viewOf(revision: ManifestRevision, unresolvedBlockers: string[] = []): 
 
 export class WorkService {
   private readonly verification: VerificationGate;
+  /** Shipped skill manifests, when the host injected them. Absent when not. */
+  private readonly skillManifests: readonly SkillManifest[] | undefined;
+  /** Host capabilities to require against the declared skills. */
+  private readonly hostCapabilities: readonly string[] | undefined;
 
   constructor(
     private readonly store: GitManifestStore,
@@ -156,12 +168,41 @@ export class WorkService {
     private readonly git: GitPort,
     private readonly clock: Clock = systemClock,
     private readonly workspace: string = store.workspace,
+    options: { skillManifests?: readonly SkillManifest[]; hostCapabilities?: readonly string[] } = {},
   ) {
     this.verification = new VerificationGate(git, worktrees, clock, (entry) => this.trace("verify", entry.data?.workId as string, entry.data?.runId as string, entry), workspace);
+    this.skillManifests = options.skillManifests;
+    this.hostCapabilities = options.hostCapabilities;
   }
 
   private async verifyPolicyAt(commit: string): Promise<{ policy: import("../core/verify-policy.js").VerifyPolicy; hash: string }> {
     return this.verification.policyAt(commit);
+  }
+
+  /**
+   * Resolve the composition the stage's run will execute under. The
+   * resolver is the authority: a declaration that does not match the
+   * resolved id set refuses with SKILL_COMPOSITION_MISMATCH, naming both
+   * declared and resolved ids. A declaration that arrives without injected
+   * manifests refuses with INVALID_INPUT. No declaration, no host — no
+   * composition is recorded, preserving the additive contract.
+   */
+  private resolveEffectiveComposition(stage: Stage, declaredSkills: readonly string[] | undefined): EffectiveComposition | undefined {
+    if (declaredSkills === undefined) return undefined;
+    if (this.skillManifests === undefined || this.hostCapabilities === undefined) {
+      throw new CodepatrolError("INVALID_INPUT", `Stage ${stage} declared a skill composition but the host injected no manifests.`);
+    }
+    const declared = [...declaredSkills].sort();
+    const composition = resolveComposition(stage, this.skillManifests, [...this.hostCapabilities]);
+    const resolved = composition.skills.map((entry) => entry.id);
+    const same = declared.length === resolved.length && declared.every((id, index) => id === resolved[index]);
+    if (!same) {
+      throw new CodepatrolError("SKILL_COMPOSITION_MISMATCH", `Stage ${stage} declared [${declared.join(", ")}] but resolved [${resolved.join(", ")}].`);
+    }
+    return {
+      skills: composition.skills.map((entry) => ({ id: entry.id, version: entry.version, kind: entry.kind, digest: entry.digest })),
+      digest: composition.digest,
+    };
   }
 
   private runtimeRoot(workId: string): string {
@@ -265,6 +306,7 @@ export class WorkService {
       change: changeOf(manifest, branch !== null),
       inspection: await this.worktrees.inspect(manifest.work.id, manifest.repository.baseRef, manifest.repository.createdFromCommit, manifest.repository.baselineCommit),
       attempts: manifest.attempts,
+      ...(active.skills === undefined ? {} : { skills: { skills: active.skills.skills.map((entry) => ({ id: entry.id, version: entry.version, digest: entry.digest })), digest: active.skills.digest } }),
       pathPolicy: { executorForbidden: [".codepatrol", ".codepatrol/**"], artifactForbidden: [".codepatrol", ".codepatrol/**"] },
       trigger: last === undefined ? null : {
         fromStage: last.stage,
@@ -281,7 +323,7 @@ export class WorkService {
     };
   }
 
-  async start(stage: Stage, workId: string, harness: string, model: string, todo: TodoItem[], _options: { worktree?: boolean } = {}): Promise<StartResult> {
+  async start(stage: Stage, workId: string, harness: string, model: string, todo: TodoItem[], _options: { worktree?: boolean; declaredSkills?: readonly string[] } = {}): Promise<StartResult> {
     workId = await this.store.resolve(workId);
     if (harness.trim() === "" || model.trim() === "") throw new CodepatrolError("INVALID_INPUT", "Harness and model are required.");
     if (stage === "build") {
@@ -291,6 +333,12 @@ export class WorkService {
     const runId = randomUUID();
     const at = this.clock.now().toISOString();
     const execution = { role: STAGE_ROLES[stage], harness: harness.trim(), model: model.trim() };
+
+    // Resolve the effective composition when the host injected shipped skill
+    // manifests. A declaration that names ids the resolver disagrees with is
+    // a SKILL_COMPOSITION_MISMATCH: nothing reaches the manifest until the
+    // composition is provable.
+    const composition: EffectiveComposition | undefined = this.resolveEffectiveComposition(stage, _options.declaredSkills);
 
     // The branch materializes on the first stage run so every stage of this
     // Work attaches its own worktree and never shares the repository's main
@@ -320,7 +368,7 @@ export class WorkService {
           if (revision.codeHead === undefined) throw new CodepatrolError("INVALID_TRANSITION", `Verify requires a materialized Change branch: ${workId}.`);
           verificationTarget = await this.verification.pinTarget(manifest, revision.codeHead, revision.commit, nextAttemptAt(manifest, "verify"));
         }
-        return applyTransition(manifest, { type: "start", stage, runId, execution, todo, ...(verificationTarget === undefined ? {} : { verificationTarget }), at });
+        return applyTransition(manifest, { type: "start", stage, runId, execution, todo, ...(verificationTarget === undefined ? {} : { verificationTarget }), ...(composition === undefined ? {} : { skills: composition }), at });
       },
       `${stage}(${workId}): start`,
     );
