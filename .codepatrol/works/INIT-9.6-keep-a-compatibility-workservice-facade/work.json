@@ -36,7 +36,10 @@
       "INIT-9.5-extract-terminalizationservice"
     ]
   },
-  "issue": null,
+  "issue": {
+    "repository": "shiborgi/codepatrol",
+    "number": 69
+  },
   "workflow": {
     "state": "ready",
     "stage": "plan",
