@@ -32,7 +32,10 @@
       "INIT-7.3-extract-changerepository"
     ]
   },
-  "issue": null,
+  "issue": {
+    "repository": "shiborgi/codepatrol",
+    "number": 60
+  },
   "workflow": {
     "state": "ready",
     "stage": "plan",
