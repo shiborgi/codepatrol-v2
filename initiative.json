@@ -1,0 +1,11 @@
+{
+  "schemaVersion": 1,
+  "type": "codepatrol-initiative",
+  "id": "INIT-6",
+  "title": "Make Main a Delivery-Only Branch",
+  "slug": "make-main-a-delivery-only-branch",
+  "intent": "Ensure that the base branch changes only when an accepted Work delivers product content",
+  "motivation": "An open Work already has an authoritative manifest ref. Projecting the manifest into main when a stage starts creates another representation of the same state and causes unnecessary commits, index reconciliation, branch contamination, and integration complexity. Explicit non-goals: no large-scale WorkService decomposition, no removal of legacy read compatibility, no redesign of the lifecycle, no database or external state store.",
+  "ordering": "The contract first, because every later change is judged against it. Then the branch cut, the removal of mutable manifest state from Change branches, and the integration split — accept-only delivery and non-accepted outcomes staying off the base are siblings on that foundation. Compatibility follows so old repositories keep reading, and the invariant tests cap the Initiative by converting characterization into enforcement.",
+  "createdAt": "2026-08-04T01:44:10.987Z"
+}
