@@ -32,7 +32,10 @@
       "INIT-10.6-integrate-signals-into-spec-discovery"
     ]
   },
-  "issue": null,
+  "issue": {
+    "repository": "shiborgi/codepatrol",
+    "number": 83
+  },
   "workflow": {
     "state": "ready",
     "stage": "plan",
