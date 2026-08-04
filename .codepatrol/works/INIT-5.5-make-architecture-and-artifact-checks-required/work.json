@@ -1,0 +1,45 @@
+{
+  "schemaVersion": 1,
+  "type": "codepatrol-work",
+  "work": {
+    "id": "INIT-5.5-make-architecture-and-artifact-checks-required",
+    "title": "Make architecture and artifact checks required",
+    "description": "Ensure the existing CI matrix and artifact validation are required before integration into main: typecheck, unit and integration tests, smoke, architecture tests, and published tarball validation become required checks; direct pushes to main are disabled for normal development; squash merge is the default integration method; the repository documents emergency bypass authority; manifest projection commits are not exempt from CI while they still exist.",
+    "issueType": "Task",
+    "priority": "p1",
+    "acceptance": [
+      "A PR cannot merge while a required check is failing",
+      "Direct pushes to main are disabled for normal development",
+      "Squash merge is the default integration method",
+      "The repository documents emergency bypass authority",
+      "Manifest projection commits are not exempt from CI while they still exist"
+    ],
+    "createdAt": "2026-08-04T01:38:53.946Z",
+    "requestedBy": "spec",
+    "initiative": {
+      "id": "INIT-5",
+      "position": 5
+    },
+    "origin": {
+      "createdAt": "2026-08-04T01:38:53.946Z"
+    }
+  },
+  "repository": {
+    "baseRef": "refs/heads/main"
+  },
+  "graph": {
+    "blockedBy": [
+      "INIT-5.3-add-lifecycle-characterization-scenarios",
+      "INIT-5.4-add-architectural-dependency-tests"
+    ]
+  },
+  "issue": null,
+  "workflow": {
+    "state": "ready",
+    "stage": "plan",
+    "attempt": 1,
+    "updatedAt": "2026-08-04T01:38:53.946Z"
+  },
+  "attempts": [],
+  "completion": null
+}
