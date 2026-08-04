@@ -24,7 +24,9 @@
     }
   },
   "repository": {
-    "baseRef": "refs/heads/main"
+    "baseRef": "refs/heads/main",
+    "createdFromCommit": "94fd150dbddd0dccff58d0cc65362e432535c655",
+    "baselineCommit": "94fd150dbddd0dccff58d0cc65362e432535c655"
   },
   "graph": {
     "blockedBy": []
@@ -34,11 +36,46 @@
     "number": 43
   },
   "workflow": {
-    "state": "ready",
+    "state": "active",
     "stage": "plan",
     "attempt": 1,
-    "updatedAt": "2026-08-04T00:38:17.625Z"
+    "updatedAt": "2026-08-04T00:43:37.035Z"
   },
-  "attempts": [],
+  "attempts": [
+    {
+      "stage": "plan",
+      "attempt": 1,
+      "runId": "a95e7955-3712-44fc-80bb-9620ef48abf7",
+      "status": "active",
+      "execution": {
+        "role": "planner",
+        "harness": "opencode",
+        "model": "kimi-for-coding/k3"
+      },
+      "startedAt": "2026-08-04T00:43:37.035Z",
+      "todo": [
+        {
+          "id": "P1",
+          "title": "Inspect gh-milestones ensure/list, markers (managed section), and the E2E milestone matching"
+        },
+        {
+          "id": "P2",
+          "title": "Decide the titled format, identity reconciliation (marker-based), and convergence rule"
+        },
+        {
+          "id": "P3",
+          "title": "Decide test coverage incl. retitle-without-duplicate and E2E assertion"
+        },
+        {
+          "id": "P4",
+          "title": "Write decision-complete plan covering all four acceptance criteria"
+        },
+        {
+          "id": "P5",
+          "title": "Record traces; complete Plan with decision continue"
+        }
+      ]
+    }
+  ],
   "completion": null
 }
