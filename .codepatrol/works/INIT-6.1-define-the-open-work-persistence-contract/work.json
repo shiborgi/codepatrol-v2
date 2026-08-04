@@ -1,0 +1,43 @@
+{
+  "schemaVersion": 1,
+  "type": "codepatrol-work",
+  "work": {
+    "id": "INIT-6.1-define-the-open-work-persistence-contract",
+    "title": "Define the open-Work persistence contract",
+    "description": "Document and encode the new invariants before modifying Git operations. Core invariants: an open Work is authoritative only on its manifest ref; a Change branch contains candidate product code, not mutable orchestration state; starting a stage does not move the base branch; attaching or recreating a worktree does not move the base branch; accept creates one squash commit; rollback, cancel, and supersede create no base commit; archive refs preserve candidate code when candidate code exists; legacy manifest projections remain readable during the compatibility period. Recovery rules are defined for interrupted branch materialization.",
+    "issueType": "Task",
+    "priority": "p1",
+    "acceptance": [
+      "The persistence contract is documented in docs/architecture.md",
+      "Each invariant has an automated test placeholder or implementation",
+      "The contract distinguishes authority, projection, cache, and archive",
+      "Recovery rules are defined for interrupted branch materialization"
+    ],
+    "createdAt": "2026-08-04T01:44:10.989Z",
+    "requestedBy": "spec",
+    "initiative": {
+      "id": "INIT-6",
+      "position": 1
+    },
+    "origin": {
+      "createdAt": "2026-08-04T01:44:10.989Z"
+    }
+  },
+  "repository": {
+    "baseRef": "refs/heads/main"
+  },
+  "graph": {
+    "blockedBy": [
+      "INIT-5.3-add-lifecycle-characterization-scenarios"
+    ]
+  },
+  "issue": null,
+  "workflow": {
+    "state": "ready",
+    "stage": "plan",
+    "attempt": 1,
+    "updatedAt": "2026-08-04T01:44:10.989Z"
+  },
+  "attempts": [],
+  "completion": null
+}
