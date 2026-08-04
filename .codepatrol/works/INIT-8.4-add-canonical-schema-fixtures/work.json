@@ -1,0 +1,44 @@
+{
+  "schemaVersion": 1,
+  "type": "codepatrol-work",
+  "work": {
+    "id": "INIT-8.4-add-canonical-schema-fixtures",
+    "title": "Add canonical schema fixtures",
+    "description": "Create fixtures for the smallest valid manifest, a complete active manifest, each terminal outcome, malformed structural documents, structurally valid but semantically corrupt documents, and legacy projected manifests.",
+    "issueType": "Task",
+    "priority": "p1",
+    "acceptance": [
+      "Fixtures are used by parser and compatibility tests",
+      "Serialization output is snapshot-tested",
+      "Field ordering remains deterministic",
+      "Every terminal outcome has a canonical fixture",
+      "Legacy fixtures remain readable where compatibility is promised"
+    ],
+    "createdAt": "2026-08-04T01:57:27.785Z",
+    "requestedBy": "spec",
+    "initiative": {
+      "id": "INIT-8",
+      "position": 4
+    },
+    "origin": {
+      "createdAt": "2026-08-04T01:57:27.785Z"
+    }
+  },
+  "repository": {
+    "baseRef": "refs/heads/main"
+  },
+  "graph": {
+    "blockedBy": [
+      "INIT-8.3-separate-parsing-from-domain-invariants"
+    ]
+  },
+  "issue": null,
+  "workflow": {
+    "state": "ready",
+    "stage": "plan",
+    "attempt": 1,
+    "updatedAt": "2026-08-04T01:57:27.785Z"
+  },
+  "attempts": [],
+  "completion": null
+}
