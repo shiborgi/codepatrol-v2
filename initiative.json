@@ -1,0 +1,11 @@
+{
+  "schemaVersion": 1,
+  "type": "codepatrol-initiative",
+  "id": "INIT-10",
+  "title": "Add Deterministic Continuous Improvement Signals",
+  "slug": "add-deterministic-continuous-improvement-signals",
+  "intent": "Convert terminal Work evidence into derived, structured improvement signals that Spec can analyze",
+  "motivation": "Codepatrol already records attempts, traces, results, artifacts, execution identities, and terminal outcomes, but continuous improvement depends on an agent reading raw evidence and spotting patterns manually. The capability stays read-only and derived, and never creates or applies Works automatically. Non-goals: no automatic Work creation, no automatic Initiative application, no permanent analytics database, no opaque score that replaces evidence.",
+  "ordering": "Contract first, then lifecycle and verification aggregates, then correlations, then the inspect command, then Spec discovery, then the evaluation suites that keep it honest. Read-only until outputs are stable.",
+  "createdAt": "2026-08-04T02:03:50.125Z"
+}
