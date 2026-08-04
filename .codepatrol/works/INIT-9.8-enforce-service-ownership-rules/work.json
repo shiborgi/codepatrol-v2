@@ -30,7 +30,10 @@
       "INIT-9.7-create-cli-dependencies-lazily"
     ]
   },
-  "issue": null,
+  "issue": {
+    "repository": "shiborgi/codepatrol",
+    "number": 71
+  },
   "workflow": {
     "state": "ready",
     "stage": "plan",
