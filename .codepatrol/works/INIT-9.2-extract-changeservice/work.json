@@ -1,0 +1,45 @@
+{
+  "schemaVersion": 1,
+  "type": "codepatrol-work",
+  "work": {
+    "id": "INIT-9.2-extract-changeservice",
+    "title": "Extract ChangeService",
+    "description": "Move application coordination for checkout, refresh, candidate inspection, baseline handling, stale-baseline reporting, and verification invalidation after refresh into ChangeService.",
+    "issueType": "Task",
+    "priority": "p1",
+    "acceptance": [
+      "ChangeService coordinates application policy through ChangeWorkspace",
+      "Worktree attachment remains operational rather than authoritative",
+      "Refresh invalidates standing Verify results",
+      "Branchless Works remain valid",
+      "Checkout and refresh commands preserve existing output contracts"
+    ],
+    "createdAt": "2026-08-04T02:00:13.641Z",
+    "requestedBy": "spec",
+    "initiative": {
+      "id": "INIT-9",
+      "position": 2
+    },
+    "origin": {
+      "createdAt": "2026-08-04T02:00:13.641Z"
+    }
+  },
+  "repository": {
+    "baseRef": "refs/heads/main"
+  },
+  "graph": {
+    "blockedBy": [
+      "INIT-7.7-introduce-application-facing-git-ports",
+      "INIT-9.1-extract-workqueries"
+    ]
+  },
+  "issue": null,
+  "workflow": {
+    "state": "ready",
+    "stage": "plan",
+    "attempt": 1,
+    "updatedAt": "2026-08-04T02:00:13.641Z"
+  },
+  "attempts": [],
+  "completion": null
+}
