@@ -1,0 +1,11 @@
+{
+  "schemaVersion": 1,
+  "type": "codepatrol-initiative",
+  "id": "INIT-5",
+  "title": "Establish Architecture Guardrails",
+  "slug": "establish-architecture-guardrails",
+  "intent": "Create the safety boundaries required before changing Codepatrol's persistence and lifecycle architecture",
+  "motivation": "The largest proposed changes affect Git refs, branches, worktrees, manifests, and integration. Before changing those behaviors, the project needs explicit architecture tests, characterization scenarios, and a safe separation between the CLI executable and the package API. Explicit non-goals: no change to Work persistence, no change to lifecycle transitions, no decomposition of WorkService, no removal of manifest projections.",
+  "ordering": "The entrypoint and the primitive moves are independent foundations and can run in parallel. Dependency rules need both landed so the rules match the final layout. Characterization needs the entrypoint so fixtures import the package safely. CI gates come last: they make the other guardrails mandatory, so they must exist first.",
+  "createdAt": "2026-08-04T01:38:53.944Z"
+}
