@@ -1,0 +1,44 @@
+{
+  "schemaVersion": 1,
+  "type": "codepatrol-work",
+  "work": {
+    "id": "INIT-10.2-aggregate-lifecycle-and-rework-signals",
+    "title": "Aggregate lifecycle and rework signals",
+    "description": "Calculate attempts by stage, returns by source and destination, Works with repeated Plan or Build attempts, Verify-to-Build and Verify-to-Plan frequency, terminal outcome distribution, abandoned attempts, and average and median stage duration where timestamps exist.",
+    "issueType": "Feature",
+    "priority": "p2",
+    "acceptance": [
+      "Metrics are reproducible",
+      "Each aggregate can be traced back to source attempts",
+      "Invalidated attempts are treated distinctly from failed or returned attempts",
+      "Active Works do not appear as terminal failures",
+      "Scope can be limited to named Works or Initiatives"
+    ],
+    "createdAt": "2026-08-04T02:03:50.127Z",
+    "requestedBy": "spec",
+    "initiative": {
+      "id": "INIT-10",
+      "position": 2
+    },
+    "origin": {
+      "createdAt": "2026-08-04T02:03:50.127Z"
+    }
+  },
+  "repository": {
+    "baseRef": "refs/heads/main"
+  },
+  "graph": {
+    "blockedBy": [
+      "INIT-10.1-define-the-improvement-signal-contract"
+    ]
+  },
+  "issue": null,
+  "workflow": {
+    "state": "ready",
+    "stage": "plan",
+    "attempt": 1,
+    "updatedAt": "2026-08-04T02:03:50.127Z"
+  },
+  "attempts": [],
+  "completion": null
+}
