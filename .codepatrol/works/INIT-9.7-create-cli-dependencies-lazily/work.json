@@ -1,0 +1,44 @@
+{
+  "schemaVersion": 1,
+  "type": "codepatrol-work",
+  "work": {
+    "id": "INIT-9.7-create-cli-dependencies-lazily",
+    "title": "Create CLI dependencies lazily",
+    "description": "Avoid constructing GitHub publication adapters and unrelated services for every command; context factories instantiate services only when used.",
+    "issueType": "Task",
+    "priority": "p1",
+    "acceptance": [
+      "Local read commands do not initialize GitHub adapters",
+      "Commands with publication disabled do not query GitHub configuration unnecessarily",
+      "No dependency-injection framework is added",
+      "Command tests can supply focused dependencies",
+      "CLI output remains compatible"
+    ],
+    "createdAt": "2026-08-04T02:00:13.641Z",
+    "requestedBy": "spec",
+    "initiative": {
+      "id": "INIT-9",
+      "position": 7
+    },
+    "origin": {
+      "createdAt": "2026-08-04T02:00:13.641Z"
+    }
+  },
+  "repository": {
+    "baseRef": "refs/heads/main"
+  },
+  "graph": {
+    "blockedBy": [
+      "INIT-9.6-keep-a-compatibility-workservice-facade"
+    ]
+  },
+  "issue": null,
+  "workflow": {
+    "state": "ready",
+    "stage": "plan",
+    "attempt": 1,
+    "updatedAt": "2026-08-04T02:00:13.641Z"
+  },
+  "attempts": [],
+  "completion": null
+}
