@@ -1,0 +1,41 @@
+{
+  "schemaVersion": 1,
+  "type": "codepatrol-work",
+  "work": {
+    "id": "INIT-5.2-move-shared-application-primitives-out-of-workse",
+    "title": "Move shared application primitives out of WorkService",
+    "description": "Move cross-cutting primitives such as Clock and systemClock to a neutral application module (src/application/clock.ts). Only primitives already shared by multiple services move; no generic utilities module is introduced.",
+    "issueType": "Task",
+    "priority": "p1",
+    "acceptance": [
+      "SpecService and WorkGraphService no longer import Clock from WorkService",
+      "Shared primitives have no dependency on a specific use case",
+      "Existing clock injection tests continue to work",
+      "No lifecycle behavior changes"
+    ],
+    "createdAt": "2026-08-04T01:38:53.946Z",
+    "requestedBy": "spec",
+    "initiative": {
+      "id": "INIT-5",
+      "position": 2
+    },
+    "origin": {
+      "createdAt": "2026-08-04T01:38:53.946Z"
+    }
+  },
+  "repository": {
+    "baseRef": "refs/heads/main"
+  },
+  "graph": {
+    "blockedBy": []
+  },
+  "issue": null,
+  "workflow": {
+    "state": "ready",
+    "stage": "plan",
+    "attempt": 1,
+    "updatedAt": "2026-08-04T01:38:53.946Z"
+  },
+  "attempts": [],
+  "completion": null
+}
