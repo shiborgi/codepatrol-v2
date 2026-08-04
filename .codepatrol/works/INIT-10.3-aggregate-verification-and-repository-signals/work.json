@@ -32,7 +32,10 @@
       "INIT-10.2-aggregate-lifecycle-and-rework-signals"
     ]
   },
-  "issue": null,
+  "issue": {
+    "repository": "shiborgi/codepatrol",
+    "number": 79
+  },
   "workflow": {
     "state": "ready",
     "stage": "plan",
