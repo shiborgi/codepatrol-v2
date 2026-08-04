@@ -36,10 +36,10 @@
     "number": 43
   },
   "workflow": {
-    "state": "ready",
+    "state": "active",
     "stage": "build",
     "attempt": 1,
-    "updatedAt": "2026-08-04T01:13:05.516Z"
+    "updatedAt": "2026-08-04T01:55:36.800Z"
   },
   "attempts": [
     {
@@ -236,6 +236,25 @@
             },
             "noHiddenEdits": true
           }
+        }
+      ]
+    },
+    {
+      "stage": "build",
+      "attempt": 1,
+      "runId": "3e8ace8d-4670-49a7-b862-f8e5700c5170",
+      "status": "active",
+      "execution": {
+        "role": "builder",
+        "harness": "opencode",
+        "model": "opencode-go/deepseek-v4-pro"
+      },
+      "startedAt": "2026-08-04T01:55:36.800Z",
+      "todo": [
+        {
+          "id": "T1",
+          "title": "Inspect acceptance and relevant context",
+          "description": "Read plan handoff, inspect worktree and source files for INIT-4.2"
         }
       ]
     }
