@@ -39,10 +39,10 @@
     "number": 32
   },
   "workflow": {
-    "state": "active",
-    "stage": "build",
+    "state": "ready",
+    "stage": "verify",
     "attempt": 1,
-    "updatedAt": "2026-08-04T00:28:18.407Z"
+    "updatedAt": "2026-08-04T01:38:14.295Z"
   },
   "attempts": [
     {
@@ -268,13 +268,14 @@
       "stage": "build",
       "attempt": 1,
       "runId": "d9ef3a5a-e526-4f2d-ad5c-58cb33cfd175",
-      "status": "active",
+      "status": "completed",
       "execution": {
         "role": "builder",
         "harness": "opencode",
         "model": "minimax-coding-plan/MiniMax-M3"
       },
       "startedAt": "2026-08-04T00:28:18.407Z",
+      "finishedAt": "2026-08-04T01:38:14.295Z",
       "todo": [
         {
           "id": "B1",
@@ -307,6 +308,135 @@
         {
           "id": "B8",
           "title": "Complete Build with continue"
+        }
+      ],
+      "result": {
+        "decision": "continue",
+        "summary": "The deterministic skill composition is now recorded on every stage attempt. The Work manifest gains an additive `skills` field (id, version, kind, digest, and a recomputable resolution digest) per attempt. The strict parser accepts it optionally and refuses a tampered digest as STATE_CORRUPT. The WorkService constructor accepts optional injected manifests and host capabilities; start() takes an optional `declaredSkills` array. A declaration that does not resolve refuses with SKILL_COMPOSITION_MISMATCH, a declaration without an injected host refuses with INVALID_INPUT, and a no-declaration start records no field — preserving the additive contract. HandoffV1 exposes the active attempt's composition. The five stage skills declare the instruction to pass `--skills` after `codepatrol skill resolve <stage>`, with refreshed digests. No adapter or lock changes. Validation: typecheck clean; 295/295 tests pass (11 new skill-composition tests on top of 284); smoke passes; --help lists `--skills <id,id,...>` for all five stages.",
+        "handoff": "# Build: Record the effective skill composition on every stage attempt (INIT-1.4)\n\n## What changed\n- src/core/work-manifest.ts — `ManifestAttempt` gains `skills?: EffectiveComposition`. The strict parser accepts `skills` optionally, validates each entry's `id` (SKILL_ID), `version` (SKILL_VERSION), `kind` (`stage` | `secondary`), and `digest` (SKILL_DIGEST), then recomputes the resolution digest from the JSON of the entries and refuses a mismatch as STATE_CORRUPT. The serializer emits the field only when present, so a manifest written before this Work still parses under schemaVersion 1.\n- src/core/lifecycle.ts — the `start` transition accepts an optional `skills?: EffectiveComposition` and the new attempt carries the field.\n- src/application/work-service.ts — the constructor accepts `{ skillManifests?, hostCapabilities? }`. `start()` accepts `declaredSkills?: readonly string[]`. The new private `resolveEffectiveComposition(stage, declaredSkills)` calls `resolveComposition` when a declaration arrives, refuses SKILL_COMPOSITION_MISMATCH when the declared id set does not match the resolved id set, and refuses INVALID_INPUT when a declaration arrives without an injected host. No declaration, no host — no composition is recorded.\n- src/cli/main.ts — loads `listShippedSkills` once and injects the manifests plus `HOST_CAPABILITIES = [\"cli\"]` into the WorkService. The `shippedSkillsDirectory` path resolves to the repo's `skills/` directory, not `dist/skills`.\n- src/cli/commands/skill.ts — `HOST_CAPABILITIES` is now exported so `main.ts` can inject the same set.\n- src/cli/commands/stage.ts — `start` accepts `--skills <id,id,...>` (comma-separated SKILL_ID tokens, strict parsing in `parseSkillsFlag`). Updated usage text.\n- skills/codepatrol-{plan,review,build,verify,ship}/SKILL.md — new step before \"If ready, start\": resolve and declare the effective skill composition with `codepatrol skill resolve <stage>`, then pass the printed id list to `--skills` on `start`. Refreshed `skill.json` digests to match the new SKILL.md bytes.\n- src/test/skill-composition.test.ts (new) — 11 tests: matching declaration records the composition; mismatching declaration refuses with SKILL_COMPOSITION_MISMATCH and records no attempt; declaration without injected manifests refuses with INVALID_INPUT; later attempt leaves earlier attempt's skills untouched; manifest without the field parses under schemaVersion 1; tampered composition digest refuses to parse; the start handoff exposes the composition; a terminal Work's manifest carries the composition on every attempt; resolveComposition and the work-service agree; the parser accepts a complete composition with digests of the right shape; the parseSkillManifest helper accepts shipped-style manifests.\n\n## Validation\n- npm run typecheck: clean.\n- npm test: 295/295 pass (11 new skill-composition tests on top of 284 existing).\n- npm run smoke: pass.\n- node bin/codepatrol.js --help: lists `--skills <id,id,...>` for all five stages.\n- Candidate commit 474690d675da9e873cc6fd51762d5b90efe14ad6 is on refs/heads/codepatrol/work/INIT-1.4-record-the-effective-skill-composition-on-every; the worktree is clean.\n\n## Acceptance evidence\n1. Record + refusal — matching declaration records identities/versions/digests/digest on the attempt (test 1); mismatching declaration refuses with SKILL_COMPOSITION_MISMATCH and records no attempt (test 2).\n2. Immutability + terminal presence — a later attempt's review step leaves the plan attempt's skills untouched (test 4); a terminal Work's manifest carries each attempt's composition (test 8).\n3. schemaVersion 1 parsing stability — a manifest written without the field still parses (test 5); a tampered composition digest refuses to parse (test 6).\n4. HandoffV1 exposure — the start handoff exposes the resolved composition with the same digest as the attempt (test 7).\n5. Lifecycle unchanged — the existing 284-test suite passes unchanged: stage transitions, returns, verification binding, terminal outcomes, lock primitives, the concurrency suite.\n\n## Files Build declared as artifacts\n- src/core/work-manifest.ts (modified)\n- src/core/lifecycle.ts (modified)\n- src/application/work-service.ts (modified)\n- src/cli/main.ts (modified)\n- src/cli/commands/skill.ts (modified)\n- src/cli/commands/stage.ts (modified)\n- skills/codepatrol-plan/SKILL.md, skills/codepatrol-plan/skill.json (modified)\n- skills/codepatrol-review/SKILL.md, skills/codepatrol-review/skill.json (modified)\n- skills/codepatrol-build/SKILL.md, skills/codepatrol-build/skill.json (modified)\n- skills/codepatrol-verify/SKILL.md, skills/codepatrol-verify/skill.json (modified)\n- skills/codepatrol-ship/SKILL.md, skills/codepatrol-ship/skill.json (modified)\n- src/test/skill-composition.test.ts (new)",
+        "todo": [
+          {
+            "id": "B1",
+            "status": "completed",
+            "note": "Inspected the v1 plan handoff and current source state. The skill-resolution module already exports `SkillCompositionEntry` and `SkillComposition`; main.ts can load manifests and inject them. Verified the strict parser and serializer in work-manifest.ts are additive-friendly."
+          },
+          {
+            "id": "B2",
+            "status": "completed",
+            "note": "src/core/work-manifest.ts: `ManifestAttempt.skills?: EffectiveComposition` (id, version, kind, digest + recomputable resolution digest). The strict parser accepts the field optionally, validates entry shapes, recomputes the digest, refuses mismatches as STATE_CORRUPT. The serializer emits the field only when present; a manifest without it parses under schemaVersion 1."
+          },
+          {
+            "id": "B3",
+            "status": "completed",
+            "note": "src/application/work-service.ts: constructor accepts `{ skillManifests?, hostCapabilities? }`. start() accepts `declaredSkills?: readonly string[]`. `resolveEffectiveComposition` calls the existing `resolveComposition`, refuses SKILL_COMPOSITION_MISMATCH on a mismatched declaration, refuses INVALID_INPUT if the host injected no manifests. The lifecycle's start transition carries the resolved composition onto the new attempt."
+          },
+          {
+            "id": "B4",
+            "status": "completed",
+            "note": "HandoffV1 gains `skills?: { skills: { id, version, digest }[]; digest: string }`. The active attempt's composition is exposed through the inline handoff so the executor can read what it is running under."
+          },
+          {
+            "id": "B5",
+            "status": "completed",
+            "note": "src/test/skill-composition.test.ts: 11 tests covering all five acceptance criteria: matching declaration records composition; mismatching refuses SKILL_COMPOSITION_MISMATCH; no-injected-host refuses INVALID_INPUT; later attempt leaves earlier untouched; manifest without field parses; tampered digest refuses to parse; handoff exposes composition; terminal Work's manifest carries composition on every attempt; resolver and work-service agree; the parser round-trips a complete composition; the parseSkillManifest helper accepts shipped-style manifests."
+          },
+          {
+            "id": "B6",
+            "status": "completed",
+            "note": "npm run typecheck clean; npm test 295/295 pass; npm run smoke passes; --help lists --skills <id,id,...> for all five stages."
+          },
+          {
+            "id": "B7",
+            "status": "completed",
+            "note": "Committed on codepatrol/work/INIT-1.4-record-the-effective-skill-composition-on-every as 474690d675da9e873cc6fd51762d5b90efe14ad6; worktree is clean."
+          },
+          {
+            "id": "B8",
+            "status": "completed",
+            "note": "Completing with decision continue."
+          }
+        ],
+        "artifacts": [
+          {
+            "path": "src/core/work-manifest.ts",
+            "kind": "source",
+            "blob": "f48efa07cb4e1d008c5f8bd0e2fd37904f68bc69",
+            "description": "ManifestAttempt gains the optional additive `skills` field with recomputable resolution digest."
+          },
+          {
+            "path": "src/core/lifecycle.ts",
+            "kind": "source",
+            "blob": "cd628fe6d97c941a540697c20c6b2f3b3da421c1",
+            "description": "Start transition carries the optional composition onto the new attempt."
+          },
+          {
+            "path": "src/application/work-service.ts",
+            "kind": "source",
+            "blob": "8505c8f3c2eb32e8fc32f82c25d6948b45c5e1be",
+            "description": "Constructor accepts injected manifests and host capabilities; start() resolves the declared composition and refuses mismatches."
+          },
+          {
+            "path": "src/cli/main.ts",
+            "kind": "cli",
+            "blob": "2587d66f25d45c907499388f28fc375969d1d593",
+            "description": "Loads shipped skill manifests once and injects them into WorkService."
+          },
+          {
+            "path": "src/cli/commands/skill.ts",
+            "kind": "cli",
+            "blob": "6e724ea226d701c6773c8cc07ba86ad40fd6a588",
+            "description": "Exports HOST_CAPABILITIES for the host wiring."
+          },
+          {
+            "path": "src/cli/commands/stage.ts",
+            "kind": "cli",
+            "blob": "a84ed39e305b027ab4087887aafffb727b25c57b",
+            "description": "Adds the `--skills <id,id,...>` flag to the start action."
+          },
+          {
+            "path": "skills/codepatrol-plan/SKILL.md",
+            "kind": "skill",
+            "blob": "6f3f1930d5a3e5b4894494e97a2d23475934aa30",
+            "description": "Declares the composition instruction; digest refreshed."
+          },
+          {
+            "path": "skills/codepatrol-review/SKILL.md",
+            "kind": "skill",
+            "blob": "a59d0dd542208ca1f0a0d3b6bc83386a682b5b88",
+            "description": "Declares the composition instruction; digest refreshed."
+          },
+          {
+            "path": "skills/codepatrol-build/SKILL.md",
+            "kind": "skill",
+            "blob": "f6a3e79b01e27be58681549862059a8597d4f208",
+            "description": "Declares the composition instruction; digest refreshed."
+          },
+          {
+            "path": "skills/codepatrol-verify/SKILL.md",
+            "kind": "skill",
+            "blob": "2709abb83a7ab4dd4e3017c247a7d5342a4238fb",
+            "description": "Declares the composition instruction; digest refreshed."
+          },
+          {
+            "path": "skills/codepatrol-ship/SKILL.md",
+            "kind": "skill",
+            "blob": "32fabbd2c052f7beab82c3b148d70961da8851fc",
+            "description": "Declares the composition instruction; digest refreshed."
+          },
+          {
+            "path": "src/test/skill-composition.test.ts",
+            "kind": "test",
+            "blob": "a53256ef95a6e108b3a6ed9ee5c1788453a46df4",
+            "description": "11 new tests covering all five acceptance criteria."
+          }
+        ]
+      },
+      "traces": [
+        {
+          "id": "c22c92537fb0",
+          "type": "observation",
+          "message": "Build changes landed as commit 474690d on codepatrol/work/INIT-1.4-record-the-effective-skill-composition-on-every. The change extends the Work manifest schema with an additive `skills` field on each attempt: the resolved composition (id, version, kind, digest) plus the resolution digest, recorded only when a stage run declared it. The strict parser accepts the field optionally, validates entries against SKILL_ID / SKILL_VERSION / SKILL_KINDS / SKILL_DIGEST, and recomputes the resolution digest from the JSON of the entries — a mismatch is STATE_CORRUPT. The WorkService constructor accepts optional skillManifests and hostCapabilities, start() takes an optional `declaredSkills` argument, and a declaration that does not resolve refuses with SKILL_COMPOSITION_MISMATCH (or INVALID_INPUT if no host manifests were injected). HandoffV1 exposes the active attempt's composition. The five stage skills declare the instruction to pass `--skills <id,id,...>` after running `codepatrol skill resolve <stage>`, with refreshed digests. No adapter or lock changes. Validation: typecheck clean; 295/295 tests pass (11 new skill-composition tests on top of 284); smoke passes; --help lists `--skills <id,id,...>` for all five stages.",
+          "at": "2026-08-04T01:37:43.530Z"
         }
       ]
     }
