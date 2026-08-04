@@ -39,10 +39,10 @@
     "number": 32
   },
   "workflow": {
-    "state": "active",
-    "stage": "verify",
-    "attempt": 1,
-    "updatedAt": "2026-08-04T01:52:40.936Z"
+    "state": "ready",
+    "stage": "build",
+    "attempt": 2,
+    "updatedAt": "2026-08-04T02:00:33.736Z"
   },
   "attempts": [
     {
@@ -268,7 +268,7 @@
       "stage": "build",
       "attempt": 1,
       "runId": "d9ef3a5a-e526-4f2d-ad5c-58cb33cfd175",
-      "status": "completed",
+      "status": "invalidated",
       "execution": {
         "role": "builder",
         "harness": "opencode",
@@ -444,13 +444,14 @@
       "stage": "verify",
       "attempt": 1,
       "runId": "a11c1885-2357-4874-8dc8-aba635d45012",
-      "status": "active",
+      "status": "returned",
       "execution": {
         "role": "verifier",
         "harness": "opencode",
         "model": "minimax-coding-plan/MiniMax-M3"
       },
       "startedAt": "2026-08-04T01:52:40.936Z",
+      "finishedAt": "2026-08-04T02:00:33.736Z",
       "todo": [
         {
           "id": "V1",
@@ -476,6 +477,138 @@
           "id": "V5",
           "title": "Complete verify",
           "description": "Run verify complete."
+        }
+      ],
+      "result": {
+        "decision": "return",
+        "summary": "Base branch moved, causing VERIFY_STALE.",
+        "handoff": "Returned to build for refresh due to base drift.",
+        "todo": [
+          {
+            "id": "V1",
+            "status": "completed"
+          },
+          {
+            "id": "V2",
+            "status": "completed"
+          },
+          {
+            "id": "V3",
+            "status": "completed"
+          },
+          {
+            "id": "V4",
+            "status": "completed"
+          },
+          {
+            "id": "V5",
+            "status": "failed",
+            "note": "Returned to build due to VERIFY_STALE."
+          }
+        ],
+        "artifacts": [],
+        "returnTo": "build",
+        "reasons": [
+          "The base branch moved during Verify, causing a VERIFY_STALE error on complete. Returning to build to allow change refresh."
+        ]
+      },
+      "traces": [
+        {
+          "id": "cc91506f4a5d",
+          "type": "observation",
+          "message": "V1: Pinned candidate and baseline commits. The candidate is 474690d675da9e873cc6fd51762d5b90efe14ad6, and the baseline is 880186a38a1c112bd036709241b1dfed4b3223ba. The verification target is exactly this range. Baseline is stale (targetCommit is 02607c6d1c744c03ad7d48e0fba101c6d6241469), but candidate is clean and status is ready.",
+          "at": "2026-08-04T01:53:17.585Z",
+          "data": {
+            "candidateCommit": "474690d675da9e873cc6fd51762d5b90efe14ad6",
+            "baselineCommit": "880186a38a1c112bd036709241b1dfed4b3223ba",
+            "targetCommit": "02607c6d1c744c03ad7d48e0fba101c6d6241469",
+            "policyHash": "738b7dca7b2b865e7de12c3f1ca6c05da0d1762f30e202a18709b6290fafb7b4"
+          }
+        },
+        {
+          "id": "c691921979a6",
+          "type": "observation",
+          "message": "Inspected changed files natively. 18 files changed. src/core/work-manifest.ts adds `skills?: EffectiveComposition` to `ManifestAttempt` with strict parser handling. src/core/lifecycle.ts wires the skills down. src/application/work-service.ts injects skillManifests and hostCapabilities to support `resolveEffectiveComposition` and exposes `skills` on `HandoffV1.run` equivalent. src/cli/commands/stage.ts supports `--skills` flag. Test file `src/test/skill-composition.test.ts` (11 tests) covers parsing stability, rejection of unresolvable skills, backwards compatibility, and immutability. No manifest schemaVersion bumps. Acceptance criteria native checks out.",
+          "at": "2026-08-04T01:53:58.745Z",
+          "data": {
+            "changedFiles": 18,
+            "acceptance1": "ManifestAttempt.skills recorded with identities, version, digest. Unresolvable start rejected with SKILL_COMPOSITION_MISMATCH.",
+            "acceptance2": "Immutability verified by append-only structure and test cases.",
+            "acceptance3": "schemaVersion stays 1, optional field tested for backward compatibility.",
+            "acceptance4": "HandoffV1 modified to expose skills attribute correctly.",
+            "acceptance5": "Other tests untouched and functioning normally. Lifecycle continues as before."
+          }
+        },
+        {
+          "id": "d6a36852d5ff",
+          "type": "command",
+          "message": "Executed npm run verify per policy.json",
+          "at": "2026-08-04T01:56:56.008Z",
+          "data": {
+            "stdout": {
+              "digest": "ab5af5927e4ecb9b566ba76a24bb59ab1a21944634e5970776daf31911f81784",
+              "bytes": 29387,
+              "truncated": false,
+              "redactions": 0
+            },
+            "stderr": {
+              "digest": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+              "bytes": 0,
+              "truncated": false,
+              "redactions": 0
+            }
+          },
+          "command": [
+            "npm",
+            "run",
+            "verify"
+          ],
+          "exitCode": 0
+        },
+        {
+          "id": "ac2daddffec8",
+          "type": "observation",
+          "message": "Recorded minimum evidence. All five acceptance criteria observed holding successfully in tests and file changes. No unverified behavior. npm run verify passes without any modifications to candidate.",
+          "at": "2026-08-04T01:57:11.173Z",
+          "data": {
+            "cleanCandidate": true,
+            "testsPassed": true
+          }
+        },
+        {
+          "id": "7336cf8c1f3f",
+          "type": "command",
+          "message": "npm run verify exited with 0",
+          "at": "2026-08-04T01:59:56.985Z",
+          "data": {
+            "source": "codepatrol",
+            "workId": "INIT-1.4-record-the-effective-skill-composition-on-every",
+            "runId": "a11c1885-2357-4874-8dc8-aba635d45012",
+            "attempt": 1,
+            "candidateCommit": "474690d675da9e873cc6fd51762d5b90efe14ad6",
+            "policyHash": "738b7dca7b2b865e7de12c3f1ca6c05da0d1762f30e202a18709b6290fafb7b4",
+            "startedAt": "2026-08-04T01:57:32.655Z",
+            "finishedAt": "2026-08-04T01:59:56.940Z",
+            "stdout": {
+              "digest": "997beca07197147e3f9701a1e12f170e15fd6e43faede0e0e5cafff953731053",
+              "bytes": 29382,
+              "truncated": true,
+              "redactions": 0
+            },
+            "stderr": {
+              "digest": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+              "bytes": 0,
+              "truncated": false,
+              "redactions": 0
+            },
+            "outputLog": ".codepatrol/runtime/works/INIT-1.4-record-the-effective-skill-composition-on-every/current/verify/01.log"
+          },
+          "command": [
+            "npm",
+            "run",
+            "verify"
+          ],
+          "exitCode": 0
         }
       ],
       "verificationTarget": {
