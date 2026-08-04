@@ -1,0 +1,44 @@
+{
+  "schemaVersion": 1,
+  "type": "codepatrol-work",
+  "work": {
+    "id": "INIT-7.1-centralize-work-discovery-and-resolution",
+    "title": "Centralize Work discovery and resolution",
+    "description": "Extract the repeated logic that discovers Work IDs from manifest refs, archive refs, and legacy base projections into a WorkLocator, which also resolves short Work codes such as INIT-x.y.",
+    "issueType": "Task",
+    "priority": "p1",
+    "acceptance": [
+      "list() and short-code resolution use the same enumeration logic",
+      "Work locations are returned with their source",
+      "Duplicate or ambiguous identities are detected deterministically",
+      "Enumeration ordering remains stable",
+      "Git commands are not duplicated between listing and resolution"
+    ],
+    "createdAt": "2026-08-04T01:55:22.853Z",
+    "requestedBy": "spec",
+    "initiative": {
+      "id": "INIT-7",
+      "position": 1
+    },
+    "origin": {
+      "createdAt": "2026-08-04T01:55:22.853Z"
+    }
+  },
+  "repository": {
+    "baseRef": "refs/heads/main"
+  },
+  "graph": {
+    "blockedBy": [
+      "INIT-6.6-preserve-legacy-projection-compatibility"
+    ]
+  },
+  "issue": null,
+  "workflow": {
+    "state": "ready",
+    "stage": "plan",
+    "attempt": 1,
+    "updatedAt": "2026-08-04T01:55:22.853Z"
+  },
+  "attempts": [],
+  "completion": null
+}
