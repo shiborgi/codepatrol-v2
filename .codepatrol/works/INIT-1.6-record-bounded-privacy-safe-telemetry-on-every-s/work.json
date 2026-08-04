@@ -39,10 +39,10 @@
     "number": 34
   },
   "workflow": {
-    "state": "ready",
+    "state": "active",
     "stage": "review",
     "attempt": 1,
-    "updatedAt": "2026-08-04T03:14:03.712Z"
+    "updatedAt": "2026-08-04T03:26:54.710Z"
   },
   "attempts": [
     {
@@ -166,6 +166,35 @@
             "failureIsolation": "collector throw => telemetry omitted, lifecycle unaffected",
             "schemaVersion": 1
           }
+        }
+      ]
+    },
+    {
+      "stage": "review",
+      "attempt": 1,
+      "runId": "20899438-b87d-43a8-b4a5-d0a21c03374c",
+      "status": "active",
+      "execution": {
+        "role": "reviewer",
+        "harness": "opencode",
+        "model": "deepseek-v4-pro"
+      },
+      "startedAt": "2026-08-04T03:26:54.710Z",
+      "todo": [
+        {
+          "id": "R1",
+          "title": "Audit plan completeness against SPEC-FORMAT and PLAN-FORMAT",
+          "description": "Verify every acceptance criterion is testable and maps to tasks; task dependencies form a DAG; every task names its file set and verify command; blast radius covers union of task files."
+        },
+        {
+          "id": "R2",
+          "title": "Validate plan references against the repository",
+          "description": "Check that referenced paths, symbols, and verification commands exist and are executable. No hidden production edits."
+        },
+        {
+          "id": "R3",
+          "title": "Write review report and seal verdict",
+          "description": "Write report.md and evidence, curate traces.md, record the run, and checkpoint or return."
         }
       ]
     }
