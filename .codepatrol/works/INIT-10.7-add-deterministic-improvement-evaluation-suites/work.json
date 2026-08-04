@@ -1,0 +1,44 @@
+{
+  "schemaVersion": 1,
+  "type": "codepatrol-work",
+  "work": {
+    "id": "INIT-10.7-add-deterministic-improvement-evaluation-suites",
+    "title": "Add deterministic improvement evaluation suites",
+    "description": "Create skill evaluation scenarios proving that Spec identifies repeated Verify returns, does not invent failures, cites supporting evidence, does not apply changes, avoids duplicate Works, and marks insufficient samples as inconclusive.",
+    "issueType": "Feature",
+    "priority": "p2",
+    "acceptance": [
+      "Suites run without model credentials or network access where possible",
+      "Deliberately broken expectations fail the suite",
+      "Improvement outputs are stable across repeated runs",
+      "At least one scenario contains misleading noise that Spec must ignore",
+      "The proposal/apply boundary is explicitly tested"
+    ],
+    "createdAt": "2026-08-04T02:03:50.127Z",
+    "requestedBy": "spec",
+    "initiative": {
+      "id": "INIT-10",
+      "position": 7
+    },
+    "origin": {
+      "createdAt": "2026-08-04T02:03:50.127Z"
+    }
+  },
+  "repository": {
+    "baseRef": "refs/heads/main"
+  },
+  "graph": {
+    "blockedBy": [
+      "INIT-10.6-integrate-signals-into-spec-discovery"
+    ]
+  },
+  "issue": null,
+  "workflow": {
+    "state": "ready",
+    "stage": "plan",
+    "attempt": 1,
+    "updatedAt": "2026-08-04T02:03:50.127Z"
+  },
+  "attempts": [],
+  "completion": null
+}
