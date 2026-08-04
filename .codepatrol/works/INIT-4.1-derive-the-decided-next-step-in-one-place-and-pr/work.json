@@ -37,23 +37,24 @@
     "number": 42
   },
   "workflow": {
-    "state": "active",
-    "stage": "plan",
+    "state": "ready",
+    "stage": "review",
     "attempt": 1,
-    "updatedAt": "2026-08-04T00:29:12.049Z"
+    "updatedAt": "2026-08-04T00:30:53.757Z"
   },
   "attempts": [
     {
       "stage": "plan",
       "attempt": 1,
       "runId": "c3a0b416-57a6-4e45-a3b2-088f01f4a4c2",
-      "status": "active",
+      "status": "completed",
       "execution": {
         "role": "planner",
         "harness": "opencode",
         "model": "kimi-for-coding/k3"
       },
       "startedAt": "2026-08-04T00:29:12.049Z",
+      "finishedAt": "2026-08-04T00:30:53.757Z",
       "todo": [
         {
           "id": "P1",
@@ -74,6 +75,66 @@
         {
           "id": "P5",
           "title": "Record traces; complete Plan with decision continue"
+        }
+      ],
+      "result": {
+        "decision": "continue",
+        "summary": "One core derivation nextStepOf (plan|review|build|verify|ship|done) in core/types.ts, consumed by nextCommand, work show, and the publication snapshot; a new single-select Next field on the Project board ensured and reconciled like Status/Outcome; reconcile becomes drift-aware so a sync with no state change edits nothing; the E2E asserts the field. No manifest change anywhere.",
+        "handoff": "# Plan: Derive the decided next step in one place and project it onto the board (INIT-4.1)\n\n## Finding (P1)\nThe Project adapter is already generic — ensureField creates or repairs a single-select field by name (gh-projects.ts:121-149) and ensure() wires Status and Outcome (168-179) — but reconcile() issues item-edit calls unconditionally (199-200), so acceptance 4 (\"a sync with no state change edits no field\") requires making reconcile drift-aware for all three fields, not merely adding Next. The next step is computed ad hoc only in nextCommand (work-service.ts:99-106); publication's snapshotOf derives Status separately. Nothing is persisted today, and nothing new will be: the derivation reads workflow state (acceptance 5).\n\n## Product files Build touches\n1. src/core/types.ts — NEXT_STEPS = [\"plan\",\"review\",\"build\",\"verify\",\"ship\",\"done\"], type NextStep, and `nextStepOf(work: { completion: unknown; workflow: { stage: Stage } }): NextStep` beside PROJECT_STATUS_BY_STAGE: terminal → \"done\", otherwise workflow.stage (a return points at its target automatically, since workflow.stage already holds it).\n2. src/application/work-service.ts — nextCommand reads nextStepOf for the stage name (its blocked-build special case and null-on-terminal stay; null now comes from next === \"done\"); WorkView gains `nextStep` via viewOf, so work show exposes it.\n3. src/application/ports.ts — GitHubProject gains nextFieldId/nextOptions; GitHubProjects.reconcile gains the next value.\n4. src/adapters/gh-projects.ts — NEXT_FIELD ensured in ensure() like the others; reconcile becomes drift-aware: read the item's current Status/Outcome/Next values from the item-list payload and issue item-edit only for fields that differ.\n5. src/application/publication.ts — snapshotOf carries nextStepOf(entry) into the publication snapshot; the reconcile call passes it; project status reporting entries gain `next`.\n6. src/test/support/github.ts — FakeGitHub: the new reconcile signature, current-value awareness, and edit-call recording so tests can count edits.\n7. Tests: src/test/publication.test.ts, src/test/github-projects.test.ts, src/test/work-service.test.ts, plus nextStepOf cases (core-level, in an existing core test file or publication tests — Build's call).\n8. scripts/projection-e2e.mjs — assert the Next field after plan (next is review) and at terminal (done); register the assertion string in src/test/documentation.test.ts.\n\n## Rules (P2)\n- The derivation is the only place that knows the mapping; every consumer imports it (acceptance 2). nextCommand keeps its richer behavior (start vs complete, blocked-build pointer) but never re-derives the stage.\n- The board field is exactly the six lowercase tokens — the vocabulary users type on the CLI.\n- Drift-aware reconcile covers all three fields: the no-edit guarantee is a pipeline property, not a Next-only special case.\n- No manifest schema change, no new stored attribute (acceptance 5): the field is a projection of workflow state, recomputed on every sync.\n\n## Tests (P3)\n1. work show exposes nextStep: ready Work → its stage, active run → the active stage, terminal → done (acceptance 1).\n2. nextCommand and the projection agree: after plan completes, nextCommand offers review start and the reconciled Next is review (acceptance 2).\n3. Board: a fresh project gains the Next field with the six options; reconcile sets it per Work (acceptance 3).\n4. Terminal shows done; a repeated sync with no state change issues zero item-edit calls (acceptance 4, via the Fake's recorded calls).\n5. E2E: projection-e2e.mjs checks Next after plan and at terminal; documentation.test.ts registers the string (acceptance 5 is the no-schema-change, asserted by the manifest tests staying untouched and green).\n\n## Acceptance coverage\n1. Shared derivation, exposed in work show — types.ts + work-service + test 1.\n2. nextCommand and projection read the same derivation — test 2.\n3. Next field ensured and reconciled like Status/Outcome — gh-projects + test 3.\n4. done at terminal, no edits without change — drift-aware reconcile + test 4.\n5. E2E asserts Next; no manifest schema change — E2E + guard + untouched manifest parser tests.\n\n## Verification for Build\nnpm run verify (typecheck, full unit suite, smoke, --help).\n\n## Non-goals\nNo persisting of the next step. No board field removal/migration tooling (ensureField's existing repair path covers drifted options). No change to Status/Outcome semantics (INIT-2.3's last-attacked rule stands — Status and Next deliberately differ between stages).",
+        "todo": [
+          {
+            "id": "P1",
+            "status": "completed",
+            "note": "Field machinery is generic; reconcile is not drift-aware today; nextCommand is the only ad-hoc next-step computation."
+          },
+          {
+            "id": "P2",
+            "status": "completed",
+            "note": "nextStepOf in core/types.ts (done when terminal, else workflow.stage); consumers nextCommand, work show, snapshotOf; board Next field ensured like the others; reconcile drift-aware for all three fields."
+          },
+          {
+            "id": "P3",
+            "status": "completed",
+            "note": "Tests cover exposure, agreement, field ensure, zero-edit re-sync via the Fake, and an E2E assertion registered in documentation.test.ts."
+          },
+          {
+            "id": "P4",
+            "status": "completed",
+            "note": "Handoff covers all five acceptance criteria with exact files and rules."
+          },
+          {
+            "id": "P5",
+            "status": "completed",
+            "note": "Two traces recorded (observation + decision); completing with decision continue."
+          }
+        ],
+        "artifacts": []
+      },
+      "traces": [
+        {
+          "id": "d19cd6439204",
+          "type": "observation",
+          "message": "The Project adapter is already generic: ensureField(name, options, colors) creates or repairs a single-select field (gh-projects.ts:121-149), ensure() wires Status and Outcome (168-179), and reconcile() always issues item-edit calls without a drift check (199-200). The next step is computed ad hoc only in nextCommand (work-service.ts:99-106, which also has a blocked-build special case); publication's snapshotOf derives Status separately. Acceptance 4 (\"a sync with no state change edits no field\") therefore requires making reconcile drift-aware for all three fields, not only adding Next.",
+          "at": "2026-08-04T00:30:53.598Z",
+          "data": {
+            "files": [
+              "src/adapters/gh-projects.ts",
+              "src/application/ports.ts",
+              "src/application/publication.ts",
+              "src/application/work-service.ts"
+            ]
+          }
+        },
+        {
+          "id": "5d877c75301e",
+          "type": "decision",
+          "message": "Core derivation in src/core/types.ts beside PROJECT_STATUS_BY_STAGE: NEXT_STEPS = [\"plan\",\"review\",\"build\",\"verify\",\"ship\",\"done\"] and nextStepOf({ completion, workflow }) — terminal yields \"done\", otherwise workflow.stage (the stage the Work is ready for or active in; a return points at its target automatically). Consumers: nextCommand uses it for the stage name (keeping its blocked-build special case and null-on-done), WorkView gains nextStep so work show exposes it, and snapshotOf carries it into publication. Board: a \"Next\" single-select ensured like Status/Outcome; ports' GitHubProject gains nextFieldId/nextOptions and reconcile gains the next value; reconcile becomes drift-aware — it reads the item's current field values from item-list and edits only what differs, so a sync with no state change issues no edits. E2E gains a Next assertion registered in documentation.test.ts.",
+          "at": "2026-08-04T00:30:53.668Z",
+          "data": {
+            "derivation": "nextStepOf in core/types.ts",
+            "field": "Next",
+            "reconcile": "drift-aware, all three fields"
+          }
         }
       ]
     }
