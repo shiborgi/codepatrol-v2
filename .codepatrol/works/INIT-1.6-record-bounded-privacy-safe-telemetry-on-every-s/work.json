@@ -1,0 +1,47 @@
+{
+  "schemaVersion": 1,
+  "type": "codepatrol-work",
+  "work": {
+    "id": "INIT-1.6-record-bounded-privacy-safe-telemetry-on-every-s",
+    "title": "Record bounded, privacy-safe telemetry on every stage attempt",
+    "description": "Without a baseline, no change to prompts, context, or skills can be shown to help: a shorter response may simply have degraded the work, and a cheaper stage may have caused a return. Records an optional additive telemetry field on the attempt: skill count and resolved skill bytes, context section count and size, tool and command counts with failures, tool input and output sizes, stage duration, and model token usage when the harness reports it, explicitly marked unavailable when it does not. Counts, sizes, digests, and identifiers only. Part of this is already derivable and must not be duplicated: an attempt carries startedAt and finishedAt, and ManifestTrace already records command traces with an exitCode and a metric type. Telemetry is best-effort and non-authoritative by construction.",
+    "issueType": "Feature",
+    "priority": "p1",
+    "acceptance": [
+      "A completed stage attempt carries bounded telemetry, and a manifest without the field still parses under schemaVersion 1",
+      "Absent model usage is recorded as explicitly unavailable rather than as zero or as an error",
+      "A test suite asserts that no prompt, response, reasoning, raw output, environment value, or credential reaches the manifest, and it fails when a field is added that would carry one",
+      "An injected telemetry failure leaves the lifecycle transition, the stage result, and Ship unaffected",
+      "The bounded telemetry survives into the manifest of a terminal Work"
+    ],
+    "createdAt": "2026-08-03T11:16:22.452Z",
+    "requestedBy": "spec",
+    "initiative": {
+      "id": "INIT-1",
+      "position": 6
+    },
+    "origin": {
+      "createdAt": "2026-08-03T11:16:22.452Z"
+    }
+  },
+  "repository": {
+    "baseRef": "refs/heads/main"
+  },
+  "graph": {
+    "blockedBy": [
+      "INIT-1.4-record-the-effective-skill-composition-on-every"
+    ]
+  },
+  "issue": {
+    "repository": "shiborgi/codepatrol",
+    "number": 34
+  },
+  "workflow": {
+    "state": "ready",
+    "stage": "plan",
+    "attempt": 1,
+    "updatedAt": "2026-08-03T11:16:22.452Z"
+  },
+  "attempts": [],
+  "completion": null
+}
