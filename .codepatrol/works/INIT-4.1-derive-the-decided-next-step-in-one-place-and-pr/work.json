@@ -25,7 +25,9 @@
     }
   },
   "repository": {
-    "baseRef": "refs/heads/main"
+    "baseRef": "refs/heads/main",
+    "createdFromCommit": "a8eeebe921bc00f2bc7c8f3c0c11e33f932dbf6d",
+    "baselineCommit": "a8eeebe921bc00f2bc7c8f3c0c11e33f932dbf6d"
   },
   "graph": {
     "blockedBy": []
@@ -35,11 +37,46 @@
     "number": 42
   },
   "workflow": {
-    "state": "ready",
+    "state": "active",
     "stage": "plan",
     "attempt": 1,
-    "updatedAt": "2026-08-03T23:37:47.404Z"
+    "updatedAt": "2026-08-04T00:29:12.049Z"
   },
-  "attempts": [],
+  "attempts": [
+    {
+      "stage": "plan",
+      "attempt": 1,
+      "runId": "c3a0b416-57a6-4e45-a3b2-088f01f4a4c2",
+      "status": "active",
+      "execution": {
+        "role": "planner",
+        "harness": "opencode",
+        "model": "kimi-for-coding/k3"
+      },
+      "startedAt": "2026-08-04T00:29:12.049Z",
+      "todo": [
+        {
+          "id": "P1",
+          "title": "Inspect nextCommand, snapshotOf, gh-projects field machinery, and FakeGitHub project fake"
+        },
+        {
+          "id": "P2",
+          "title": "Decide the core derivation (name, values, location) and its consumers"
+        },
+        {
+          "id": "P3",
+          "title": "Decide the board Next field mechanics, tests, and E2E assertion"
+        },
+        {
+          "id": "P4",
+          "title": "Write decision-complete plan covering all five acceptance criteria"
+        },
+        {
+          "id": "P5",
+          "title": "Record traces; complete Plan with decision continue"
+        }
+      ]
+    }
+  ],
   "completion": null
 }
