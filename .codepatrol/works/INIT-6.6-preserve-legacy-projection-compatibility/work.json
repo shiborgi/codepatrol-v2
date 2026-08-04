@@ -34,7 +34,10 @@
       "INIT-6.5-keep-non-accepted-outcomes-off-the-base"
     ]
   },
-  "issue": null,
+  "issue": {
+    "repository": "shiborgi/codepatrol",
+    "number": 50
+  },
   "workflow": {
     "state": "ready",
     "stage": "plan",
