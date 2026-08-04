@@ -39,10 +39,10 @@
     "number": 32
   },
   "workflow": {
-    "state": "ready",
+    "state": "active",
     "stage": "verify",
     "attempt": 1,
-    "updatedAt": "2026-08-04T01:38:14.295Z"
+    "updatedAt": "2026-08-04T01:52:40.936Z"
   },
   "attempts": [
     {
@@ -439,6 +439,53 @@
           "at": "2026-08-04T01:37:43.530Z"
         }
       ]
+    },
+    {
+      "stage": "verify",
+      "attempt": 1,
+      "runId": "a11c1885-2357-4874-8dc8-aba635d45012",
+      "status": "active",
+      "execution": {
+        "role": "verifier",
+        "harness": "opencode",
+        "model": "minimax-coding-plan/MiniMax-M3"
+      },
+      "startedAt": "2026-08-04T01:52:40.936Z",
+      "todo": [
+        {
+          "id": "V1",
+          "title": "Pin candidate and baseline commits",
+          "description": "Report verificationTarget.candidateCommit and baselineCommit."
+        },
+        {
+          "id": "V2",
+          "title": "Inspect changed files and test coverage",
+          "description": "Inspect every changed file against the acceptance criteria."
+        },
+        {
+          "id": "V3",
+          "title": "Execute required commands",
+          "description": "Run npm run verify per policy.json."
+        },
+        {
+          "id": "V4",
+          "title": "Record traces and evidence",
+          "description": "Record minimum evidence in traces."
+        },
+        {
+          "id": "V5",
+          "title": "Complete verify",
+          "description": "Run verify complete."
+        }
+      ],
+      "verificationTarget": {
+        "attempt": 1,
+        "candidateCommit": "474690d675da9e873cc6fd51762d5b90efe14ad6",
+        "manifestCommit": "1299a88d61480b308077a7b1ede6abba56033e0d",
+        "baselineCommit": "880186a38a1c112bd036709241b1dfed4b3223ba",
+        "targetCommit": "02607c6d1c744c03ad7d48e0fba101c6d6241469",
+        "policyHash": "738b7dca7b2b865e7de12c3f1ca6c05da0d1762f30e202a18709b6290fafb7b4"
+      }
     }
   ],
   "completion": null
