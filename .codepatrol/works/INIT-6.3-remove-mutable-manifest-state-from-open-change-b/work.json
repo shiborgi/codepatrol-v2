@@ -1,0 +1,45 @@
+{
+  "schemaVersion": 1,
+  "type": "codepatrol-work",
+  "work": {
+    "id": "INIT-6.3-remove-mutable-manifest-state-from-open-change-b",
+    "title": "Remove mutable manifest state from open Change branches",
+    "description": "Stop writing or reconciling the current Work manifest inside the Change branch or its worktree. Executors receive orchestration information only through CLI responses, handoffs, and explicit inspection commands. Legacy branches that already contain a manifest projection remain readable but receive no new mutable checkpoints.",
+    "issueType": "Feature",
+    "priority": "p1",
+    "acceptance": [
+      "New Change branches do not require a Work manifest file",
+      "Manifest checkpoints do not modify the Change branch",
+      "Worktrees do not need index reconciliation after manifest updates",
+      "Executors remain forbidden from modifying .codepatrol/**",
+      "Handoff generation remains complete without reading a branch manifest",
+      "Existing legacy branches continue to operate during migration"
+    ],
+    "createdAt": "2026-08-04T01:44:10.989Z",
+    "requestedBy": "spec",
+    "initiative": {
+      "id": "INIT-6",
+      "position": 3
+    },
+    "origin": {
+      "createdAt": "2026-08-04T01:44:10.989Z"
+    }
+  },
+  "repository": {
+    "baseRef": "refs/heads/main"
+  },
+  "graph": {
+    "blockedBy": [
+      "INIT-6.2-cut-change-branches-directly-from-the-base"
+    ]
+  },
+  "issue": null,
+  "workflow": {
+    "state": "ready",
+    "stage": "plan",
+    "attempt": 1,
+    "updatedAt": "2026-08-04T01:44:10.989Z"
+  },
+  "attempts": [],
+  "completion": null
+}
