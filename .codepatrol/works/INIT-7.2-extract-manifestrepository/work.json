@@ -33,7 +33,10 @@
       "INIT-7.1-centralize-work-discovery-and-resolution"
     ]
   },
-  "issue": null,
+  "issue": {
+    "repository": "shiborgi/codepatrol",
+    "number": 58
+  },
   "workflow": {
     "state": "ready",
     "stage": "plan",
