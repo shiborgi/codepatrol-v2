@@ -1,0 +1,44 @@
+{
+  "schemaVersion": 1,
+  "type": "codepatrol-work",
+  "work": {
+    "id": "INIT-4.3-record-todo-progress-during-a-run",
+    "title": "Record todo progress during a run",
+    "description": "The todo contract is enforced only at the boundaries: the starting todo freezes on the attempt, the result answers every id at complete, and between them the Core sees nothing — the harness task facility mirrors the todo, but no update reaches the manifest, so work show during an active run cannot say which item is being worked. Add a mid-run progress channel: an executor reports an item as in progress or done through the trace mechanism it already uses, progress naming an unknown id is refused, the starting todo is never rewritten, and work show derives the current position from the starting todo plus the latest progress per item. The completion contract is unchanged: the result still answers the starting ids.",
+    "issueType": "Feature",
+    "priority": "p2",
+    "acceptance": [
+      "An active run records todo progress mid-run, and work show surfaces which item is in progress and which are done",
+      "A progress entry naming an id the starting todo does not contain is refused",
+      "The starting todo on the attempt is never rewritten by progress, and a resumed run keeps the recorded progress",
+      "The completion contract is unchanged: the result still answers every starting todo id, and the existing suite passes"
+    ],
+    "createdAt": "2026-08-04T01:24:09.980Z",
+    "requestedBy": "spec",
+    "initiative": {
+      "id": "INIT-4",
+      "position": 3
+    },
+    "origin": {
+      "createdAt": "2026-08-04T01:24:09.980Z"
+    }
+  },
+  "repository": {
+    "baseRef": "refs/heads/main"
+  },
+  "graph": {
+    "blockedBy": []
+  },
+  "issue": {
+    "repository": "shiborgi/codepatrol",
+    "number": 44
+  },
+  "workflow": {
+    "state": "ready",
+    "stage": "plan",
+    "attempt": 1,
+    "updatedAt": "2026-08-04T01:24:09.980Z"
+  },
+  "attempts": [],
+  "completion": null
+}
