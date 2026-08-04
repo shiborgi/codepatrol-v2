@@ -36,23 +36,24 @@
     "number": 43
   },
   "workflow": {
-    "state": "active",
-    "stage": "plan",
+    "state": "ready",
+    "stage": "review",
     "attempt": 1,
-    "updatedAt": "2026-08-04T00:43:37.035Z"
+    "updatedAt": "2026-08-04T00:45:10.890Z"
   },
   "attempts": [
     {
       "stage": "plan",
       "attempt": 1,
       "runId": "a95e7955-3712-44fc-80bb-9620ef48abf7",
-      "status": "active",
+      "status": "completed",
       "execution": {
         "role": "planner",
         "harness": "opencode",
         "model": "kimi-for-coding/k3"
       },
       "startedAt": "2026-08-04T00:43:37.035Z",
+      "finishedAt": "2026-08-04T00:45:10.890Z",
       "todo": [
         {
           "id": "P1",
@@ -73,6 +74,66 @@
         {
           "id": "P5",
           "title": "Record traces; complete Plan with decision continue"
+        }
+      ],
+      "result": {
+        "decision": "continue",
+        "summary": "Milestone titles become \"INIT-<n>: <title>\" via a shared initiativeTitleOf helper, and identity stops depending on the title: the managed section gains a hidden codepatrol-initiative-id marker, and ensure() matches new title, then marker, then legacy bare title, retitling in place and never duplicating. The E2E matches by the managed section and asserts the id in the title.",
+        "handoff": "# Plan: Include the Initiative id in the GitHub Milestone title (INIT-4.2)\n\n## Finding (P1)\nensure() finds a Milestone by exact title (gh-milestones.ts:32), and the managed initiative section carries no initiative id (markers.ts:99-113). Two consequences: a naive title change creates a second Milestone, and a marker alone cannot identify which Initiative a pre-change Milestone belongs to — so reconciliation needs a legacy path. The E2E finds the Milestone by exact title (projection-e2e.mjs milestoneFor) and must switch to the managed section.\n\n## Product files Build touches\n1. src/application/publication/markers.ts — add `initiativeTitleOf(initiative: { id, title }): string` returning `INIT-<n>: <title>`; add the hidden marker `<!-- codepatrol-initiative-id: <id> -->` inside the managed section of initiativeSection (right after the start marker, so the section stays wholly owned); export a reader for the id marker.\n2. src/application/ports.ts — GitHubMilestones.ensure becomes `ensure(repository, initiative: { id: string; title: string }, section)`.\n3. src/adapters/gh-milestones.ts — ensure() matches in order: (a) exact new title → converge description only; (b) a Milestone whose description carries this initiative's id marker → PATCH title + converged description; (c) legacy: exact bare title AND an initiative section present → retitle + converge; (d) otherwise create. Two different Milestones matching (a) and (b) is SYNC_CONFLICT, never a silent pick.\n4. src/application/publication.ts — the milestone call passes the initiative identity (id + title) instead of the bare title (publication.ts:263).\n5. src/test/support/github.ts — the fake milestones port mirrors the new signature and matching, and records edits so tests can count them.\n6. src/test/publication.test.ts — updated milestone tests plus the new ones below.\n7. scripts/projection-e2e.mjs — milestoneFor matches by the managed section (`codepatrol:initiative:start`) instead of the exact title; a new check asserts the id is in the title.\n8. src/test/documentation.test.ts — register the new E2E assertion string (e.g. \"the Milestone title carries the Initiative id\").\n\n## Rules (P2)\n- Format: `INIT-2: Shareable Initiatives` — the id, colon, title; the same convention INIT-2.2 set for Issue titles.\n- Identity never depends on the title again: the id marker inside the managed section is the durable handle; the legacy bare-title path exists only for Milestones written before the marker did, and only when an initiative section is present.\n- Convergence stays the existing mechanism: the managed section is replaced wholesale, and an already-correct Milestone is not edited (title compared, description compared).\n\n## Tests (P3)\n1. A published Initiative's Milestone is titled `INIT-<n>: <title>` (acceptance 1) — update the existing milestone projection test.\n2. A pre-change Milestone (bare title, initiative section, no id marker) is retitled in place on the next sync — one Milestone before, one after, same number (acceptance 2).\n3. A repeated sync issues no title or description edit once the Milestone carries the id (acceptance 3, via the fake's recorded calls).\n4. A Milestone carrying the id marker under a drifted title is found by the marker and retitled (the durable-handle path).\n5. E2E: the scenario matches through the managed section and asserts the id in the title; the documentation guard registers the string (acceptance 4).\n\n## Acceptance coverage\n1. Id in the title at ensure — initiativeTitleOf + test 1.\n2. Retitle, never duplicate — four-step matching + tests 2 and 4.\n3. No churn — existing compare-then-edit + test 3.\n4. E2E matches the managed section and asserts the id — script + guard + test 5.\n\n## Verification for Build\nnpm run verify (typecheck, full unit suite, smoke, --help).\n\n## Non-goals\nNo change to what the managed section shows beyond the hidden marker. No Milestone deletion or merging. No id marker retrofit for closed Milestones beyond the same ensure path (a closed Milestone is retitled like any other — reconciliation does not reopen it).",
+        "todo": [
+          {
+            "id": "P1",
+            "status": "completed",
+            "note": "ensure matches by exact title; the managed section has no id; E2E matches by title; duplication risk confirmed."
+          },
+          {
+            "id": "P2",
+            "status": "completed",
+            "note": "INIT-<n>: <title> via initiativeTitleOf; hidden id marker in the section; four-step matching (new title, marker, legacy, create); port signature carries the initiative identity."
+          },
+          {
+            "id": "P3",
+            "status": "completed",
+            "note": "Tests: prefixed ensure, legacy retitle without duplicate, no-churn re-sync, marker-path retitle, E2E section matching + guard string."
+          },
+          {
+            "id": "P4",
+            "status": "completed",
+            "note": "Handoff covers all four acceptance criteria with exact files and the matching order."
+          },
+          {
+            "id": "P5",
+            "status": "completed",
+            "note": "Two traces recorded (observation + decision); completing with decision continue."
+          }
+        ],
+        "artifacts": []
+      },
+      "traces": [
+        {
+          "id": "6e50983a86e2",
+          "type": "observation",
+          "message": "ensure() finds a Milestone by exact title (gh-milestones.ts:32) and the managed initiative section carries no initiative id (markers.ts:99-113), so a naive title change duplicates the Milestone and a marker alone cannot say which Initiative a legacy Milestone belongs to. publication.ts:263 passes initiative.title; the E2E finds the Milestone by exact title (projection-e2e.mjs milestoneFor).",
+          "at": "2026-08-04T00:45:10.732Z",
+          "data": {
+            "files": [
+              "src/adapters/gh-milestones.ts",
+              "src/application/publication/markers.ts",
+              "src/application/publication.ts",
+              "scripts/projection-e2e.mjs"
+            ]
+          }
+        },
+        {
+          "id": "192a87bb6331",
+          "type": "decision",
+          "message": "Format \"INIT-<n>: <title>\" via initiativeTitleOf in markers.ts, and the managed section gains a hidden <!-- codepatrol-initiative-id: INIT-<n> --> marker inside the owned section. ensure() matches in four steps: exact new title (converge description), the id marker (retitle + converge), the legacy bare title with an initiative section present (retitle + converge), otherwise create. The port signature becomes ensure(repository, initiative: { id, title }, section); the E2E matches milestones by the managed section and asserts the id is in the title, with the assertion string registered in documentation.test.ts.",
+          "at": "2026-08-04T00:45:10.802Z",
+          "data": {
+            "format": "INIT-<n>: <title>",
+            "marker": "codepatrol-initiative-id",
+            "matching": "new title -> id marker -> legacy bare title -> create"
+          }
         }
       ]
     }
