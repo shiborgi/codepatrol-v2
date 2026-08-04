@@ -1,0 +1,45 @@
+{
+  "schemaVersion": 1,
+  "type": "codepatrol-work",
+  "work": {
+    "id": "INIT-9.3-extract-stagerunservice",
+    "title": "Extract StageRunService",
+    "description": "Move start, resume, complete, return, attempt numbering, run identity, stage role binding, and handoff generation into StageRunService.",
+    "issueType": "Task",
+    "priority": "p1",
+    "acceptance": [
+      "StageRunService owns stage execution state but not GitHub publication",
+      "resume cannot alter role, model, harness, attempt, or todo",
+      "Stage transitions remain controlled by the Core lifecycle",
+      "Starting Build still validates blockers",
+      "Every stage continues to receive an isolated worktree",
+      "No stage automatically invokes the next stage"
+    ],
+    "createdAt": "2026-08-04T02:00:13.641Z",
+    "requestedBy": "spec",
+    "initiative": {
+      "id": "INIT-9",
+      "position": 3
+    },
+    "origin": {
+      "createdAt": "2026-08-04T02:00:13.641Z"
+    }
+  },
+  "repository": {
+    "baseRef": "refs/heads/main"
+  },
+  "graph": {
+    "blockedBy": [
+      "INIT-9.1-extract-workqueries"
+    ]
+  },
+  "issue": null,
+  "workflow": {
+    "state": "ready",
+    "stage": "plan",
+    "attempt": 1,
+    "updatedAt": "2026-08-04T02:00:13.641Z"
+  },
+  "attempts": [],
+  "completion": null
+}
