@@ -37,10 +37,10 @@
     "number": 42
   },
   "workflow": {
-    "state": "active",
-    "stage": "verify",
+    "state": "ready",
+    "stage": "ship",
     "attempt": 1,
-    "updatedAt": "2026-08-04T01:34:30.007Z"
+    "updatedAt": "2026-08-04T01:43:17.945Z"
   },
   "attempts": [
     {
@@ -303,13 +303,14 @@
       "stage": "verify",
       "attempt": 1,
       "runId": "e6d62f44-f232-4e0a-b1fc-2e051ff38b89",
-      "status": "active",
+      "status": "completed",
       "execution": {
         "role": "verifier",
         "harness": "opencode",
         "model": "minimax-coding-plan/MiniMax-M3"
       },
       "startedAt": "2026-08-04T01:34:30.007Z",
+      "finishedAt": "2026-08-04T01:43:17.945Z",
       "todo": [
         {
           "id": "V1",
@@ -337,7 +338,147 @@
           "description": "Run verify complete."
         }
       ],
+      "result": {
+        "decision": "continue",
+        "summary": "Verification completed successfully. Candidate is completely clean and tests verify nextStepOf derivation logic and gh-projects field reconciliation.",
+        "handoff": "Verified: INIT-4.1 all tests passed and no regressions found.",
+        "todo": [
+          {
+            "id": "V1",
+            "status": "completed",
+            "note": "Pinned candidate d8df4df644b1a3799ccf8c613b187c04da262df7."
+          },
+          {
+            "id": "V2",
+            "status": "completed",
+            "note": "Inspected changed files natively mapping to the plan."
+          },
+          {
+            "id": "V3",
+            "status": "completed",
+            "note": "Executed npm run verify."
+          },
+          {
+            "id": "V4",
+            "status": "completed",
+            "note": "Recorded traces and evidence."
+          },
+          {
+            "id": "V5",
+            "status": "completed",
+            "note": "Complete verify with decision continue."
+          }
+        ],
+        "artifacts": []
+      },
+      "traces": [
+        {
+          "id": "d733819c2188",
+          "type": "observation",
+          "message": "V1: Pinned candidate and baseline commits. The candidate is d8df4df644b1a3799ccf8c613b187c04da262df7, and the baseline is a8eeebe921bc00f2bc7c8f3c0c11e33f932dbf6d. The verification target is exactly this range. Baseline is stale (targetCommit is 02607c6d1c744c03ad7d48e0fba101c6d6241469), but candidate is clean and status is ready.",
+          "at": "2026-08-04T01:35:02.652Z",
+          "data": {
+            "candidateCommit": "d8df4df644b1a3799ccf8c613b187c04da262df7",
+            "baselineCommit": "a8eeebe921bc00f2bc7c8f3c0c11e33f932dbf6d",
+            "targetCommit": "02607c6d1c744c03ad7d48e0fba101c6d6241469",
+            "policyHash": "738b7dca7b2b865e7de12c3f1ca6c05da0d1762f30e202a18709b6290fafb7b4"
+          }
+        },
+        {
+          "id": "f460faae858f",
+          "type": "observation",
+          "message": "Inspected changed files. 11 files changed including `src/core/types.ts` defining NEXT_STEPS and nextStepOf, `src/application/work-service.ts` updating nextCommand and WorkView, `src/application/publication.ts` computing snapshot next step, `src/adapters/gh-projects.ts` adding drift-aware reconcile, `src/test/support/github.ts` updating FakeGitHub, and scripts/projection-e2e.mjs adding assertions. Acceptance criteria verified natively.",
+          "at": "2026-08-04T01:38:08.067Z",
+          "data": {
+            "changedFiles": 11,
+            "acceptance1": "nextStepOf derived and exposed in WorkView",
+            "acceptance2": "nextCommand and snapshotOf read nextStepOf",
+            "acceptance3": "NEXT_FIELD created via ensureField",
+            "acceptance4": "terminal yields 'done', gh-projects.ts item-view drift-aware update implemented",
+            "acceptance5": "projection-e2e.mjs updated with NEXT_FIELD assertion, no manifest schema change"
+          }
+        },
+        {
+          "id": "4488eec7d6e4",
+          "type": "command",
+          "message": "Executed npm run verify per policy.json",
+          "at": "2026-08-04T01:38:23.226Z",
+          "data": {
+            "stdout": {
+              "digest": "448c40fb010c88cb270ed112da593ea90351de2bd61abea0d53d4c99e4e8d94a",
+              "bytes": 29532,
+              "truncated": false,
+              "redactions": 0
+            },
+            "stderr": {
+              "digest": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+              "bytes": 0,
+              "truncated": false,
+              "redactions": 0
+            }
+          },
+          "command": [
+            "npm",
+            "run",
+            "verify"
+          ],
+          "exitCode": 0
+        },
+        {
+          "id": "eb37bbf11557",
+          "type": "observation",
+          "message": "Recorded minimum evidence. All five acceptance criteria observed holding successfully in tests and file changes. No unverified behavior. npm run verify passes without any modifications to candidate.",
+          "at": "2026-08-04T01:38:37.549Z",
+          "data": {
+            "cleanCandidate": true,
+            "testsPassed": true
+          }
+        },
+        {
+          "id": "1d0ba4634aa4",
+          "type": "command",
+          "message": "npm run verify exited with 0",
+          "at": "2026-08-04T01:43:17.945Z",
+          "data": {
+            "source": "codepatrol",
+            "workId": "INIT-4.1-derive-the-decided-next-step-in-one-place-and-pr",
+            "runId": "e6d62f44-f232-4e0a-b1fc-2e051ff38b89",
+            "attempt": 1,
+            "candidateCommit": "d8df4df644b1a3799ccf8c613b187c04da262df7",
+            "policyHash": "738b7dca7b2b865e7de12c3f1ca6c05da0d1762f30e202a18709b6290fafb7b4",
+            "startedAt": "2026-08-04T01:41:01.737Z",
+            "finishedAt": "2026-08-04T01:43:17.898Z",
+            "stdout": {
+              "digest": "16a8b55913dbe50a366617bdaff6acd7ff3eaa763f283388017a4ed907d2a569",
+              "bytes": 29506,
+              "truncated": true,
+              "redactions": 0
+            },
+            "stderr": {
+              "digest": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+              "bytes": 0,
+              "truncated": false,
+              "redactions": 0
+            },
+            "outputLog": ".codepatrol/runtime/works/INIT-4.1-derive-the-decided-next-step-in-one-place-and-pr/current/verify/01.log"
+          },
+          "command": [
+            "npm",
+            "run",
+            "verify"
+          ],
+          "exitCode": 0
+        }
+      ],
       "verificationTarget": {
+        "attempt": 1,
+        "candidateCommit": "d8df4df644b1a3799ccf8c613b187c04da262df7",
+        "manifestCommit": "16c147973c6d6c5c51ffbcb6ab1405ae823bb79a",
+        "baselineCommit": "a8eeebe921bc00f2bc7c8f3c0c11e33f932dbf6d",
+        "targetCommit": "02607c6d1c744c03ad7d48e0fba101c6d6241469",
+        "policyHash": "738b7dca7b2b865e7de12c3f1ca6c05da0d1762f30e202a18709b6290fafb7b4"
+      },
+      "verifiedCandidate": {
         "attempt": 1,
         "candidateCommit": "d8df4df644b1a3799ccf8c613b187c04da262df7",
         "manifestCommit": "16c147973c6d6c5c51ffbcb6ab1405ae823bb79a",
