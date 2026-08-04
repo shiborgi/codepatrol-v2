@@ -33,7 +33,10 @@
       "INIT-10.3-aggregate-verification-and-repository-signals"
     ]
   },
-  "issue": null,
+  "issue": {
+    "repository": "shiborgi/codepatrol",
+    "number": 80
+  },
   "workflow": {
     "state": "ready",
     "stage": "plan",
