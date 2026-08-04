@@ -1,0 +1,44 @@
+{
+  "schemaVersion": 1,
+  "type": "codepatrol-work",
+  "work": {
+    "id": "INIT-5.3-add-lifecycle-characterization-scenarios",
+    "title": "Add lifecycle characterization scenarios",
+    "description": "Create deterministic repository-level tests for the current Git behavior before changing it: Work creation, first Plan start, Change branch creation, worktree attachment, Build completion, Verify completion, accept, rollback, cancel, supersede, refresh, archive creation, and recovery after interrupted operations. The tests characterize current behavior without claiming it is all desirable, and the fixtures can later be updated to express the new delivery-only-main contract.",
+    "issueType": "Task",
+    "priority": "p1",
+    "acceptance": [
+      "Every lifecycle outcome has a repository-level fixture",
+      "Tests record which refs and commits exist after each operation",
+      "Tests distinguish authoritative refs from derived projections",
+      "Tests verify no partial state survives an intentionally failed atomic operation",
+      "Fixtures can later be updated to express the new delivery-only-main contract"
+    ],
+    "createdAt": "2026-08-04T01:38:53.946Z",
+    "requestedBy": "spec",
+    "initiative": {
+      "id": "INIT-5",
+      "position": 3
+    },
+    "origin": {
+      "createdAt": "2026-08-04T01:38:53.946Z"
+    }
+  },
+  "repository": {
+    "baseRef": "refs/heads/main"
+  },
+  "graph": {
+    "blockedBy": [
+      "INIT-5.1-create-a-side-effect-free-package-entrypoint"
+    ]
+  },
+  "issue": null,
+  "workflow": {
+    "state": "ready",
+    "stage": "plan",
+    "attempt": 1,
+    "updatedAt": "2026-08-04T01:38:53.946Z"
+  },
+  "attempts": [],
+  "completion": null
+}
