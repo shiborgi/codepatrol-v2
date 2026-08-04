@@ -36,10 +36,10 @@
     "number": 43
   },
   "workflow": {
-    "state": "active",
-    "stage": "verify",
+    "state": "ready",
+    "stage": "ship",
     "attempt": 1,
-    "updatedAt": "2026-08-04T02:12:07.226Z"
+    "updatedAt": "2026-08-04T02:18:55.904Z"
   },
   "attempts": [
     {
@@ -296,13 +296,14 @@
       "stage": "verify",
       "attempt": 1,
       "runId": "fc32ad64-41dd-40f8-95ff-b882c35fb53d",
-      "status": "active",
+      "status": "completed",
       "execution": {
         "role": "verifier",
         "harness": "opencode",
         "model": "minimax-coding-plan/MiniMax-M3"
       },
       "startedAt": "2026-08-04T02:12:07.226Z",
+      "finishedAt": "2026-08-04T02:18:55.904Z",
       "todo": [
         {
           "id": "V1",
@@ -330,7 +331,146 @@
           "description": "Run verify complete."
         }
       ],
+      "result": {
+        "decision": "continue",
+        "summary": "Verification completed successfully. Candidate is completely clean and tests verify retitling logic with the 4-step matching mechanism correctly. The E2E match switched to the managed section cleanly.",
+        "handoff": "Verified: INIT-4.2 all tests passed and no regressions found.",
+        "todo": [
+          {
+            "id": "V1",
+            "status": "completed",
+            "note": "Pinned candidate 44cff52275ef7d229b9680b82a45f4b1c2397ed8."
+          },
+          {
+            "id": "V2",
+            "status": "completed",
+            "note": "Inspected changed files natively mapping to the plan."
+          },
+          {
+            "id": "V3",
+            "status": "completed",
+            "note": "Executed npm run verify."
+          },
+          {
+            "id": "V4",
+            "status": "completed",
+            "note": "Recorded traces and evidence."
+          },
+          {
+            "id": "V5",
+            "status": "completed",
+            "note": "Complete verify with decision continue."
+          }
+        ],
+        "artifacts": []
+      },
+      "traces": [
+        {
+          "id": "d45ae0bc348d",
+          "type": "observation",
+          "message": "V1: Pinned candidate and baseline commits. The candidate is 44cff52275ef7d229b9680b82a45f4b1c2397ed8, and the baseline is 94fd150dbddd0dccff58d0cc65362e432535c655. Verification target is exactly this range. Baseline is stale (targetCommit is 8799c55a9871ae4d6e93b94e9d768d1f9f911fe6), but candidate is clean and status is ready.",
+          "at": "2026-08-04T02:12:27.767Z",
+          "data": {
+            "candidateCommit": "44cff52275ef7d229b9680b82a45f4b1c2397ed8",
+            "baselineCommit": "94fd150dbddd0dccff58d0cc65362e432535c655",
+            "targetCommit": "8799c55a9871ae4d6e93b94e9d768d1f9f911fe6",
+            "policyHash": "738b7dca7b2b865e7de12c3f1ca6c05da0d1762f30e202a18709b6290fafb7b4"
+          }
+        },
+        {
+          "id": "66f547b5e6b7",
+          "type": "observation",
+          "message": "Inspected changed files. 9 files changed. src/adapters/gh-milestones.ts updated with a 4-step reconciliation strategy (exact new title, ID marker match, legacy exact bare title match, or create). src/application/publication/markers.ts extended with initiativeTitleOf helper and an embedded codepatrol-initiative-id marker. src/test/publication.test.ts updated with extensive unit tests covering the four acceptance criteria. scripts/projection-e2e.mjs changed `milestoneFor` to match by the managed section and asserts the ID format in the title, registering this string in src/test/documentation.test.ts.",
+          "at": "2026-08-04T02:13:14.594Z",
+          "data": {
+            "changedFiles": 9,
+            "acceptance1": "initiativeTitleOf helper implemented in markers.ts, format INIT-<n>: <title>",
+            "acceptance2": "Legacy retitling without duplicating verified in 4-step matching logic (gh-milestones.ts)",
+            "acceptance3": "Convergence helper applied effectively to prevent churn",
+            "acceptance4": "E2E match switched to managed section + format assertion"
+          }
+        },
+        {
+          "id": "b26ec934bfc4",
+          "type": "command",
+          "message": "Executed npm run verify per policy.json",
+          "at": "2026-08-04T02:16:02.565Z",
+          "data": {
+            "stdout": {
+              "digest": "ce4425a83b6f06a31680982a8e154a9de3c4ce5f8f683a3ea60e9b94fbabaf67",
+              "bytes": 29760,
+              "truncated": false,
+              "redactions": 0
+            },
+            "stderr": {
+              "digest": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+              "bytes": 0,
+              "truncated": false,
+              "redactions": 0
+            }
+          },
+          "command": [
+            "npm",
+            "run",
+            "verify"
+          ],
+          "exitCode": 0
+        },
+        {
+          "id": "3488a9ebfbe0",
+          "type": "observation",
+          "message": "Recorded minimum evidence. All four acceptance criteria observed holding successfully in tests and file changes. No unverified behavior. npm run verify passes without any modifications to candidate.",
+          "at": "2026-08-04T02:16:19.795Z",
+          "data": {
+            "cleanCandidate": true,
+            "testsPassed": true
+          }
+        },
+        {
+          "id": "ffe1d5983c49",
+          "type": "command",
+          "message": "npm run verify exited with 0",
+          "at": "2026-08-04T02:18:55.904Z",
+          "data": {
+            "source": "codepatrol",
+            "workId": "INIT-4.2-include-the-initiative-id-in-the-github-mileston",
+            "runId": "fc32ad64-41dd-40f8-95ff-b882c35fb53d",
+            "attempt": 1,
+            "candidateCommit": "44cff52275ef7d229b9680b82a45f4b1c2397ed8",
+            "policyHash": "738b7dca7b2b865e7de12c3f1ca6c05da0d1762f30e202a18709b6290fafb7b4",
+            "startedAt": "2026-08-04T02:16:44.013Z",
+            "finishedAt": "2026-08-04T02:18:55.854Z",
+            "stdout": {
+              "digest": "a0b086767e716a40eedfc419a0f2dad5e7b3ef482b5be7c71b5c36ea4b907e6a",
+              "bytes": 29761,
+              "truncated": true,
+              "redactions": 0
+            },
+            "stderr": {
+              "digest": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+              "bytes": 0,
+              "truncated": false,
+              "redactions": 0
+            },
+            "outputLog": ".codepatrol/runtime/works/INIT-4.2-include-the-initiative-id-in-the-github-mileston/current/verify/01.log"
+          },
+          "command": [
+            "npm",
+            "run",
+            "verify"
+          ],
+          "exitCode": 0
+        }
+      ],
       "verificationTarget": {
+        "attempt": 1,
+        "candidateCommit": "44cff52275ef7d229b9680b82a45f4b1c2397ed8",
+        "manifestCommit": "c965029a421768a7fa062964827dab183e3d23e5",
+        "baselineCommit": "94fd150dbddd0dccff58d0cc65362e432535c655",
+        "targetCommit": "8799c55a9871ae4d6e93b94e9d768d1f9f911fe6",
+        "policyHash": "738b7dca7b2b865e7de12c3f1ca6c05da0d1762f30e202a18709b6290fafb7b4"
+      },
+      "verifiedCandidate": {
         "attempt": 1,
         "candidateCommit": "44cff52275ef7d229b9680b82a45f4b1c2397ed8",
         "manifestCommit": "c965029a421768a7fa062964827dab183e3d23e5",
