@@ -39,10 +39,10 @@
     "number": 32
   },
   "workflow": {
-    "state": "ready",
+    "state": "active",
     "stage": "build",
     "attempt": 1,
-    "updatedAt": "2026-08-03T22:57:53.492Z"
+    "updatedAt": "2026-08-04T00:28:18.407Z"
   },
   "attempts": [
     {
@@ -261,6 +261,52 @@
             ],
             "noHiddenEdits": true
           }
+        }
+      ]
+    },
+    {
+      "stage": "build",
+      "attempt": 1,
+      "runId": "d9ef3a5a-e526-4f2d-ad5c-58cb33cfd175",
+      "status": "active",
+      "execution": {
+        "role": "builder",
+        "harness": "opencode",
+        "model": "minimax-coding-plan/MiniMax-M3"
+      },
+      "startedAt": "2026-08-04T00:28:18.407Z",
+      "todo": [
+        {
+          "id": "B1",
+          "title": "Inspect accepted plan and current source state"
+        },
+        {
+          "id": "B2",
+          "title": "Add effective composition field to manifest schema and verify backward compatibility"
+        },
+        {
+          "id": "B3",
+          "title": "Wire resolveComposition into the start transition with refusal for unresolvable skills"
+        },
+        {
+          "id": "B4",
+          "title": "Expose effective composition on HandoffV1"
+        },
+        {
+          "id": "B5",
+          "title": "Tests covering all five acceptance criteria"
+        },
+        {
+          "id": "B6",
+          "title": "Run npm run verify"
+        },
+        {
+          "id": "B7",
+          "title": "Commit product changes; verify clean worktree"
+        },
+        {
+          "id": "B8",
+          "title": "Complete Build with continue"
         }
       ]
     }
