@@ -1,0 +1,43 @@
+{
+  "schemaVersion": 1,
+  "type": "codepatrol-work",
+  "work": {
+    "id": "INIT-8.3-separate-parsing-from-domain-invariants",
+    "title": "Separate parsing from domain invariants",
+    "description": "Distinguish structural JSON decoding from domain invariants and lifecycle consistency checks: Work ID belongs to its Initiative, blockers sorted and unique, branch provenance fields appear together, active state matches the latest active attempt, terminal state requires completion, Verify snapshots match their attempts.",
+    "issueType": "Task",
+    "priority": "p1",
+    "acceptance": [
+      "Parsed manifests pass an explicit invariant validation step",
+      "Unit tests identify whether a failure is structural or semantic",
+      "Serialization round-trips remain deterministic",
+      "Existing corrupt-state scenarios remain rejected"
+    ],
+    "createdAt": "2026-08-04T01:57:27.785Z",
+    "requestedBy": "spec",
+    "initiative": {
+      "id": "INIT-8",
+      "position": 3
+    },
+    "origin": {
+      "createdAt": "2026-08-04T01:57:27.785Z"
+    }
+  },
+  "repository": {
+    "baseRef": "refs/heads/main"
+  },
+  "graph": {
+    "blockedBy": [
+      "INIT-8.2-extract-shared-strict-decoding-primitives"
+    ]
+  },
+  "issue": null,
+  "workflow": {
+    "state": "ready",
+    "stage": "plan",
+    "attempt": 1,
+    "updatedAt": "2026-08-04T01:57:27.785Z"
+  },
+  "attempts": [],
+  "completion": null
+}
