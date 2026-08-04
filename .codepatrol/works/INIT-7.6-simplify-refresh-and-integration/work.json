@@ -1,0 +1,48 @@
+{
+  "schemaVersion": 1,
+  "type": "codepatrol-work",
+  "work": {
+    "id": "INIT-7.6-simplify-refresh-and-integration",
+    "title": "Simplify refresh and integration",
+    "description": "Reimplement refresh and integration on the new boundaries: refresh coordinates application policy, ChangeRepository preflight, the Change refresh, the manifest baseline checkpoint, and verification invalidation; integration coordinates terminal manifest, verified candidate, and current base into one accepted commit or no base change.",
+    "issueType": "Task",
+    "priority": "p1",
+    "acceptance": [
+      "Refresh behavior remains backward compatible",
+      "Refresh does not move the base",
+      "Refresh conflicts leave all refs unchanged",
+      "Accept remains idempotent",
+      "Archive divergence is reported as corruption",
+      "Recovery refs preserve commits that appear after finalization",
+      "Integration does not depend on a mutable branch manifest"
+    ],
+    "createdAt": "2026-08-04T01:55:22.853Z",
+    "requestedBy": "spec",
+    "initiative": {
+      "id": "INIT-7",
+      "position": 6
+    },
+    "origin": {
+      "createdAt": "2026-08-04T01:55:22.853Z"
+    }
+  },
+  "repository": {
+    "baseRef": "refs/heads/main"
+  },
+  "graph": {
+    "blockedBy": [
+      "INIT-7.3-extract-changerepository",
+      "INIT-7.4-reduce-worktreemanager-to-checkout-lifecycle",
+      "INIT-7.5-remove-manifeststore-worktree-hooks"
+    ]
+  },
+  "issue": null,
+  "workflow": {
+    "state": "ready",
+    "stage": "plan",
+    "attempt": 1,
+    "updatedAt": "2026-08-04T01:55:22.853Z"
+  },
+  "attempts": [],
+  "completion": null
+}
