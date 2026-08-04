@@ -34,7 +34,10 @@
       "INIT-9.4-extract-evidenceservice"
     ]
   },
-  "issue": null,
+  "issue": {
+    "repository": "shiborgi/codepatrol",
+    "number": 77
+  },
   "workflow": {
     "state": "ready",
     "stage": "plan",
