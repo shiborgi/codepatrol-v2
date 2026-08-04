@@ -1,0 +1,43 @@
+{
+  "schemaVersion": 1,
+  "type": "codepatrol-work",
+  "work": {
+    "id": "INIT-8.5-document-schema-evolution-rules",
+    "title": "Document schema evolution rules",
+    "description": "Define when Codepatrol preserves schema version 1, adds optional fields, creates schema version 2, provides migrations, and rejects unsupported future fields.",
+    "issueType": "Task",
+    "priority": "p1",
+    "acceptance": [
+      "Compatibility rules are documented",
+      "Reader and writer version responsibilities are explicit",
+      "Upgrade behavior distinguishes automatic migration from manual repair",
+      "No current Work is rewritten only for formatting"
+    ],
+    "createdAt": "2026-08-04T01:57:27.785Z",
+    "requestedBy": "spec",
+    "initiative": {
+      "id": "INIT-8",
+      "position": 5
+    },
+    "origin": {
+      "createdAt": "2026-08-04T01:57:27.785Z"
+    }
+  },
+  "repository": {
+    "baseRef": "refs/heads/main"
+  },
+  "graph": {
+    "blockedBy": [
+      "INIT-8.4-add-canonical-schema-fixtures"
+    ]
+  },
+  "issue": null,
+  "workflow": {
+    "state": "ready",
+    "stage": "plan",
+    "attempt": 1,
+    "updatedAt": "2026-08-04T01:57:27.785Z"
+  },
+  "attempts": [],
+  "completion": null
+}
