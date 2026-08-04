@@ -1,0 +1,45 @@
+{
+  "schemaVersion": 1,
+  "type": "codepatrol-work",
+  "work": {
+    "id": "INIT-5.4-add-architectural-dependency-tests",
+    "title": "Add architectural dependency tests",
+    "description": "Introduce tests that enforce the intended dependency direction: core imports no application, adapters, or cli; application imports no cli; cli may depend on application and core; adapters may implement application ports. Additional rules prevent adapters from becoming lifecycle authorities, Worktrees from containing application policy, and package entrypoints from producing import-time side effects. The rules are documented.",
+    "issueType": "Task",
+    "priority": "p1",
+    "acceptance": [
+      "Dependency violations fail npm test",
+      "Rules inspect actual TypeScript imports",
+      "Tests do not require a new runtime dependency",
+      "The architecture rules are documented",
+      "At least one deliberately invalid fixture proves the rules detect violations"
+    ],
+    "createdAt": "2026-08-04T01:38:53.946Z",
+    "requestedBy": "spec",
+    "initiative": {
+      "id": "INIT-5",
+      "position": 4
+    },
+    "origin": {
+      "createdAt": "2026-08-04T01:38:53.946Z"
+    }
+  },
+  "repository": {
+    "baseRef": "refs/heads/main"
+  },
+  "graph": {
+    "blockedBy": [
+      "INIT-5.1-create-a-side-effect-free-package-entrypoint",
+      "INIT-5.2-move-shared-application-primitives-out-of-workse"
+    ]
+  },
+  "issue": null,
+  "workflow": {
+    "state": "ready",
+    "stage": "plan",
+    "attempt": 1,
+    "updatedAt": "2026-08-04T01:38:53.946Z"
+  },
+  "attempts": [],
+  "completion": null
+}
