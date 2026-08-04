@@ -33,7 +33,10 @@
       "INIT-5.2-move-shared-application-primitives-out-of-workse"
     ]
   },
-  "issue": null,
+  "issue": {
+    "repository": "shiborgi/codepatrol",
+    "number": 55
+  },
   "workflow": {
     "state": "ready",
     "stage": "plan",
